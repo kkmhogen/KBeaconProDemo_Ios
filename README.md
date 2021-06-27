@@ -13,7 +13,7 @@ With this SDK, you can scan and configure the KBeacon device. The SDK include fo
 
 * KBCfgHandler：Responsible for configuring parameters related to KBeacon devices
 * DFU Library: Responsible for KBeacon firmware update.
-![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/master/kbeacon_class_arc.png?raw=true)
+![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/main/kbeacon_class_arc.png?raw=true)
 
 **Scanning Stage**
 
@@ -711,7 +711,7 @@ func updateModifyParaToDevice()
   &nbsp;&nbsp; 1. Setting slot 0 to iBeacon advertisement(adv period = 211.25ms, trigger only adv = true).  
   &nbsp;&nbsp; 2. Add a single button trigger(Trigger No = 0, Trigger type = Btn single click, Action = advertisement, Adv slot = 0, Adv duration = 20).  
 	&nbsp;&nbsp;  
-	![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/master/only_adv_when_trigger.png?raw=true)
+	![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/main/only_adv_when_trigger.png?raw=true)
 
  Example 2:  Trigger advertisment
 	&nbsp;For some scenario, we need to continuously monitor the KBeacon to ensure that the device was alive. The device usually broadcasting iBeacon1(UUID=xxx1) , and we want to trigger the broadcast iBeacon2(uuid=xxx2) when the button is pressed.   
@@ -720,7 +720,7 @@ func updateModifyParaToDevice()
 	&nbsp;We set an larger advertisement interval during alive advertisement and a short advertisement interval when trigger event happened, so we can achieve a balance between power consumption and triggers advertisement be easily detected.  
   &nbsp;&nbsp; 3. Add a single button trigger(Trigger No = 0, Trigger type = Btn single click, Action = advertisement, Adv slot = 1, Adv duration = 20).  
 	 &nbsp;&nbsp;
- 	![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/master/always_adv_with_trigger.png?raw=true)
+ 	![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/main/always_adv_with_trigger.png?raw=true)
 
 
 
