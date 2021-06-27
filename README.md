@@ -13,7 +13,7 @@ With this SDK, you can scan and configure the KBeacon device. The SDK include fo
 
 * KBCfgHandler：Responsible for configuring parameters related to KBeacon devices
 * DFU Library: Responsible for KBeacon firmware update.
-![avatar](https://github.com/kkmhogen/KBeaconProDemo_Ios/blob/master/kbeacon_class_arc.png?raw=true)
+![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/master/kbeacon_class_arc.png?raw=true)
 
 **Scanning Stage**
 
@@ -105,7 +105,7 @@ After app startup, the BLE state was set to unknown, so the app should wait a fe
 
 4. Implementation KBeaconMgr delegate to get scanning result
 
-```objective-c
+```swift
 func onBeaconDiscovered(beacons:[KBeacon])
 {
     for beacon in beacons
