@@ -13,7 +13,7 @@ With this SDK, you can scan and configure the KBeacon device. The SDK include fo
 
 * KBCfgHandler：Responsible for configuring parameters related to KBeacon devices
 * DFU Library: Responsible for KBeacon firmware update.
-![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/master/kbeacon_class_arc.png?raw=true)
+![avatar](https://github.com/kkmhogen/KBeaconProDemo_Ios/blob/master/kbeacon_class_arc.png?raw=true)
 
 **Scanning Stage**
 
@@ -209,25 +209,25 @@ func printScanPacket(_ advBeacon: KBeacon)
 4. Clean scanning result and stop scanning  
 After start scanning, The KBeaconMgr will buffer all found KBeacon device. If the app want to remove all buffered KBeacon device, the app can:  
 
-```objective-c
+```swift
 mBeaconsMgr!.clearBeacons()
 ```
 
 If the app wants to stop scanning:
-```objective-c
+```swift
 mBeaconsMgr!.stopScanning()
 ```
 
 ### 4.2 Connect to device
  1. If the app wants to change the device parameters, then it need connect to the device.
- ```objective-c
+ ```swift
 self.beacon!.connect(beaconPwd, timeout: 15.0, delegate: self)
  ```
 * Password: device password, the default password is 0000000000000000
 * timeout: max connection time, unit is second.
 
 2. the app should implementation the KBeacon's delegate for get connection status:
- ```objective-c
+ ```swift
 func onConnStateChange(_ beacon:KBeacon, state:KBConnState, evt:KBConnEvtReason)
 {
     if (state == KBConnState.Connecting)
@@ -255,7 +255,7 @@ func onConnStateChange(_ beacon:KBeacon, state:KBConnState, evt:KBConnEvtReason)
  ```
 
 3. Disconnect from the device.
- ```objective-c
+ ```swift
 self.beacon!.disconnect()
  ```
 
@@ -278,7 +278,7 @@ For example, advertisement type was set to “iBeacon + TLM + System”, then th
 
 #### 4.3.2 Get device parameters
 After the app connect to KBeacon success. The KBeacon will automatically read current parameters from physical device. so the app can update UI and show the parameters to user after connection setup.  
- ```objective-c
+ ```swift
  func onConnStateChange(_ beacon:KBeacon, state:KBConnState, evt:KBConnEvtReason)
  {
      ...
@@ -361,7 +361,7 @@ The app can modify the basic parameters of KBeacon through the KBCfgCommon class
  Be sure to remember the new password, you won’t be able to connect to the device if you forget the new password.
 
 Example: Update common parameters
-```objective-c
+```swift
 func updateCommPara()
 {
     let commCfg = KBCfgCommon()
@@ -416,7 +416,7 @@ The app can enable iBeacon broadcast through the KBCfgIBeacon class. The KBCfgIB
 * minorID: iBeacon minor ID
 
 example: set the slot0 to broadcasting iBeacon packet
-```objective-c
+```swift
 //example: update KBeacon to iBeacon
 func updateIBeaconPara()
 {
@@ -520,7 +520,7 @@ func updateIBeaconPara()
 
 example: set the slot0/slot1 to hybrid iBeacon/EddyTLM.  
 sometimes we need KBeacon broadcasting both iBeacon and TLM packet (battery level, Temperature, power on times, etc., )
-```objective-c
+```swift
 func updateKBeaconToIBeaconTLM_unconnectable()
 {
     if (self.beacon!.state != KBConnState.Connected)
@@ -569,7 +569,7 @@ The KBCfgEddyUID has follow parameters:
 * nid: namespace id about UID. It is 10 bytes length hex string value.
 * sid: instance id about UID. It is 6 bytes length hex string value.
 
-```objective-c
+```swift
 //example: update KBeacon to Eddy URL
 func updateKBeaconToEddyURL()
 {
@@ -610,7 +610,7 @@ func updateKBeaconToEddyURL()
 Sometimes, in order to reduce the time for configuration, The app can only sending the modified parameters.
 
 Example: checking if the parameters was changed, then send new parameters to device.
-```objective-c
+```swift
 func updateModifyParaToDevice()
 {
     if (!self.beacon!.isConnected())
@@ -739,7 +739,7 @@ When you set multiple triggers to the same slot broadcast, you can turn on the T
 
 1. Enable or button trigger event to advertisement.  
 
-```objective-c
+```swift
 //enable button press trigger event to slot1 advertisement
 func enableBtnTriggerEvtToSlot1Advertisement()
 {
@@ -799,7 +799,7 @@ func enableBtnTriggerEvtToSlot1Advertisement()
 In some scenarios, our app will always be connected to the KBeacon device. We need the app can receive a press notification event when the button is pressed.  
 
 //implementation KBNotifyDataDelegate
-```objective-c
+```swift
 class DeviceViewController : KBNotifyDataDelegate
 {
 
@@ -807,7 +807,7 @@ class DeviceViewController : KBNotifyDataDelegate
 ```
 
 //enable button press trigger event to application
-```objective-c
+```swift
 func enableBtnTriggerEvtToApp()
 {
     //check if device can support button trigger capibility
@@ -846,7 +846,7 @@ func onNotifyDataReceived(_ beacon:KBeacon, evt:Int, data:Data)
 
 3. The app can disable the button trigger by  
 
-```objective-c
+```swift
 //disable button trigger
 @IBAction func onDisableButtonTrigger(_ sender: Any)
 {
@@ -888,7 +888,7 @@ Enabling motion trigger is similar to push button trigger, which will not be des
 
 1. Enable or motion trigger feature.  
 
-```Java
+```swift
 // the iBeacon broadcast duration is 10 seconds.
 @IBAction func onEnableMotionTrigger(_ sender: Any)
 {
@@ -938,7 +938,7 @@ The app can configure KBeacon to start broadcasting after detecting an abnormali
 
 1. Enable temperature&humidity trigger feature.  
 
-```Java
+```swift
 @IBAction func onTHTrigger2Adv(_ sender: Any)
 {
     guard self.beacon!.isConnected(),
@@ -966,7 +966,7 @@ The app can configure KBeacon to start broadcasting after detecting an abnormali
 }
 ```
 2. Report temperature&humidity to app realtime
-```Java
+```swift
 //After enable realtime data to app, then the device will periodically send the temperature and humidity data to app whether it was changed or not.
 @IBAction func onTHTriggerEvt2App(_ sender: Any)
 {
@@ -1006,7 +1006,7 @@ If the device has some sensors, such as temperature and humidity sensors, we may
 
 
 #### 4.3.5.1 Config measure and log paramaters
-```Java
+```swift
 func setTHSensorMeasureParameters()
 {
     if (!self.beacon!.isConnected())
@@ -1054,7 +1054,7 @@ func setTHSensorMeasureParameters()
 
 #### 4.3.5.3 Read sensor history records
 1. read history summary information.
-```Java
+```swift
 self.mSensorDataMsg!.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
     if (!result)
     {
@@ -1088,7 +1088,7 @@ self.mSensorDataMsg!.readSensorDataInfo(self.beacon!, callback: { (result, obj, 
   * KBSensorReadOption.ReverseOrder: Read records without pointer moving. The app can read records from recently to old. To read records in this way, the app must  specify the record no to be read.
 
    Example1: The app read the temperature and humidity records. Each time the records was read, the pointer will move to next.
-```Java
+```swift
 self.mSensorDataMsg!.readSensorRecord(self.beacon!,
                                           number: CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS,
                   option: KBSensorReadOption.NewRecord,
@@ -1113,7 +1113,7 @@ self.mSensorDataMsg!.readSensorRecord(self.beacon!,
   Example2: The app read the temperature and humidity records without moving pointer.
   The device has 100 records sorted by time, the app want to reading 10 records and start from the No 99. The Kbeacon will send records #99 ~ #90 to app by reverse order.     
   If the app does not known the last record no, then the value can set to INVALID_DATA_RECORD_POS.
-```Java
+```swift
 self.mSensorDataMsg!.readSensorRecord(self.beacon!,
                                           number: CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS,
                   option: KBSensorReadOption.ReverseOrder,
@@ -1137,7 +1137,7 @@ self.mSensorDataMsg!.readSensorRecord(self.beacon!,
 
  Example3: The app read the temperature and humidity records without moving pointer.
  The device has 100 records sorted by time, the app want to reading 20 records and start from No 10. The Kbeacon will send records #10 ~ #29 to app.  
-```Java
+```swift
 self.mSensorDataMsg!.readSensorRecord(self.beacon!,
                                           number:10,
                   option: KBSensorReadOption.NormalOrder,
@@ -1170,7 +1170,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
  * ledOn: optional parameters, unit is ms. The LED will flash at interval (ledOn + ledOff).  This parameters is valid when ringType set to 0x0 or 0x1.
  * ledOff: optional parameters, unit is ms. the LED will flash at interval (ledOn + ledOff).  This parameters is valid when ringType set to 0x0 or 0x1.  
 
-  ```Java
+  ```swift
 @IBAction func onRingDevice(_ sender: Any)
 {
      guard self.beacon!.isConnected() else
@@ -1210,7 +1210,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
  The app can use follow command to reset all configurations to default.
  * msg: message type is 'reset'
 
-```objective-c
+```swift
 //set parameter to default
 @IBAction func onResetParametersToDefault(_ sender: Any)
 {
@@ -1247,7 +1247,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
  * KBErrorCode.CfgStateError: device is not in connected state
  * KBErrorCode.CfgNotSupport: device does not support the parameters
 
- ```objective-c
+ ```swift
 {
     ...another code
 
@@ -1295,7 +1295,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
   ```
 
  3. Start DFU  
- ```objective-c
+ ```swift
  @IBAction func onDFUClick(_ sender: Any)
  {
      if self.beacon!.isConnected(),
