@@ -1,0 +1,78 @@
+/* 
+  Localizable.strings
+  KBeacon2
+
+  Created by hogen on 2021/6/8.
+  
+*/
+
+"ERR_TITLE"="Error";
+"ACTION_START_SCAN"="Scan";
+"ACTION_STOP_SCAN"="Stop";
+
+"SUCC_TITLE"="Success";
+"DLG_OK"="Ok";
+"DLG_CANCEL"="Cancel";
+"ERR_BLE_FUNC_OFF"="Ble function is not enable on your phone.";
+"ERR_JSON_FILE_INVALID"="Json file not suitable for this ESL device.";
+"ERR_JSON_FILE_SUCCESS"="Save Json file success.";
+"PUSH_TO_RELEASE" = "Pull to refresh";
+"ACTION_REFRESHING"="Refreshing";
+
+"BEACON_CONNECT" = "Connect";
+"BEACON_DISCONNECT" = "Disconnect";
+"ERR_BEACON_NOT_CONNECTED" = "The device was disconnected";
+
+"DEVICE_CHECK_UPDATE" = "Check version...";
+"DEVICE_FOUND_VERSION" = "Found new version";
+"DEVICE_LATEST_VERSION" = "Current version is the latest, not need update.";
+"DFU_CONNECT_SERVICE_FAIL" = "Connect to cloud server failed, please check if the network was connected and give the application network permission";
+"DFU_FOUND_NEW_VERSION" =  "A new version(%s) found.";
+
+"DFU_TITLE_SUCCESS" = "Update";
+"DFU_TITLE_FAIL" = "Update failed";
+"UPDATE_DOWNLOADING" = "Downloading...";
+"UPDATE_STARTED" = "Updating...";
+"UPDATE_CONNECTING" = "Connecting...";
+"UPDATE_UPLOADING" = "Upload firmware...";
+"UPDATE_ABORTED" = "Update aborted!";
+"UPDATE_COMPLETE" = "Update success!";
+"UPDATE_NETWORK_FAIL" = "Network failure!";
+
+"nb_menu_item_check_ver" = "Firmware update";
+"DFU_CLOUDS_SERVER_ERROR" = "Cloud server error";
+"DFU_CLOUDS_FILE_NOT_EXIST" = "DFU file does not exist";
+"BEACON_FIELD_NAME"="Firmware update";
+
+"UPDATE_NOT_FOUND_NEW_VERSION" = "Failed to obtain the latest version information, please ensure that the Internet connection is successful";
+
+"DFU_VERSION_MAKE_SURE"="To ensure a successful upgrade, it is recommended that the distance between the mobile phone and the KBeacon device be less than 3 meters. Are you sure you want to upgrade?";
+
+"nb_clear_history_warning" = "Warning";
+"nb_clear_history_description" = "Once you clear the record, all distancing records will be lost, are you sure you want to continue?";
+"LOAD_HISTORY_DATA_FAILED" = "Load data failed";
+"LOAD_HISTORY_DATA_TIMEOUT" = "Load history data timeout, please try it again";
+"MJRefreshHeaderIdleText" = "Pull down to refresh";
+"MJRefreshHeaderPullingText" = "Release to refresh";
+"MJRefreshHeaderRefreshingText" = "Reloading data from device...";
+
+"MJRefreshAutoFooterIdleText" = "Tap or pull up to load more";
+"MJRefreshAutoFooterRefreshingText" = "Loading data from device...";
+"MJRefreshAutoFooterNoMoreDataText" = "No more data";
+
+"MJRefreshBackFooterIdleText" = "Pull up to load more";
+"MJRefreshBackFooterPullingText" = "Release to load more.";
+"MJRefreshBackFooterRefreshingText" = "Loading data from device...";
+"MJRefreshBackFooterNoMoreDataText" = "No more data";
+
+"BEACON_FIELD_HISTORY_DATA_TITLE"="History data";
+"EXPORT_SENSOR_HISTORY_DATA_TITLE" = "&subject=Sensor history data ";
+
+"BEACON_TEMP"="Temperature";
+"BEACON_HUM"="Humidity";
+"BEACON_TEMP_UINT"="°C";
+"load_data_complete_no_more_data"="Read %d records, no more data";
+"load_data_complete"="Read data complete, update %d records";
+"upload_data_success"="Uploaded configuration parameters to device successfully!";
+"upload_config_data_failed"="Upload config paramaters failed";
+

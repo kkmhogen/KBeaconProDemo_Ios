@@ -1,0 +1,124 @@
+//
+//  KBAdvPacketSensor.swift
+//  KBeacon2
+//
+//  Created by hogen on 2021/5/23.
+//
+
+import Foundation
+
+@objc public class KBAdvPacketSensor : KBAdvPacketBase
+{
+    static let MIN_SENSOR_ADV_LEN = 2
+    
+    private static let SENSOR_MASK_VOLTAGE = 1
+    public static let SENSOR_MASK_TEMP = 2
+    public static let SENSOR_MASK_HUME = 4
+    public static let SENSOR_MASK_ACC_AIX = 8
+    
+    //acceleration sensor data
+    @objc public var accSensor: KBAccSensorValue?
+
+    //temperature about sensor
+    @objc public var temperature: Float = KBCfgBase.INVALID_FLOAT
+
+    //humidity about sensor
+    @objc public var humidity: Float = KBCfgBase.INVALID_FLOAT
+
+    //adv packet version
+    @objc public var version: UInt = 0
+
+    //battery level, uint is mV
+    @objc public var batteryLevel: Int16 = 0
+    
+    internal required init() {
+        
+        super.init()
+    }
+    
+    @objc public override func getAdvType()->Int
+    {
+        return KBAdvType.Sensor;
+    }
+    
+    internal override func parseAdvPacket(_ data:Data, index:Int)->Bool
+    {
+        super.parseAdvPacket(data, index: index);
+        
+        if (data.count < KBAdvPacketSensor.MIN_SENSOR_ADV_LEN)
+        {
+            return false;
+        }
+        var nSrvIndex = index;
+        
+        //version
+        version = UInt(data[nSrvIndex])
+        nSrvIndex += 1
+                
+        //sensor mask
+        let bySensorMask = Int(data[nSrvIndex]);
+        nSrvIndex += 1
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_VOLTAGE) > 0)
+        {
+            if (nSrvIndex > data.count - 2)
+            {
+                return false;
+            }
+            
+            batteryLevel = Int16(Int16(data[nSrvIndex]) << 8) + Int16(data[nSrvIndex + 1]);
+            nSrvIndex += 2
+        }
+        
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_TEMP) > 0)
+        {
+            if (nSrvIndex > data.count - 2)
+            {
+                return false;
+            }
+            
+            let tempHeigh = Int8(bitPattern: data[nSrvIndex]);
+            nSrvIndex += 1
+            let tempLow = data[nSrvIndex];
+            nSrvIndex += 1
+            temperature = KBUtility.signedBytes2Float(byte1: tempHeigh, byte2: tempLow)
+        }
+        
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_HUME) > 0)
+        {
+            if (nSrvIndex > data.count - 2)
+            {
+                return false;
+            }
+            
+            let humHeigh = Int8(bitPattern: data[nSrvIndex])
+            nSrvIndex += 1
+            let humLow = data[nSrvIndex];
+            nSrvIndex += 1
+            
+            humidity = KBUtility.signedBytes2Float(byte1: humHeigh, byte2: humLow)
+        }
+        
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_ACC_AIX) > 0)
+        {
+            if (nSrvIndex > data.count - 6)
+            {
+                return false;
+            }
+            
+            accSensor = KBAccSensorValue()
+            let tempXAis = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
+            accSensor!.xAis = Int16(bitPattern: tempXAis)
+            nSrvIndex += 2
+            
+            let tempYAis = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
+            accSensor!.yAis = Int16(bitPattern: tempYAis)
+            nSrvIndex += 2
+
+            let tempZAis = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
+            accSensor!.zAis = Int16(bitPattern: tempZAis)
+            nSrvIndex += 2
+        }
+        
+        return true;
+    }
+}

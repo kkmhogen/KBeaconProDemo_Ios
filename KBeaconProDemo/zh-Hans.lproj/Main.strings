@@ -1,0 +1,204 @@
+
+/* Class = "UILabel"; text = "conn:yes  "; ObjectID = "1BY-0f-6QE"; */
+"1BY-0f-6QE.text" = "conn:yes  ";
+
+/* Class = "UILabel"; text = "DeviceName"; ObjectID = "1Bt-3a-BF7"; */
+"1Bt-3a-BF7.text" = "DeviceName";
+
+/* Class = "UILabel"; text = "major:n/a"; ObjectID = "1Ly-YJ-1PM"; */
+"1Ly-YJ-1PM.text" = "major:n/a";
+
+/* Class = "UILabel"; text = "V1.0"; ObjectID = "2qt-HC-5XS"; */
+"2qt-HC-5XS.text" = "V1.0";
+
+/* Class = "UILabel"; text = "Status:"; ObjectID = "6k2-ha-Vov"; */
+"6k2-ha-Vov.text" = "Status:";
+
+/* Class = "UIButton"; normalTitle = "EnableTrigger"; ObjectID = "7YI-I9-3Gr"; */
+"7YI-I9-3Gr.normalTitle" = "EnableTrigger";
+
+/* Class = "UILabel"; text = "V1.0"; ObjectID = "AFD-7G-cYb"; */
+"AFD-7G-cYb.text" = "V1.0";
+
+/* Class = "UITextView"; text = "Disconnected "; ObjectID = "BBG-pn-TWn"; */
+"BBG-pn-TWn.text" = "Disconnected ";
+
+/* Class = "UIButton"; normalTitle = "RingDevice"; ObjectID = "BcW-nC-hQX"; */
+"BcW-nC-hQX.normalTitle" = "RingDevice";
+
+/* Class = "UILabel"; text = "N/A"; ObjectID = "E6W-ni-yL7"; */
+"E6W-ni-yL7.text" = "N/A";
+
+/* Class = "UIBarButtonItem"; title = "Scan"; ObjectID = "Eub-i7-b0N"; */
+"Eub-i7-b0N.title" = "Scan";
+
+/* Class = "UILabel"; text = "Motion Trigger:"; ObjectID = "GrJ-FM-U4z"; */
+"GrJ-FM-U4z.text" = "Motion Trigger:";
+
+/* Class = "UIButton"; normalTitle = "Firmware Update"; ObjectID = "H7t-MF-d5R"; */
+"H7t-MF-d5R.normalTitle" = "Firmware Update";
+
+/* Class = "UIButton"; normalTitle = "LogData2App"; ObjectID = "HAH-yv-7xm"; */
+"HAH-yv-7xm.normalTitle" = "LogData2App";
+
+/* Class = "UILabel"; text = "Temperature:"; ObjectID = "HZo-6N-Cop"; */
+"HZo-6N-Cop.text" = "Temperature:";
+
+/* Class = "UINavigationItem"; title = "Sensor data history"; ObjectID = "Hcj-Sd-1qo"; */
+"Hcj-Sd-1qo.title" = "Sensor data history";
+
+/* Class = "UILabel"; text = "Kx_xxx"; ObjectID = "Hnn-e4-cFI"; */
+"Hnn-e4-cFI.text" = "Kx_xxx";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "Hqy-1U-Xlq"; */
+"Hqy-1U-Xlq.text" = "Detail";
+
+/* Class = "UILabel"; text = "Command"; ObjectID = "IZ2-KQ-HfB"; */
+"IZ2-KQ-HfB.text" = "Command";
+
+/* Class = "UILabel"; text = "Model:"; ObjectID = "InU-nO-epc"; */
+"InU-nO-epc.text" = "Model:";
+
+/* Class = "UILabel"; text = "Button trigger:"; ObjectID = "LMp-af-Bnk"; */
+"LMp-af-Bnk.text" = "Button trigger:";
+
+/* Class = "UILabel"; text = "minor:n/a"; ObjectID = "Mdh-sc-ukq"; */
+"Mdh-sc-ukq.text" = "minor:n/a";
+
+/* Class = "UIButton"; normalTitle = "DisableTrigger"; ObjectID = "NMx-2K-lCN"; */
+"NMx-2K-lCN.normalTitle" = "DisableTrigger";
+
+/* Class = "UILabel"; text = "rssi:-128"; ObjectID = "NPo-Pb-og4"; */
+"NPo-Pb-og4.text" = "rssi:-128";
+
+/* Class = "UILabel"; text = "Adv Period"; ObjectID = "Nl5-Nn-pi3"; */
+"Nl5-Nn-pi3.text" = "Adv Period";
+
+/* Class = "UIButton"; normalTitle = "EnableTrigger"; ObjectID = "P1V-EJ-lQ3"; */
+"P1V-EJ-lQ3.normalTitle" = "EnableTrigger";
+
+/* Class = "UILabel"; text = "Temperature&humidity logger"; ObjectID = "QAC-dG-ZBx"; */
+"QAC-dG-ZBx.text" = "Temperature&humidity logger";
+
+/* Class = "UIButton"; normalTitle = "viewLogHistory"; ObjectID = "QEV-zq-6HH"; */
+"QEV-zq-6HH.normalTitle" = "viewLogHistory";
+
+/* Class = "UIButton"; normalTitle = "ReadTrigger"; ObjectID = "QRE-ch-d2i"; */
+"QRE-ch-d2i.normalTitle" = "ReadTrigger";
+
+/* Class = "UILabel"; text = "Name:"; ObjectID = "Qdz-HV-t3Y"; */
+"Qdz-HV-t3Y.text" = "Name:";
+
+/* Class = "UILabel"; text = "Humidity:"; ObjectID = "R3o-cV-3iH"; */
+"R3o-cV-3iH.text" = "Humidity:";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "Sbo-he-uqO"; */
+"Sbo-he-uqO.text" = "Title";
+
+/* Class = "UILabel"; text = "Filter rssi:"; ObjectID = "Ssb-JH-hhG"; */
+"Ssb-JH-hhG.text" = "Filter rssi:";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "Txv-26-m0t"; */
+"Txv-26-m0t.text" = "Detail";
+
+/* Class = "UILabel"; text = "mac:xxxxxxxxxxxx"; ObjectID = "Vs0-G7-Fgi"; */
+"Vs0-G7-Fgi.text" = "mac:xxxxxxxxxxxx";
+
+/* Class = "UIButton"; normalTitle = "DisableTrigger"; ObjectID = "XDB-df-pyN"; */
+"XDB-df-pyN.normalTitle" = "DisableTrigger";
+
+/* Class = "UITextField"; placeholder = "Tap to edit filter"; ObjectID = "XMt-Oq-tUg"; */
+"XMt-Oq-tUg.placeholder" = "Tap to edit filter";
+
+/* Class = "UIButton"; normalTitle = "Reset"; ObjectID = "Xt9-gu-Wee"; */
+"Xt9-gu-Wee.normalTitle" = "Reset";
+
+/* Class = "UILabel"; text = "MajorID:"; ObjectID = "YrX-wd-U95"; */
+"YrX-wd-U95.text" = "MajorID:";
+
+/* Class = "UIBarButtonItem"; title = "Connect"; ObjectID = "ays-6n-QO4"; */
+"ays-6n-QO4.title" = "Connect";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "bSv-a4-q9d"; */
+"bSv-a4-q9d.text" = "Title";
+
+/* Class = "UIBarButtonItem"; title = "Back"; ObjectID = "c2T-zt-4Ia"; */
+"c2T-zt-4Ia.title" = "Back";
+
+/* Class = "UIButton"; normalTitle = "UploadConfig"; ObjectID = "ccJ-HZ-sKo"; */
+"ccJ-HZ-sKo.normalTitle" = "UploadConfig";
+
+/* Class = "UILabel"; text = "voltage:n/a"; ObjectID = "ckZ-6x-qQl"; */
+"ckZ-6x-qQl.text" = "voltage:n/a";
+
+/* Class = "UIBarButtonItem"; title = "Update"; ObjectID = "crn-GQ-Rvx"; */
+"crn-GQ-Rvx.title" = "Update";
+
+/* Class = "UIButton"; normalTitle = "TriggerEvt2Adv"; ObjectID = "dGl-40-MtZ"; */
+"dGl-40-MtZ.normalTitle" = "TriggerEvt2Adv";
+
+/* Class = "UILabel"; text = "Release notes:"; ObjectID = "e5l-Ek-4Sh"; */
+"e5l-Ek-4Sh.text" = "Release notes:";
+
+/* Class = "UILabel"; text = "Type: "; ObjectID = "eCg-7y-bQ5"; */
+"eCg-7y-bQ5.text" = "Type: ";
+
+/* Class = "UILabel"; text = "-100"; ObjectID = "geU-1C-p8d"; */
+"geU-1C-p8d.text" = "-100";
+
+/* Class = "UILabel"; text = "MinorID:"; ObjectID = "hp2-Sr-GEG"; */
+"hp2-Sr-GEG.text" = "MinorID:";
+
+/* Class = "UIButton"; normalTitle = "EnableAixsAdv"; ObjectID = "iXD-4q-hOi"; */
+"iXD-4q-hOi.normalTitle" = "EnableAixsAdv";
+
+/* Class = "UILabel"; text = "Humidity:"; ObjectID = "inQ-CC-suK"; */
+"inQ-CC-suK.text" = "Humidity:";
+
+/* Class = "UIButton"; normalTitle = "LogData2Adv"; ObjectID = "jEJ-J6-rQS"; */
+"jEJ-J6-rQS.normalTitle" = "LogData2Adv";
+
+/* Class = "UINavigationItem"; title = "KBeacon List"; ObjectID = "kA2-M0-vnL"; */
+"kA2-M0-vnL.title" = "KBeacon List";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "li2-UI-seE"; */
+"li2-UI-seE.text" = "Title";
+
+/* Class = "UILabel"; text = "HardwareVer:"; ObjectID = "llY-Gc-ncu"; */
+"llY-Gc-ncu.text" = "HardwareVer:";
+
+/* Class = "UINavigationItem"; title = "KBeacon"; ObjectID = "oJ9-eG-a6q"; */
+"oJ9-eG-a6q.title" = "KBeacon";
+
+/* Class = "UIButton"; normalTitle = "TriggerEvt2App"; ObjectID = "oKG-WU-eDj"; */
+"oKG-WU-eDj.normalTitle" = "TriggerEvt2App";
+
+/* Class = "UILabel"; text = "FirmwareVer:"; ObjectID = "pZV-gx-f99"; */
+"pZV-gx-f99.text" = "FirmwareVer:";
+
+/* Class = "UILabel"; text = "Temperature&humidity trigger"; ObjectID = "rMV-fU-zRE"; */
+"rMV-fU-zRE.text" = "Temperature&humidity trigger";
+
+/* Class = "UILabel"; text = "2019-02-03 14:30:00"; ObjectID = "trw-dW-2yz"; */
+"trw-dW-2yz.text" = "2019-02-03 14:30:00";
+
+/* Class = "UITextField"; placeholder = "Filter name"; ObjectID = "u0P-hT-gsm"; */
+"u0P-hT-gsm.placeholder" = "Filter name";
+
+/* Class = "UILabel"; text = "Acc:"; ObjectID = "ugk-B9-Sym"; */
+"ugk-B9-Sym.text" = "Acc:";
+
+/* Class = "UILabel"; text = "dBm"; ObjectID = "wla-n6-02k"; */
+"wla-n6-02k.text" = "dBm";
+
+/* Class = "UILabel"; text = "Tx Power:"; ObjectID = "wnI-qb-DEx"; */
+"wnI-qb-DEx.text" = "Tx Power:";
+
+/* Class = "UILabel"; text = "UUID:"; ObjectID = "yhw-ba-bKz"; */
+"yhw-ba-bKz.text" = "UUID:";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "ymn-64-Jcu"; */
+"ymn-64-Jcu.text" = "Label";
+
+/* Class = "UILabel"; text = "uuid:xxxxxxx"; ObjectID = "zJV-Yj-6gT"; */
+"zJV-Yj-6gT.text" = "uuid:xxxxxxx";
