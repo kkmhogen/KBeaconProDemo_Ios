@@ -104,8 +104,9 @@ After app startup, the BLE state was set to unknown, so the app should wait a fe
 ```
 
 4. Implementation KBeaconMgr delegate to get scanning result
-
+The SDK will cache the last packet of each advertisement type that it scans, and it may cache up to 6 packet (iBeacon, URL, TLM, UID, KSensor, System). the application can call removeAdvPacket() in onBeaconDiscovered to delete the cached packet.
 ```swift
+//example for print all scanned packet
 func onBeaconDiscovered(beacons:[KBeacon])
 {
     for beacon in beacons
@@ -221,8 +222,20 @@ mBeaconsMgr!.stopScanning()
 ### 4.2 Connect to device
  1. If the app wants to change the device parameters, then it need connect to the device.
  ```swift
+ //connect to device with default parameters
 self.beacon!.connect(beaconPwd, timeout: 15.0, delegate: self)
- ```
+//or
+//connect to device with specified parameters
+//When the app is connected to the KBeacon device, the app can specify which the configuration parameters to be read,
+//The parameter that can be read include: common parameters, advertisement parameters, trigger parameters, and sensor parameters
+let connPara = KBConnPara()
+connPara.syncUtcTime = true  //sync the phone's time to device
+connPara.readCommPara = true   //only read basic parameters (KBCfgCommon)
+connPara.readTriggerPara = false //not read trigger parameters
+connPara.readSlotPara = false    //not read advertisement parameters
+connPara.readSensorPara = false
+self.beacon!.connectEnhanced(beaconPwd, timeout: 15.0, connPara: connPara, delegate: self)
+```
 * Password: device password, the default password is 0000000000000000
 * timeout: max connection time, unit is second.
 
@@ -292,6 +305,8 @@ After the app connect to KBeacon success. The KBeacon will automatically read cu
 //update device's configuration to UI
 func updateDeviceToView()
 {
+    //if the device had read common parameters and advertisement parameters during connection,
+    //then the app can print the parameters
     if let pCommonCfg = self.beacon!.getCommonCfg()
     {
         print("support max adv slot:\(pCommonCfg.getMaxSlot())")
@@ -902,11 +917,11 @@ Enabling motion trigger is similar to push button trigger, which will not be des
     }
 
     //trigger index is 0
-    let accTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.BtnSingleClick)
+    let accTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.AccMotion)
     //set trigger action to app
     accTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
     accTriggerPara.setTriggerAdvSlot(1)
-    accTriggerPara.setTriggerAdvTime(20)   //advertisement 5 seconds
+    accTriggerPara.setTriggerAdvTime(5)   //advertisement 5 seconds
     accTriggerPara.setTriggerPara(3)    //motion sensitivity
 
     //we assumption the slot1 already config to iBeacon parameters

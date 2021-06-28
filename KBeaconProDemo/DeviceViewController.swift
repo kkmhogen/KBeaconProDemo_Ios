@@ -74,6 +74,40 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         UIApplication.shared.keyWindow?.endEditing(true)
     }
     
+    @IBAction func onActionItemClick(_ sender: Any)
+    {
+        if (actionConnect.tag == DeviceViewController.ACTION_CONNECT)
+        {
+            let beaconPwd = KBPreferance.sharedPreferance.getBeaconPassword(beacon!.uuidString!)
+            
+            if (GET_CFG_DURING_CONNECTING)
+            {
+                //connect to device with default paramaters
+                self.beacon!.connect(beaconPwd, timeout: 15.0, delegate: self)
+            }
+            else
+            {
+                //If the parameters are not read when connecting, the connection time will be less.
+                let connPara = KBConnPara()
+                connPara.syncUtcTime = true  //sync the phone's time to device
+                connPara.readCommPara = true   //only read basic parameters (KBCfgCommon)
+                connPara.readTriggerPara = false //not read trigger parameters
+                connPara.readSlotPara = false    //not read advertisement parameters
+                connPara.readSensorPara = false
+                self.beacon!.connectEnhanced(beaconPwd, timeout: 15.0, connPara: connPara, delegate: self)
+            }
+            
+            actionConnect.title = getString("BEACON_DISCONNECT")
+            actionConnect.tag = DeviceViewController.ACTION_DISCONNECT
+        }
+        else
+        {
+            self.beacon!.disconnect()
+            actionConnect.title = getString("BEACON_CONNECT")
+            actionConnect.tag = DeviceViewController.ACTION_CONNECT
+        }
+    }
+    
     func onConnStateChange(_ beacon:KBeacon, state:KBConnState, evt:KBConnEvtReason)
     {
         if (state == KBConnState.Connecting)
@@ -99,6 +133,8 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         self.updateActionButton()
     }
     
+    //The device will read the device's configruation parameters while setup connection
+    //so the app can get the common configruation after connection setup.
     func updateDeviceToView()
     {
         if let pCommonCfg = self.beacon!.getCommonCfg()
@@ -329,6 +365,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         })
     }
     
+    //only update the modification para
     func updateModifyParaToDevice()
     {
         if (!self.beacon!.isConnected())
@@ -438,6 +475,44 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         })
     }
     
+    func onNotifyDataReceived(_ beacon:KBeacon, evt:Int, data:Data)
+    {
+        NSLog("recieve event:\(evt), content:\(data.count)")
+    }
+    
+    func updateActionButton()
+    {
+        if (beacon!.state == KBConnState.Connected)
+        {
+            actionConnect.title = getString("BEACON_DISCONNECT")
+            actionConnect.tag = DeviceViewController.ACTION_DISCONNECT
+        }
+        else
+        {
+            actionConnect.title = getString("BEACON_CONNECT")
+            actionConnect.tag = DeviceViewController.ACTION_CONNECT
+        }
+    }
+    
+    @IBAction func backToParentView(_ sender: Any)
+    {
+        self.navigationController?.popViewController(animated: true)
+        self.beacon!.delegate = nil
+        self.beacon!.disconnect()
+    }
+    
+    
+
+    @IBAction func onStartConfig(_ sender: Any)
+    {
+        if (self.beacon!.state != KBConnState.Connected){
+            self.showDialogMsg(getString("ERR_TITLE"), message:getString("ERR_BEACON_NOT_CONNECTED"))
+            return
+        }
+        
+        self.updateIBeaconPara()
+    }
+    
     //enable button press trigger event to application
     func enableBtnTriggerEvtToApp()
     {
@@ -518,108 +593,6 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             }
         }
     }
-    
-    func showPasswordInputDlg(_ beacon:KBeacon)
-    {
-        let passwordInputDlg = UIAlertController(title: getString("AUTH_FAIL"),
-            message: getString("PWD_INPUT"),
-            preferredStyle: .alert)
-        passwordInputDlg.addTextField { (txtField) in
-            txtField.placeholder = getString("PWD_HINT")
-        }
-        passwordInputDlg.addAction(UIAlertAction(title: getString("DLG_CANCEL"),
-                                                 style: UIAlertAction.Style.cancel,
-                                                 handler: nil))
-        
-        passwordInputDlg.addAction(UIAlertAction(title: getString("DLG_OK"),
-                                                 style: UIAlertAction.Style.default,
-                                                 handler: { (action) in
-                                                    if let password = passwordInputDlg.textFields?[0].text
-                                                    {
-                                                        let pref = KBPreferance.sharedPreferance
-                                                        pref.saveBeaconPassword(beacon.uuidString!, password: password)
-                                                        
-                                                        beacon.connect(password,
-                                                                              timeout: 15.0,
-                                                                              delegate: self)
-                                                        
-                                                        let connText = getString("BEACON_CONNECT")
-                                                        self.indicatorView = IndicatorViewController(title: connText, center: self.view.center)
-                                                        self.indicatorView?.startAnimating(self.view)
-                                                    }
-                                                 }))
-        self.present(passwordInputDlg, animated: true, completion: nil)
-    }
-    
-    func onNotifyDataReceived(_ beacon:KBeacon, evt:Int, data:Data)
-    {
-        NSLog("recieve event:\(evt), content:\(data.count)")
-    }
-    
-    func updateActionButton()
-    {
-        if (beacon!.state == KBConnState.Connected)
-        {
-            actionConnect.title = getString("BEACON_DISCONNECT")
-            actionConnect.tag = DeviceViewController.ACTION_DISCONNECT
-        }
-        else
-        {
-            actionConnect.title = getString("BEACON_CONNECT")
-            actionConnect.tag = DeviceViewController.ACTION_CONNECT
-        }
-    }
-    
-    @IBAction func backToParentView(_ sender: Any)
-    {
-        self.navigationController?.popViewController(animated: true)
-        self.beacon!.delegate = nil
-        self.beacon!.disconnect()
-    }
-    
-    @IBAction func onActionItemClick(_ sender: Any)
-    {
-        if (actionConnect.tag == DeviceViewController.ACTION_CONNECT)
-        {
-            let beaconPwd = KBPreferance.sharedPreferance.getBeaconPassword(beacon!.uuidString!)
-            
-            if (GET_CFG_DURING_CONNECTING)
-            {
-                //connect to device with default paramaters
-                self.beacon!.connect(beaconPwd, timeout: 15.0, delegate: self)
-            }
-            else
-            {
-                //If the parameters are not read when connecting, the connection time will be less.
-                let connPara = KBConnPara()
-                connPara.syncUtcTime = true  //sync the phone's time to device
-                connPara.readCommPara = true   //only read basic parameters (KBCfgCommon)
-                connPara.readTriggerPara = false //not read trigger parameters
-                connPara.readSlotPara = false    //not read advertisement parameters
-                connPara.readSensorPara = false
-                self.beacon!.connectEnhanced(beaconPwd, timeout: 15.0, connPara: connPara, delegate: self)
-            }
-            
-            actionConnect.title = getString("BEACON_DISCONNECT")
-            actionConnect.tag = DeviceViewController.ACTION_DISCONNECT
-        }
-        else
-        {
-            self.beacon!.disconnect()
-            actionConnect.title = getString("BEACON_CONNECT")
-            actionConnect.tag = DeviceViewController.ACTION_CONNECT
-        }
-    }
-
-    @IBAction func onStartConfig(_ sender: Any)
-    {
-        if (self.beacon!.state != KBConnState.Connected){
-            self.showDialogMsg(getString("ERR_TITLE"), message:getString("ERR_BEACON_NOT_CONNECTED"))
-            return
-        }
-        
-        self.updateIBeaconPara()
-    }
 
     @IBAction func onEnableButtonTrigger(_ sender: Any)
     {
@@ -632,6 +605,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         self.enableBtnTriggerEvtToSlot1Advertisement()
     }
     
+    //disable trigger instance 0 (already config to button trigger)
     @IBAction func onDisableButtonTrigger(_ sender: Any)
     {
         if (self.beacon!.state != KBConnState.Connected){
@@ -747,16 +721,16 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
                 
         //trigger index is 0
-        let accTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.BtnSingleClick)
+        let accTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.AccMotion)
         //set trigger action to app
         accTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
         accTriggerPara.setTriggerAdvSlot(1)
-        accTriggerPara.setTriggerAdvTime(20)   //advertisement 5 seconds
+        accTriggerPara.setTriggerAdvTime(5)   //advertisement 5 seconds
         accTriggerPara.setTriggerPara(3)    //motion sensitivity
         
         //we assumption the slot1 already config to iBeacon parameters
         //otherwise you need to config the slot1 parameters
-        //please reference the enableBtnTriggerEvtToSlot1Advertisement for configruation
+        //please reference the enableBtnTriggerEvtToSlot1Advertisement for configruation slot1
         //...
         
         //enable motion trigger
@@ -1093,6 +1067,37 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
+    func showPasswordInputDlg(_ beacon:KBeacon)
+    {
+        let passwordInputDlg = UIAlertController(title: getString("AUTH_FAIL"),
+            message: getString("PWD_INPUT"),
+            preferredStyle: .alert)
+        passwordInputDlg.addTextField { (txtField) in
+            txtField.placeholder = getString("PWD_HINT")
+        }
+        passwordInputDlg.addAction(UIAlertAction(title: getString("DLG_CANCEL"),
+                                                 style: UIAlertAction.Style.cancel,
+                                                 handler: nil))
+        
+        passwordInputDlg.addAction(UIAlertAction(title: getString("DLG_OK"),
+                                                 style: UIAlertAction.Style.default,
+                                                 handler: { (action) in
+                                                    if let password = passwordInputDlg.textFields?[0].text
+                                                    {
+                                                        let pref = KBPreferance.sharedPreferance
+                                                        pref.saveBeaconPassword(beacon.uuidString!, password: password)
+                                                        
+                                                        beacon.connect(password,
+                                                                              timeout: 15.0,
+                                                                              delegate: self)
+                                                        
+                                                        let connText = getString("BEACON_CONNECT")
+                                                        self.indicatorView = IndicatorViewController(title: connText, center: self.view.center)
+                                                        self.indicatorView?.startAnimating(self.view)
+                                                    }
+                                                 }))
+        self.present(passwordInputDlg, animated: true, completion: nil)
+    }
     
     func showDialogMsg(_ title:String, message:String)
     {
