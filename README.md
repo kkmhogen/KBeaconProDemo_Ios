@@ -35,7 +35,7 @@ Development environment:
 min IOS Version 11.0
 
 ### 3.2 Import SDK
-kbeaconlib is available through [CocoaPods](https://cocoapods.org). To install
+kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
