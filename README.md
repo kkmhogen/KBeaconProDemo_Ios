@@ -103,7 +103,7 @@ After app startup, the BLE state was set to unknown, so the app should wait a fe
   }
 ```
 
-4. Implementation KBeaconMgr delegate to get scanning result
+4. Implementation KBeaconMgr delegate to get scanning result.  
 The SDK will cache the last packet of each advertisement type that it scans, and it may cache up to 6 packet (iBeacon, URL, TLM, UID, KSensor, System). the application can call removeAdvPacket() in onBeaconDiscovered to delete the cached packet.
 ```swift
 //example for print all scanned packet
