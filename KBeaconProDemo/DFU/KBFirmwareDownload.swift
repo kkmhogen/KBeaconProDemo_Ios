@@ -42,7 +42,9 @@ public class KBFirmwareDownload : NSObject
     public func downloadFirmwareInfo(_ model: String, callback:  @escaping onHttpFirmwareInfoDownCallback)
     {
         let urlStr = "\(model).json"
-        self.downLoadFirmwreData(urlStr, callback: { (result, destPath, error) in
+        
+        //if already download, then remove it because the download information may update
+        self.downLoadFirmwreData(urlStr, removeExist: true, callback: { (result, destPath, error) in
             if (!result)
             {
                 callback(false, nil, error);
@@ -67,7 +69,7 @@ public class KBFirmwareDownload : NSObject
         })
     }
 
-    public func downLoadFirmwreData(_ filename: String, callback: @escaping onHttpFirmwareDataDownComplete)
+    public func downLoadFirmwreData(_ filename: String, removeExist: Bool, callback: @escaping onHttpFirmwareDataDownComplete)
     {
         let urlPath = "\(self.firmwareWebAddress)\(filename)"
         let webUrl = URL(string: urlPath)
@@ -78,23 +80,41 @@ public class KBFirmwareDownload : NSObject
         }
         
         let writeFilePath = filePath?.appending(webUrl!.lastPathComponent)
-        let fileManager = FileManager.default
-        if (fileManager.fileExists(atPath: writeFilePath!))
-        {
-            try? fileManager.removeItem(atPath: writeFilePath!)
-        }
-        
        
         let destURL = URL(fileURLWithPath: writeFilePath!)
-        FileDownloader.loadFileAsync(webUrl!, destinationUrl: destURL, completion: { (savedPath, result, error) in
-            if (!result)
+        if (removeExist)
+        {
+            //remove exist
+            let fileManager = FileManager.default
+            if (fileManager.fileExists(atPath: writeFilePath!))
             {
-                callback(false, nil, error);
+                try? fileManager.removeItem(atPath: writeFilePath!)
             }
-            else
-            {
-                callback(true, savedPath, nil);
-            }
-        })
+            
+            //download new
+            FileDownloader.loadFileSync(webUrl!, destinationUrl: destURL, completion: { (savedPath, result, error) in
+                if (!result)
+                {
+                    callback(false, nil, error);
+                }
+                else
+                {
+                    callback(true, savedPath, nil);
+                }
+            })
+        }
+        else
+        {
+            FileDownloader.loadFileAsync(webUrl!, destinationUrl: destURL, completion: { (savedPath, result, error) in
+                if (!result)
+                {
+                    callback(false, nil, error);
+                }
+                else
+                {
+                    callback(true, savedPath, nil);
+                }
+            })
+        }
     }
 }

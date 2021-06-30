@@ -49,7 +49,10 @@ class KBDFUViewController : UIViewController, ConnStateDelegate,DFUServiceDelega
         labelDFUStatus.text = getString("DEVICE_CHECK_UPDATE")
         
         //download firmware info
-        downloadFirmwareInfo()
+        //download firmware info
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { (timer) in
+            self.downloadFirmwareInfo()
+        }
     }
     
     func onConnStateChange(_ beacon:KBeacon, state:KBConnState, evt:KBConnEvtReason)
@@ -156,7 +159,7 @@ class KBDFUViewController : UIViewController, ConnStateDelegate,DFUServiceDelega
     {
         self.labelDFUStatus.text = getString("UPDATE_DOWNLOADING")
         print("DFU start download file \(self.latestFirmwareFileName)")
-        self.firmwareDownload?.downLoadFirmwreData(self.latestFirmwareFileName, callback: { (result, path, error) in
+        self.firmwareDownload?.downLoadFirmwreData(self.latestFirmwareFileName, removeExist: false, callback: { (result, path, error) in
             if (result )
             {
                 self.mInDfuState = true
