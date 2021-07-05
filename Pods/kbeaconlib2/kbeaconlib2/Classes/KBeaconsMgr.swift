@@ -163,14 +163,15 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
         {
             if let strAdvName = advertisementData["kCBAdvDataLocalName"] as? String
             {
+                var advName = strAdvName
+                var filterName = cfgNameFilter
                 if let ignoreCase = scanIgnoreCaseFilter, ignoreCase
                 {
-                    if cfgNameFilter.lowercased() == strAdvName.lowercased()
-                    {
-                        return;
-                    }
+                    advName = strAdvName.lowercased()
+                    filterName = cfgNameFilter.lowercased()
                 }
-                else if strAdvName.contains(cfgNameFilter)
+                
+                if !advName.contains(filterName)
                 {
                     return
                 }
@@ -288,7 +289,6 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
         
         switch central.state
         {
-        
         case CBManagerState.poweredOn:
             callBack.onCentralBleStateChange(newState: BLECentralMgrState.PowerOn)
                 

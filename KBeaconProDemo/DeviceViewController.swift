@@ -60,7 +60,6 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(tap_ui(_:)))
         self.view.addGestureRecognizer(tap)
-        
         self.txtName.delegate = self
         self.txtTxPower.delegate = self
         self.txtAdvPeriod.delegate = self
@@ -158,9 +157,12 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             if let advSlotList = self.beacon!.getSlotCfgList(){
                 var advTypeDescs = ""
                 for advSlot in advSlotList{
-                    let advDesc = KBAdvType.getAdvTypeString(advSlot.getAdvType())
-                    let slotIndex = advSlot.getSlotIndex()
-                    advTypeDescs = "\(advTypeDescs) | slot:\(slotIndex):\(advDesc)"
+                    if (advSlot.getAdvType() != KBAdvType.AdvNull)
+                    {
+                        let advDesc = KBAdvType.getAdvTypeString(advSlot.getAdvType())
+                        let slotIndex = advSlot.getSlotIndex()
+                        advTypeDescs = "\(advTypeDescs)|slot:\(slotIndex):\(advDesc)"
+                    }
                 }
                 self.labelBeaconType.text = advTypeDescs
             }

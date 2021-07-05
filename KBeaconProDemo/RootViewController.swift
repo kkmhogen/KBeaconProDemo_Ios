@@ -96,6 +96,7 @@ class RootViewController: UIViewController ,UITextFieldDelegate, UITableViewData
             self.mFilterView.isHidden = true;
             mFilterNameEdit.resignFirstResponder()
             
+            self.mBeaconsArray.removeAll()
             self.mBeaconsDictory.removeAll()
             
             self.beaconsTableView.reloadData()
