@@ -39,7 +39,7 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.0.2'
+pod 'kbeaconlib2','1.0.4'
 ```
 
 
@@ -447,7 +447,7 @@ func updateIBeaconPara()
 
     //tx power
     if let strTxPower = txtTxPower.text,
-       let nTxPower = Int8(strTxPower)
+       let nTxPower = Int(strTxPower)
     {
         iBeaconCfg.setTxPower(nTxPower)
     }
