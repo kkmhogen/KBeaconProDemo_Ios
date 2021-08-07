@@ -155,9 +155,6 @@ public extension String {
     @objc public static let PARCE_UUID_EDDYSTONE = CBUUID.init(string: "0000FEAA-0000-1000-8000-00805f9b34fb")
     @objc public static let PARCE_UUID_KB_EXT_DATA = CBUUID.init(string: "00002080-0000-1000-8000-00805f9b34fb")
 
-    //configruation uuid for beacon
-    @objc public static let RV_CFG_UUID_EDDYSTONE = CBUUID.init(string: "EE0C2080-8786-40BA-AB96-99B91AC981D8")
-
     //beacon system info
     @objc public static let KB_SYSTEM_SERVICE_UUID = CBUUID.init(string: "0000180a-0000-1000-8000-00805f9b34fb")
     @objc public static let KB_MAC_CHAR_UUID = CBUUID.init(string: "00002a23-0000-1000-8000-00805f9b34fb")

@@ -76,3 +76,6 @@
 "upload_data_success"="Uploaded configuration parameters to device successfully!";
 "upload_config_data_failed"="Upload config paramaters failed";
 
+"AUTH_FAIL"="Authentication failed";
+"PWD_INPUT"="8~16 character password.";
+

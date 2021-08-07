@@ -94,22 +94,22 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     }
     
     //return KBCfgBase.INVALID_INT8 if device does not have max tx power
-    @objc public var maxTxPower:Int8{
+    @objc public var maxTxPower:Int{
         get{
             if let cfgCommon = mCfgMgr.getCfgComm(){
                 return cfgCommon.getMaxTxPower()
             }
-            return KBCfgBase.INVALID_INT8
+            return KBCfgBase.INVALID_INT
         }
     }
     
     //return KBCfgBase.INVALID_INT8 if device does not have min tx power
-    @objc public var minTxPower:Int8{
+    @objc public var minTxPower:Int{
         get{
             if let cfgCommon = mCfgMgr.getCfgComm(){
                 return cfgCommon.getMinTxPower()
             }
-            return KBCfgBase.INVALID_INT8
+            return KBCfgBase.INVALID_INT
         }
     }
     

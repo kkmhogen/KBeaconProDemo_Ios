@@ -96,6 +96,10 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
                 self.beacon!.connectEnhanced(beaconPwd, timeout: 15.0, connPara: connPara, delegate: self)
             }
             
+            //show process dialog
+            self.indicatorView = IndicatorViewController(title: getString("UPDATE_CONNECTING"), center: self.view.center)
+            self.indicatorView?.startAnimating(self.view)
+            
             actionConnect.title = getString("BEACON_DISCONNECT")
             actionConnect.tag = DeviceViewController.ACTION_DISCONNECT
         }
@@ -115,12 +119,16 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
         else if (state == KBConnState.Connected)
         {
+            self.indicatorView?.stopAnimating()
+            
             self.txtBeaconStatus.text = "Device connected";
             
             self.updateDeviceToView()
         }
         else if (state == KBConnState.Disconnected)
         {
+            self.indicatorView?.stopAnimating()
+            
             self.txtBeaconStatus.text = "Device disconnected";
             if (evt == KBConnEvtReason.ConnAuthFail)
             {
@@ -239,10 +247,17 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         
         let iBeaconCfg = KBCfgAdvIBeacon()
         iBeaconCfg.setSlotIndex(0)   //must be paramaters
+        
+        //tx power
+        let commCfg = KBCfgCommon()
+        if let strName = txtName.text
+        {
+            commCfg.setName(strName)
+        }
             
         //tx power
         if let strTxPower = txtTxPower.text,
-           let nTxPower = Int8(strTxPower)
+           let nTxPower = Int(strTxPower)
         {
             iBeaconCfg.setTxPower(nTxPower)
         }
@@ -305,7 +320,9 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         iBeaconCfg.setAdvTriggerOnly(false)
         iBeaconCfg.setAdvConnectable(true)         //allowed connectable
         
-        self.beacon!.modifyConfig(obj: iBeaconCfg, callback: { (result, exception) in
+        let cfgArray = [commCfg, iBeaconCfg]
+        
+        self.beacon!.modifyConfig(array: cfgArray, callback: { (result, exception) in
             if (result)
             {
                 self.showDialogMsg("success", message: "config success")

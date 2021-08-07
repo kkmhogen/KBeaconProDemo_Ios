@@ -16,7 +16,7 @@ import Foundation
     @objc public static let MAX_SLOT_INDEX = 4
     @objc public static let INVALID_SLOT_INDEX = 0xff
 
-    @objc public static let DEFAULT_TX_POWER = Int8(0)
+    @objc public static let DEFAULT_TX_POWER = Int(0)
     @objc public static let DEFAULT_ADV_CONNECTABLE = true
     @objc public static let DEFAULT_ADV_TRIGGER_ONLY = false
     @objc public static let DEFAULT_ADV_MODE = KBAdvMode.Legacy
@@ -35,7 +35,7 @@ import Foundation
     
     var advType: Int? //beacon type (iBeacon, Eddy TLM/UID/ etc.,)
     
-    var txPower : Int8?
+    var txPower : Int?
 
     var advPeriod: Float?
 
@@ -82,9 +82,9 @@ import Foundation
     }
 
     //return KBCfgBase.INVALID_INT8 if is null
-    @objc public func getTxPower()->Int8
+    @objc public func getTxPower()->Int
     {
-        return txPower ?? KBCfgBase.INVALID_INT8
+        return txPower ?? KBCfgBase.INVALID_INT
     }
 
     //return KBCfgBase.INVALID_INT8 if is null
@@ -143,7 +143,7 @@ import Foundation
     }
 
     //set KBeacon tx power
-    @objc @discardableResult public func setTxPower(_ txPower:Int8) ->Bool
+    @objc @discardableResult public func setTxPower(_ txPower:Int) ->Bool
     {
         if (txPower >= KBAdvTxPower.RADIO_TXPOWER_MIN_TXPOWER && txPower <= KBAdvTxPower.RADIO_TXPOWER_MAX_TXPOWER) {
             self.txPower = txPower;
@@ -187,7 +187,7 @@ import Foundation
         }
         
         if let tempValue = para[KBCfgAdvBase.JSON_FIELD_TX_PWR] as? Int {
-            txPower = Int8(tempValue);
+            txPower = tempValue;
             nUpdateParaNum += 1
         }
 

@@ -56,7 +56,8 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
     
     //name filter
     private var scanNameFilter : String?
-    private var scanIgnoreCaseFilter : Bool?
+    private var scanNameIgnoreCase : Bool = true
+    private var scanNameMatchWord : Bool = true
     
     private var  mPeriodTimer : Timer?
     
@@ -113,8 +114,9 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
         //scan option
         let scanOption = [CBCentralManagerScanOptionAllowDuplicatesKey:NSNumber(true)]
         
-        //NSArray* filterSrvList = @[SRV_CFG_UUID_EDDYSTONE];
-        cbBeaconMgr.scanForPeripherals(withServices: nil, options: scanOption)
+        //set scan filter
+        let filterSrvList = [KBUtility.PARCE_UUID_KB_EXT_DATA, KBUtility.PARCE_UUID_EDDYSTONE]
+        cbBeaconMgr.scanForPeripherals(withServices: filterSrvList, options: scanOption)
         NSLog("start central ble device scanning");
         
         return true;
@@ -135,10 +137,11 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
     }
 
     //scan name filter
-    @objc public func setScanNameFilter(filterName:String, ignoreCase:Bool)
+    @objc public func setScanNameFilter(filterName:String, ignoreCase:Bool=true, matchWord:Bool=false)
     {
-        scanNameFilter = filterName;
-        scanIgnoreCaseFilter = ignoreCase;
+        scanNameFilter = filterName
+        scanNameIgnoreCase = ignoreCase
+        scanNameMatchWord = matchWord
     }
 
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber)
@@ -165,15 +168,25 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
             {
                 var advName = strAdvName
                 var filterName = cfgNameFilter
-                if let ignoreCase = scanIgnoreCaseFilter, ignoreCase
+                if scanNameIgnoreCase
                 {
                     advName = strAdvName.lowercased()
                     filterName = cfgNameFilter.lowercased()
                 }
                 
-                if !advName.contains(filterName)
+                if !scanNameMatchWord
                 {
-                    return
+                    if !advName.contains(filterName)
+                    {
+                        return
+                    }
+                }
+                else
+                {
+                    if advName.compare(filterName) != .orderedSame
+                    {
+                        return
+                    }
                 }
             }
             else

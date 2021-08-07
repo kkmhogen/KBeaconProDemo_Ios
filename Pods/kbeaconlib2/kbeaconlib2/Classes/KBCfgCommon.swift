@@ -47,9 +47,9 @@ import Foundation
 
     private var trigCapability: Int?
 
-    private var maxTxPower: Int8?
+    private var maxTxPower: Int?
 
-    private var minTxPower: Int8?
+    private var minTxPower: Int?
     
     private var  model: String?
 
@@ -58,7 +58,7 @@ import Foundation
     private var hversion : String?
 
     ////////////////////can be configruation able///////////////////////
-    private var refPower1Meters:Int8?   //received RSSI at 1 meters
+    private var refPower1Meters:Int?   //received RSSI at 1 meters
 
     private var password: String?
 
@@ -204,19 +204,19 @@ import Foundation
         return trigCapability ?? 0
     }
 
-    @objc public func getMaxTxPower()->Int8
+    @objc public func getMaxTxPower()->Int
     {
-        return maxTxPower ?? KBCfgBase.INVALID_INT8
+        return maxTxPower ?? KBCfgBase.INVALID_INT
     }
 
-    @objc public func getMinTxPower()->Int8
+    @objc public func getMinTxPower()->Int
     {
-        return minTxPower ?? KBCfgBase.INVALID_INT8
+        return minTxPower ?? KBCfgBase.INVALID_INT
     }
 
-    @objc public func getRefPower1Meters()->Int8
+    @objc public func getRefPower1Meters()->Int
     {
-        return refPower1Meters ?? KBCfgBase.INVALID_INT8
+        return refPower1Meters ?? KBCfgBase.INVALID_INT
     }
 
     @objc public func getModel()->String?
@@ -249,7 +249,7 @@ import Foundation
     }
 
 
-    @objc @discardableResult public func setRefPower1Meters(_ value: Int8)->Bool{
+    @objc @discardableResult public func setRefPower1Meters(_ value: Int)->Bool{
         if (value < -10 && value > -100) {
             self.refPower1Meters = value;
             return true
@@ -302,12 +302,12 @@ import Foundation
         }
         
         if let tempValue = para[KBCfgCommon.JSON_FIELD_MAX_TX_PWR] as? Int {
-            maxTxPower = Int8(tempValue)
+            maxTxPower = tempValue
             nUpdatePara += 1
         }
         
         if let tempValue = para[KBCfgCommon.JSON_FIELD_MIN_TX_PWR] as? Int {
-            minTxPower = Int8(tempValue)
+            minTxPower = tempValue
             nUpdatePara += 1
         }
         
@@ -332,7 +332,7 @@ import Foundation
         }
         
         if let tempValue = para[KBCfgCommon.JSON_FIELD_MEA_PWR] as? Int {
-            refPower1Meters = Int8(tempValue)
+            refPower1Meters = tempValue
             nUpdatePara += 1
         }
 
@@ -378,7 +378,7 @@ import Foundation
 
         //auto power
         if let tempValue = alwaysPowerOn {
-            configDicts[KBCfgCommon.JSON_FIELD_AUTO_POWER_ON] = tempValue
+            configDicts[KBCfgCommon.JSON_FIELD_AUTO_POWER_ON] = tempValue ? 1 : 0;
         }
 
         return configDicts;
