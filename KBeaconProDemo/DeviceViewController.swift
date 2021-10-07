@@ -537,7 +537,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
     {
         //check if device can support button trigger capibility
         if let commCfg = self.beacon!.getCommonCfg(),
-           !(commCfg.isSupportButton())
+           !commCfg.isSupportTrigger(KBTriggerType.BtnSingleClick)
         {
             self.showDialogMsg("Fail", message: "device does not support button trigger")
             return
@@ -565,7 +565,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
     {
         //check if device can support button trigger capibility
         if let commCfg = self.beacon!.getCommonCfg(),
-           !(commCfg.isSupportButton())
+           !(commCfg.isSupportTrigger(KBTriggerType.BtnSingleClick))
         {
             self.showDialogMsg("Fail", message: "device does not support button trigger")
             return
@@ -576,12 +576,13 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         //set trigger action to app
         btnTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
         btnTriggerPara.setTriggerAdvSlot(1)
-        btnTriggerPara.setTriggerAdvTime(20)   //advertisement 5 seconds
+        btnTriggerPara.setTriggerAdvTime(10)   //advertisement 10 seconds
+        btnTriggerPara.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeDisable)
         
         //slot 0 default advertisement (alive advertisement)
         let slot0DefaultAdv = KBCfgAdvIBeacon()
         slot0DefaultAdv.setSlotIndex(0)
-        slot0DefaultAdv.setAdvPeriod(1285.0)
+        slot0DefaultAdv.setAdvPeriod(2000.0)
         slot0DefaultAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
         slot0DefaultAdv.setAdvConnectable(true)
         slot0DefaultAdv.setAdvTriggerOnly(false)   //always advertisement
@@ -604,11 +605,11 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         self.beacon!.modifyConfig(array:configArray) { (result, exception) in
             if (result)
             {
-                print("config trigger success")
+                self.showDialogMsg("success", message: "Config button trigger success")
             }
             else
             {
-                print("config trigger failed");
+                self.showDialogMsg("Error", message: "Config button trigger failed")
             }
         }
     }
@@ -632,16 +633,9 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             return
         }
         
-        //check if device can support button trigger capibility
-        if let commCfg = self.beacon!.getCommonCfg(),
-           !(commCfg.isSupportButton())
-        {
-            self.showDialogMsg("Fail", message: "device does not support button trigger")
-            return
-        }
-        
         //turn off trigger instance 0
         let btnTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.TriggerNull)
+        btnTriggerPara.setTriggerAction(0)
         self.beacon!.modifyConfig(obj: btnTriggerPara) { (result, exception) in
             if (result)
             {
@@ -658,7 +652,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
     {
         guard self.beacon!.isConnected(),
             let commCfg = self.beacon!.getCommonCfg(),
-           (commCfg.isSupportButton()) else
+            (commCfg.isSupportTrigger(KBTriggerType.BtnSingleClick)) else
         {
             print("not allowed to enable button trigger")
             return
@@ -733,7 +727,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         //check if device can support motion trigger capibility
         guard self.beacon!.isConnected(),
             let commCfg = self.beacon!.getCommonCfg(),
-           commCfg.isSupportAccSensor() else
+            commCfg.isSupportTrigger(KBTriggerType.AccMotion) else
         {
             print("not allowed to modify motion parameters")
             return
@@ -780,6 +774,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         
         //turn off trigger instance 0
         let accTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.TriggerNull)
+        accTriggerPara.setTriggerAction(0)
         self.beacon!.modifyConfig(obj: accTriggerPara) { (result, exception) in
             if (result)
             {
@@ -849,7 +844,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         //iBeacon parameters
         let sensorAdv = KBCfgAdvKSensor()
         sensorAdv.setSlotIndex(2)
-        sensorAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)   //only used for nearby application
+        sensorAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
         sensorAdv.setAdvConnectable(false)    //not allowed connect
         sensorAdv.setAdvPeriod(3000.0)
         sensorAdv.setAxisSensorInclude(true)
@@ -878,10 +873,10 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             return
         }
 
-        //iBeacon parameters
+        //sensor parameters
         let sensorAdv = KBCfgAdvKSensor()
         sensorAdv.setSlotIndex(2)
-        sensorAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)   //only used for nearby application
+        sensorAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
         sensorAdv.setAdvConnectable(false)    //not allowed connect
         sensorAdv.setAdvPeriod(3000.0)
         sensorAdv.setHtSensorInclude(true)
@@ -910,7 +905,8 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
 
         //iBeacon parameters
-        let triggerAdv = KBCfgTrigger(0, triggerType: KBTriggerType.HTRealTimeReport)
+        let triggerAdv = KBCfgTrigger(0, triggerType: KBTriggerType.HTHumidityAbove)
+        triggerAdv.setTriggerPara(0) //always true
         triggerAdv.setTriggerAction(KBTriggerAction.ReportToApp)
         self.beacon!.modifyConfig(obj: triggerAdv) { (result, exception) in
             if (result)
@@ -918,7 +914,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
                 print("Enable report H&T data to app realtime")
                 
                 //subscribe HT notification
-                self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTRealTimeReport, notifyDelegate: self) { (result, exception) in
+                self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTHumidityAbove, notifyDelegate: self) { (result, exception) in
                     if (result){
                         print("enable report success")
                     }else{
@@ -942,28 +938,49 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         self.performSegue(withIdentifier: "seqShowHistory", sender: self)
     }
     
+    
+    //enable temp above trigger
+    //the device will start slot1 advertisement when temperature > 30 degree
     @IBAction func onTHTrigger2Adv(_ sender: Any)
     {
         guard self.beacon!.isConnected(),
             let commCfg = self.beacon!.getCommonCfg(),
-           commCfg.isSupportHumiditySensor() else
+            commCfg.isSupportTrigger(KBTriggerType.HTTempAbove) else
         {
-            print("not allowed to modify TH parameters")
+            print("device does not support temp above trigger")
             return
         }
 
         //trigger parameters
         let triggerAdv = KBCfgTrigger(0, triggerType: KBTriggerType.HTTempAbove)
         triggerAdv.setTriggerAction(KBTriggerAction.Advertisement)
-        triggerAdv.setTriggerAdvSlot(2)  //please makesure the slot 2 was config
+        triggerAdv.setTriggerAdvSlot(1)  //please makesure the slot 1 was config
         triggerAdv.setTriggerAdvTime(10)
+        triggerAdv.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeDisable)
         triggerAdv.setTriggerPara(30)    //trigger when temperature > 30 Celsius
         
+        //config slot 1 parameters
+        let slot1TriggerAdv = KBCfgAdvIBeacon()
+        slot1TriggerAdv.setSlotIndex(1)
+        slot1TriggerAdv.setAdvPeriod(152.5)
+        slot1TriggerAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
+        slot1TriggerAdv.setAdvConnectable(false)
+        slot1TriggerAdv.setAdvTriggerOnly(true)   //only advertisement when trigger happened
+        slot1TriggerAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E3")
+        slot1TriggerAdv.setMajorID(0)
+        slot1TriggerAdv.setMinorID(2)
+
+        let configArray = [triggerAdv, slot1TriggerAdv]
+        
         //set trigger
-        self.beacon!.modifyConfig(obj:triggerAdv) { (result, exception) in
+        self.beacon!.modifyConfig(array:configArray) { (result, exception) in
             if (result)
             {
-                print("Enable report H&T data to advertisement")
+                self.showDialogMsg("success", message: "Enable temp above trigger success")
+            }
+            else
+            {
+                self.showDialogMsg("error", message: "Enable temp above trigger failed")
             }
         }
     }
@@ -972,9 +989,9 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
     {
         guard self.beacon!.isConnected(),
             let commCfg = self.beacon!.getCommonCfg(),
-           commCfg.isSupportHumiditySensor() else
+            commCfg.isSupportTrigger(KBTriggerType.HTTempAbove) else
         {
-            print("not allowed to read history log")
+            print("not allowed to set trigger")
             return
         }
 
@@ -985,7 +1002,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             if (result)
             {
                 //subscribe HT notification
-                self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTRealTimeReport, notifyDelegate: self) { (result, exception) in
+                self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTTempAbove, notifyDelegate: self) { (result, exception) in
                     if (result){
                         print("subscribe trigger notification success")
                     }else{
@@ -1000,6 +1017,67 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
+    //After enable realtime data to app, then the device will periodically send the temperature and humidity data to app whether it was changed or not.
+    func onTHMeasurementResult2AppRealtime(_ sender: Any)
+    {
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+            commCfg.isSupportTrigger(KBTriggerType.HTHumidityAbove) else
+        {
+            print("not allowed to set trigger")
+            return
+        }
+
+        let triggerApp = KBCfgTrigger(0, triggerType: KBTriggerType.HTHumidityAbove)
+        triggerApp.setTriggerAction(KBTriggerAction.ReportToApp)
+        triggerApp.setTriggerPara(0)  //always True
+        self.beacon!.modifyConfig(obj:triggerApp) { (result, exception) in
+            if (result)
+            {
+                //subscribe HT notification
+                self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTHumidityAbove, notifyDelegate: self) { (result, exception) in
+                    if (result){
+                        print("subscribe trigger notification success")
+                    }else{
+                        print("subscribe trigger notification failed")
+                    }
+                }
+            }
+            else
+            {
+                print("enable trigger failed")
+            }
+        }
+    }
+    
+    func onEnableCutoffTrigger()
+    {
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+            commCfg.isSupportTrigger(KBTriggerType.CutoffWatchband) else
+        {
+            print("device does not support cut off trigger")
+            return
+        }
+
+        //enable cutoff trigger
+        let cutoffTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.CutoffWatchband)
+        cutoffTrigger.setTriggerAction(KBTriggerAction.Advertisement)
+        cutoffTrigger.setTriggerAdvSlot(0)  //please makesure the slot 0 was setting
+        cutoffTrigger.setTriggerAdvTime(10)
+        cutoffTrigger.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID)
+        
+        self.beacon!.modifyConfig(obj: cutoffTrigger) { (result, exception) in
+            if (result)
+            {
+                print("Enable cutoff trigger success")
+            }
+            else
+            {
+                print("Enable cutoff trigger failed")
+            }
+        }
+    }
     
     
     @IBAction func onRingDevice(_ sender: Any)

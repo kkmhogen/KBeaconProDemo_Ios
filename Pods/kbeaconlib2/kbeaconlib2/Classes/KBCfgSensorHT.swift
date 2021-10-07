@@ -21,12 +21,12 @@ import Foundation
     //temperature change threshold
     @objc public static let DEFAULT_HT_TEMP_CHANGE_THD = 5   //0.1 Celsius
     @objc public static let MAX_HT_TEMP_CHANGE_LOG_THD = 200  //max value is 20 Celsius
-    @objc public static let MIN_HT_TEMP_CHANGE_LOG_THD = 1
+    @objc public static let MIN_HT_TEMP_CHANGE_LOG_THD = 0
 
     //humidity change threshold
     @objc public static let DEFAULT_HT_HUMIDITY_CHANGE_THD = 30  //unit is 0.1%
     @objc public static let MAX_HT_HUMIDITY_CHANGE_LOG_THD = 200  //max value is 20%
-    @objc public static let MIN_HT_HUMIDITY_CHANGE_LOG_THD = 1
+    @objc public static let MIN_HT_HUMIDITY_CHANGE_LOG_THD = 0
 
     //log enable
     private var logEnable: Bool?

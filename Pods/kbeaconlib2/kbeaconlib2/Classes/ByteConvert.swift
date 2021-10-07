@@ -20,9 +20,11 @@ import Foundation
 
     @objc public static func bytesToShort(value: Data, offset:Int)->UInt16
     {
-        var data = value[offset+1] & 0xff
-        data = data | ((value[offset]  & 0xff) << 8)
-        return UInt16(data)
+        var nData = UInt16(value[offset] & 0xFF);
+        nData = nData << 8;
+        nData += UInt16(value[offset + 1] & 0xFF);
+        
+        return nData
     }
     
     @objc public static func bytesTo4Long(value: Data, offset:Int)->UInt32

@@ -31,6 +31,7 @@ internal class KBCfgHandler {
         KBTriggerType.BtnSingleClick: KBCfgTrigger.self,
         KBTriggerType.BtnDoubleClick: KBCfgTrigger.self,
         KBTriggerType.BtnTripleClick: KBCfgTrigger.self,
+        KBTriggerType.CutoffWatchband: KBCfgTrigger.self,
         KBTriggerType.HTTempAbove: KBCfgTrigger.self,
         KBTriggerType.HTTempBelow: KBCfgTrigger.self,
         KBTriggerType.HTHumidityAbove: KBCfgTrigger.self,

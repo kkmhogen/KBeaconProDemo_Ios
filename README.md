@@ -421,7 +421,7 @@ For all broadcast messages, such as iBeacon or Eddystone protocols, they include
 * advTriggerOnly : When it is true, it means that this slot is not broadcast by default, it is only start broadcast when the Trigger event occurs.
 * advConnectable: is this slot advertisement can be connectable.  
  **Warning:**   
-If all slot was setting to un-connectable, the app cannot connect to it again unless: 1. The KBeacon button was pressed while button trigger are not enable. or 2. The device was power on again and the device will be connectable in first 30 seconds after power on.
+If all slot was setting to un-connectable, the app cannot connect to it again unless: 1. The KBeacon button was pressed while button trigger are not enable. or 2. The device was power on again and the device will be connectable in first 30 seconds after power on.  
 
 
  **iBeacon parameters:**  
@@ -760,7 +760,7 @@ func enableBtnTriggerEvtToSlot1Advertisement()
 {
     //check if device can support button trigger capibility
     if let commCfg = self.beacon!.getCommonCfg(),
-       !(commCfg.isSupportButton())
+       !(commCfg.isSupportTrigger(KBTriggerType.BtnSingleClick))
     {
         self.showDialogMsg("Fail", message: "device does not support button trigger")
         return
@@ -827,7 +827,7 @@ func enableBtnTriggerEvtToApp()
 {
     //check if device can support button trigger capibility
     if let commCfg = self.beacon!.getCommonCfg(),
-       !(commCfg.isSupportButton())
+       !(commCfg.isSupportTrigger(KBTriggerType.BtnSingleClick))
     {
         self.showDialogMsg("Fail", message: "device does not support button trigger")
         return
@@ -870,16 +870,9 @@ func onNotifyDataReceived(_ beacon:KBeacon, evt:Int, data:Data)
         return
     }
 
-    //check if device can support button trigger capibility
-    if let commCfg = self.beacon!.getCommonCfg(),
-       !(commCfg.isSupportButton())
-    {
-        self.showDialogMsg("Fail", message: "device does not support button trigger")
-        return
-    }
-
     //turn off trigger instance 0
     let btnTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.TriggerNull)
+    btnTriggerPara.setTriggerAction(0)
     self.beacon!.modifyConfig(obj: btnTriggerPara) { (result, exception) in
         if (result)
         {
@@ -910,7 +903,7 @@ Enabling motion trigger is similar to push button trigger, which will not be des
     //check if device can support motion trigger capibility
     guard self.beacon!.isConnected(),
         let commCfg = self.beacon!.getCommonCfg(),
-       commCfg.isSupportAccSensor() else
+       commCfg.isSupportTrigger(KBTriggerType.AccMotion) else
     {
         print("not allowed to modify motion parameters")
         return
@@ -949,16 +942,15 @@ The app can configure KBeacon to start broadcasting after detecting an abnormali
 * HTTempBelow
 * HTHumidityAbove
 * HTHumidityBelow
-* HTRealTimeReport : This trigger will always happened regardless of the measured value of temperature and humidity. It is only used to report realtime humidity and temperature to APP.
 
-1. Enable temperature&humidity trigger feature.  
+1. Start advertisement when temperature above trigger happened.  
 
 ```swift
 @IBAction func onTHTrigger2Adv(_ sender: Any)
 {
     guard self.beacon!.isConnected(),
         let commCfg = self.beacon!.getCommonCfg(),
-       commCfg.isSupportHumiditySensor() else
+       commCfg.isSupportTrigger(KBTriggerType.HTTempAbove) else
     {
         print("not allowed to modify TH parameters")
         return
@@ -969,18 +961,34 @@ The app can configure KBeacon to start broadcasting after detecting an abnormali
     triggerAdv.setTriggerAction(KBTriggerAction.Advertisement)
     triggerAdv.setTriggerAdvSlot(1)  //please makesure the slot 1 was config
     triggerAdv.setTriggerAdvTime(10)
-    triggerAdv.setTriggerPara(30)    //trigger when temperature > 30 Celsius
+    triggerAdv.setTriggerPara(30)    //trigger when temperature > 30 Celsius degree
 
+    //config slot 1 parameters
+    let slot1TriggerAdv = KBCfgAdvIBeacon()
+    slot1TriggerAdv.setSlotIndex(1)
+    slot1TriggerAdv.setAdvPeriod(152.5)
+    slot1TriggerAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
+    slot1TriggerAdv.setAdvConnectable(false)
+    slot1TriggerAdv.setAdvTriggerOnly(true)   //only advertisement when trigger happened
+    slot1TriggerAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E3")
+    slot1TriggerAdv.setMajorID(0)
+    slot1TriggerAdv.setMinorID(2)
+    
     //set trigger
-    self.beacon!.modifyConfig(obj:triggerAdv) { (result, exception) in
+    let configArray = [triggerAdv, slot1TriggerAdv]
+    self.beacon!.modifyConfig(array:configArray) { (result, exception) in
         if (result)
         {
-            print("Enable report H&T data to advertisement")
+            self.showDialogMsg("success", message: "Enable temp above trigger success")
+        }
+        else
+        {
+            self.showDialogMsg("error", message: "Enable temp above trigger failed")
         }
     }
 }
 ```
-2. Report temperature&humidity to app realtime
+2. Report event to app when temperature above trigger event happened.  
 ```swift
 //After enable realtime data to app, then the device will periodically send the temperature and humidity data to app whether it was changed or not.
 @IBAction func onTHTriggerEvt2App(_ sender: Any)
@@ -1015,6 +1023,76 @@ The app can configure KBeacon to start broadcasting after detecting an abnormali
     }
 }
 ```
+
+3. Real-time reporting of measurement results to the app
+```swift
+func onTHMeasurementResult2AppRealtime(_ sender: Any)
+{
+    guard self.beacon!.isConnected(),
+        let commCfg = self.beacon!.getCommonCfg(),
+        commCfg.isSupportTrigger(KBTriggerType.HTHumidityAbove) else
+    {
+        print("not allowed to set trigger")
+        return
+    }
+
+    let triggerApp = KBCfgTrigger(0, triggerType: KBTriggerType.HTHumidityAbove)
+    triggerApp.setTriggerAction(KBTriggerAction.ReportToApp)
+    triggerApp.setTriggerPara(0)  //always True
+    self.beacon!.modifyConfig(obj:triggerApp) { (result, exception) in
+        if (result)
+        {
+            //subscribe HT notification
+            self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTHumidityAbove, notifyDelegate: self) { (result, exception) in
+                if (result){
+                    print("subscribe trigger notification success")
+                }else{
+                    print("subscribe trigger notification failed")
+                }
+            }
+        }
+        else
+        {
+            print("enable trigger failed")
+        }
+    }
+}
+ ```
+
+#### 4.3.4.3 Watchband cutoff trigger
+The app can configure KBeacon to start broadcasting after detecting watchband was cutoff.   
+* CutoffWatchband
+```swift
+func onEnableCutoffTrigger()
+{
+    guard self.beacon!.isConnected(),
+        let commCfg = self.beacon!.getCommonCfg(),
+        commCfg.isSupportTrigger(KBTriggerType.CutoffWatchband) else
+    {
+        print("device does not support cut off trigger")
+        return
+    }
+
+    //enable cutoff trigger
+    let cutoffTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.CutoffWatchband)
+    cutoffTrigger.setTriggerAction(KBTriggerAction.Advertisement)
+    cutoffTrigger.setTriggerAdvSlot(0)  //please makesure the slot 0 was setting
+    cutoffTrigger.setTriggerAdvTime(10)
+    cutoffTrigger.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID)
+    
+    self.beacon!.modifyConfig(obj: cutoffTrigger) { (result, exception) in
+        if (result)
+        {
+            print("Enable cutoff trigger success")
+        }
+        else
+        {
+            print("Enable cutoff trigger failed")
+        }
+    }
+}
+ ```
+
 
 #### 4.3.5 Setup Temperature&Humidity sensor parameters
 If the device has some sensors, such as temperature and humidity sensors, we may need to set sensor parameters, such as the measurement period. Whether to save measurement records, etc.

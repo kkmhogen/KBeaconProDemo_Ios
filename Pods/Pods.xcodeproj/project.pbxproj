@@ -799,8 +799,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2FA7CF735801C899E309901D09D92CB /* MJRefresh-umbrella.h in Headers */,
 				18EF68A63F897815E7651478AC683BFF /* MJRefresh.h in Headers */,
+				B2FA7CF735801C899E309901D09D92CB /* MJRefresh-umbrella.h in Headers */,
 				32875BD0D0C2023541F2FE9CB05433C9 /* MJRefreshAutoFooter.h in Headers */,
 				B7B8322CDCEA00A4AC58F453546B6034 /* MJRefreshAutoGifFooter.h in Headers */,
 				D9785C7021E6C4E23702768F9055F120 /* MJRefreshAutoNormalFooter.h in Headers */,
@@ -939,8 +939,8 @@
 		BFDFE7DC352907FC980B868725387E98 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1100;
-				LastUpgradeCheck = 1100;
+				LastSwiftUpdateCheck = 1240;
+				LastUpgradeCheck = 1240;
 			};
 			buildConfigurationList = 4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */;
 			compatibilityVersion = "Xcode 10.0";
@@ -1008,10 +1008,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A94D81B3E4AEEABDF74E1C8777FD449F /* Archive.swift in Sources */,
 				DD98CFC4BA7ECBC4A307831716A1A9A8 /* Archive+MemoryFile.swift in Sources */,
 				C71DDE4CE526BBF6D6F70AEB700BA989 /* Archive+Reading.swift in Sources */,
 				C05876E1A230253564A273EE417A5949 /* Archive+Writing.swift in Sources */,
-				A94D81B3E4AEEABDF74E1C8777FD449F /* Archive.swift in Sources */,
 				B49C4A24ECDADD5E992EC563A5CBD29B /* Data+Compression.swift in Sources */,
 				D81D99A1BC5943D4D14B3354B07ABF16 /* Data+Serialization.swift in Sources */,
 				6D5EB5FCED6621F96DB2301CA65655F5 /* Entry.swift in Sources */,

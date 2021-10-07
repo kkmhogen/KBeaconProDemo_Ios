@@ -197,6 +197,17 @@ import Foundation
             return false
         }
     }
+    
+    //is support button
+    @objc public func isSupportTrigger(_ triggerType:Int)->Bool
+    {
+        if let tmpTriggerCap = self.trigCapability{
+            let triggerMask = 0x1 << (triggerType - 1)
+            return (tmpTriggerCap & triggerMask) > 0
+        }else{
+            return false
+        }
+    }
 
     //trigger capability
     @objc public func getTrigCapability()->Int
