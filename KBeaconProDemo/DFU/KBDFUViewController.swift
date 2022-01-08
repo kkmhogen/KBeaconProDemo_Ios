@@ -57,14 +57,6 @@ class KBDFUViewController : UIViewController, ConnStateDelegate,DFUServiceDelega
     
     func onConnStateChange(_ beacon:KBeacon, state:KBConnState, evt:KBConnEvtReason)
     {
-        if (state == KBConnState.Disconnected)
-        {
-            //start dfu
-            if (mInDfuState)
-            {
-                updateFirmware()
-            }
-        }
     }
     
     func dfuComplete(_ result:Bool, description : String)
@@ -118,6 +110,8 @@ class KBDFUViewController : UIViewController, ConnStateDelegate,DFUServiceDelega
             
         case DFUState.completed:
             NSLog("DFU complete");
+            self.mInDfuState = false
+
             labelDFUStatus.text = getString("UPDATE_COMPLETE")
             dfuComplete(true, description: getString("UPDATE_COMPLETE"))
             
@@ -224,13 +218,13 @@ class KBDFUViewController : UIViewController, ConnStateDelegate,DFUServiceDelega
                                         self.mPrivousDelegation = self.beacon!.delegate
                                         self.beacon!.delegate = self;
                                         
-                                        //disconnect for update
-                                        self.beacon?.disconnect()
-                                        
                                         //indication
                                         self.indicatorView = IndicatorViewController(title:getString("UPDATE_STARTED"),
                                                                                      center: self.view.center)
                                         self.indicatorView!.startAnimating(self.view)
+                                        
+                                        //update firmware
+                                        self.updateFirmware()
                                      })
         alertController.addAction(OkAction)
         self.present(alertController, animated: true, completion: nil)
@@ -299,7 +293,7 @@ class KBDFUViewController : UIViewController, ConnStateDelegate,DFUServiceDelega
                         
                         if let releaseNotes = objVersion["note"] as? String
                         {
-                            versionNotes = "\(releaseNotes)\n"
+                            versionNotes = "\(versionNotes)\n\(releaseNotes)"
                         }
 
                         //check if it is the last

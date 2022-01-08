@@ -16,7 +16,7 @@ public class KBFirmwareDownload : NSObject
 {
     var firmwareWebAddress : String
     static let HEX_PATH_NAME  = "KBeaconFirmware"
-    static let DEFAULT_DOWNLOAD_WEB_ADDRESS = "https://api.ieasygroup.com:8092/KBeaconFirmware/"
+    static let DEFAULT_DOWNLOAD_WEB_ADDRESS = "https://download.kkmiot.com:8093/KBeaconFirmware/"
     
     override public init() {
         firmwareWebAddress = KBFirmwareDownload.DEFAULT_DOWNLOAD_WEB_ADDRESS
