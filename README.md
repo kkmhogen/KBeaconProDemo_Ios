@@ -1062,7 +1062,7 @@ func enableTHPeriodicallyTriggerRpt2App(_ sender: Any)
 }
  ```
 
-#### 4.3.4.3 Watchband cutoff trigger
+#### 4.3.4.3 Cutoff trigger
 The Cutoff trigger is suitable for tamper-evident beacon such as W3, W7. Or Door beacon such as the S1.  
 When the cut-off was detected, the beacon will send the specfic advertisement to the cloud/backend and trigger the alert, the administrator will response and help.  
 *Wristband Beacon  
@@ -1099,7 +1099,7 @@ func onEnableCutoffTrigger()
         }
     }
 }
- ```
+``` 
 
  #### 4.3.4.5 PIR trigger
  ```swift
