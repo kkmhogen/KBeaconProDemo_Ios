@@ -15,7 +15,9 @@ import Foundation
     public static let SENSOR_MASK_TEMP = 2
     public static let SENSOR_MASK_HUME = 4
     public static let SENSOR_MASK_ACC_AIX = 8
-    
+    public static let SENSOR_MASK_CUTOFF = 0x10
+    public static let SENSOR_MASK_PIR = 0x20
+
     //acceleration sensor data
     @objc public var accSensor: KBAccSensorValue?
 
@@ -30,6 +32,12 @@ import Foundation
 
     //battery level, uint is mV
     @objc public var batteryLevel: Int16 = 0
+    
+    //adv packet version
+    @objc public var cutoff: UInt8 = KBCfgBase.INVALID_UINT8
+    
+    //PIR indication
+    @objc public var pirIndication: UInt8 = KBCfgBase.INVALID_UINT8
     
     internal required init() {
         
@@ -117,6 +125,28 @@ import Foundation
             let tempZAis = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
             accSensor!.zAis = Int16(bitPattern: tempZAis)
             nSrvIndex += 2
+        }
+        
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_CUTOFF) > 0)
+        {
+            if (nSrvIndex > data.count - 1)
+            {
+                return false;
+            }
+            
+            cutoff = data[nSrvIndex]
+            nSrvIndex += 1
+        }
+        
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_PIR) > 0)
+        {
+            if (nSrvIndex > data.count - 1)
+            {
+                return false;
+            }
+            
+            pirIndication = data[nSrvIndex]
+            nSrvIndex += 1
         }
         
         return true;

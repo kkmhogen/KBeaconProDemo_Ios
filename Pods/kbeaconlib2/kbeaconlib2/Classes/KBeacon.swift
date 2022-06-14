@@ -496,7 +496,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         return self.state == KBConnState.Connected
     }
     
-    @objc public func setConnStateDelegate(delegate: ConnStateDelegate)
+    @objc public func setConnStateDelegate(delegate: ConnStateDelegate?)
     {
         self.delegate = delegate;
     }

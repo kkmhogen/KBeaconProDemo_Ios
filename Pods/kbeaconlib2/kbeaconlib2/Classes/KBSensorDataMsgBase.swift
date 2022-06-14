@@ -16,6 +16,21 @@ public typealias onSensorDataCommandCallback = (_ result:Bool, _ obj:Any?, _ err
     case NewRecord = 2
 }
 
+@objc public class ReadSensorInfoRsp : NSObject
+{
+    @objc public var totalRecordNumber: UInt32 = 0
+
+    @objc public var unreadRecordNumber: UInt32 = 0
+
+    @objc public var readInfoUtcSeconds :UInt32 = 0
+    
+    @objc public override init()
+    {
+        super.init()
+    }
+};
+
+
 @objc public class KBSensorDataMsgBase : NSObject
 {
     //read sensor summary
@@ -28,6 +43,9 @@ public typealias onSensorDataCommandCallback = (_ result:Bool, _ obj:Any?, _ err
     
     //clear all sensor data
     private static let MSG_CLR_SENSOR_DATA_REQ = 3
+    
+    public var utcOffset:UInt32
+    @objc public static let MIN_UTC_TIME_SECONDS = 946080000
 
     @objc public static let INVALID_DATA_RECORD_POS = UInt32(4294967295)
 
@@ -35,6 +53,7 @@ public typealias onSensorDataCommandCallback = (_ result:Bool, _ obj:Any?, _ err
     
     @objc public override init()
     {
+        utcOffset = 0
     }
 
     @objc public func getSensorDataType()->Int
@@ -69,7 +88,28 @@ public typealias onSensorDataCommandCallback = (_ result:Bool, _ obj:Any?, _ err
 
     @objc public func parseSensorInfoResponse(_ beacon:KBeacon, dataPtr:Int, response:Data)->Any?
     {
-        return nil
+        if (response.count -  dataPtr < 8)
+        {
+            return nil;
+        }
+
+        let infoRsp = ReadSensorInfoRsp()
+
+        //total record number
+        var nReadDataPos = dataPtr
+        infoRsp.totalRecordNumber = UInt32(ByteConvert.bytesToShort(value: response, offset: nReadDataPos))
+        nReadDataPos += 2
+
+        //total record number
+        infoRsp.unreadRecordNumber = UInt32(ByteConvert.bytesToShort(value: response, offset: nReadDataPos))
+        nReadDataPos += 2
+
+        //utc offset
+        infoRsp.readInfoUtcSeconds = ByteConvert.bytesTo4Long(value:response, offset: nReadDataPos)
+        utcOffset = UTCTime.getUTCTimeSecond() - infoRsp.readInfoUtcSeconds
+        nReadDataPos += 4;
+        
+        return infoRsp
     }
 
     @objc public func readSensorDataInfo(_ beacon:KBeacon, callback: @escaping onSensorDataCommandCallback)->Void

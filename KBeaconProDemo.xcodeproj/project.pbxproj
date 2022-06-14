@@ -22,6 +22,7 @@
 		0CB5BC85264FB390007DD918 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0CB5BC83264FB390007DD918 /* Main.storyboard */; };
 		0CB5BC87264FB392007DD918 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0CB5BC86264FB392007DD918 /* Assets.xcassets */; };
 		0CB5BC8A264FB392007DD918 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0CB5BC88264FB392007DD918 /* LaunchScreen.storyboard */; };
+		11D8DCCB2858B2AE00B1A945 /* CfgHTHistoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D8DCCA2858B2AE00B1A945 /* CfgHTHistoryRecord.swift */; };
 		64D5495622CACA8E9225A09E /* Pods_KBeaconProDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C039036CD686295358DD8F0 /* Pods_KBeaconProDemo.framework */; };
 /* End PBXBuildFile section */
 
@@ -43,6 +44,7 @@
 		0CB5BC86264FB392007DD918 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0CB5BC89264FB392007DD918 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0CB5BC8B264FB392007DD918 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		11D8DCCA2858B2AE00B1A945 /* CfgHTHistoryRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CfgHTHistoryRecord.swift; sourceTree = "<group>"; };
 		1DA6BD93B0EAC47E1ABFBEE2 /* Pods-KBeaconProDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KBeaconProDemo.debug.xcconfig"; path = "Target Support Files/Pods-KBeaconProDemo/Pods-KBeaconProDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		9C039036CD686295358DD8F0 /* Pods_KBeaconProDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KBeaconProDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6F0EE3F769BF97124559A60 /* Pods-KBeaconProDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KBeaconProDemo.release.xcconfig"; path = "Target Support Files/Pods-KBeaconProDemo/Pods-KBeaconProDemo.release.xcconfig"; sourceTree = "<group>"; };
@@ -65,6 +67,7 @@
 			children = (
 				0C1C42572682CFD2008BA962 /* CfgSensorDataHistoryController.swift */,
 				0C1C425B2682D4FB008BA962 /* CfgHTRecordFileMgr.swift */,
+				11D8DCCA2858B2AE00B1A945 /* CfgHTHistoryRecord.swift */,
 			);
 			path = HTHistory;
 			sourceTree = "<group>";
@@ -253,6 +256,7 @@
 				0CB5BC82264FB390007DD918 /* RootViewController.swift in Sources */,
 				0C5F8017267F410F0025A6D5 /* KBPreferance.swift in Sources */,
 				0C1C425C2682D4FB008BA962 /* CfgHTRecordFileMgr.swift in Sources */,
+				11D8DCCB2858B2AE00B1A945 /* CfgHTHistoryRecord.swift in Sources */,
 				0C5A64FA26708A62006C739B /* KBeaconViewCell.swift in Sources */,
 				0C5F800B267F3DC20025A6D5 /* KBDFUViewController.swift in Sources */,
 				0CB5BC7E264FB390007DD918 /* AppDelegate.swift in Sources */,

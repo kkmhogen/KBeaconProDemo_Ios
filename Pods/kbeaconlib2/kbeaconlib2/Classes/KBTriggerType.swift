@@ -22,11 +22,16 @@ import Foundation
     @objc public static let BtnTripleClick = 6   //triple tap
     
     //cut off watchband
-    @objc public static let CutoffWatchband = 7   //cutoff watch band
+    @objc public static let Cutoff = 7   //cutoff watch band
 
     //temp and humidity trigger
     @objc public static let HTTempAbove = 8   //temperature above
     @objc public static let HTTempBelow = 9   //temperature below
     @objc public static let HTHumidityAbove = 10   //humidity above
     @objc public static let HTHumidityBelow = 11   //humidity below
+    @objc public static let HTHumidityPeriodically = 12   //periodically report
+
+    //PIR indication
+    @objc public static let PIRBodyInfraredDetected = 13
+
 }

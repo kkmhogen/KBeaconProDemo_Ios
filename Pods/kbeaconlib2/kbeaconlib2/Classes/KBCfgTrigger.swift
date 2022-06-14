@@ -29,6 +29,16 @@ import Foundation
     @objc public static let KBTriggerConditionDefaultTemperatureBelow = -10;
     @objc public static let MAX_TEMPERATURE_VALUE = 1000;
     @objc public static let MIN_TEMPERATURE_VALUE = -50;
+    
+    //humidity report interval
+    @objc public static let KBTriggerConditionDefaultHumidityRptInterval = 300
+    @objc public static let MIN_HUMIDITY_RPT_INTERVAL = 3;
+    @objc public static let MAX_HUMIDITY_RPT_INTERVAL = 36000;
+    
+    //PIR repeat detected interval
+    @objc public static let KBTriggerConditionPIRRepeatRptInterval = 30;
+    @objc public static let MAX_PIR_REPORT_INTERVAL_VALUE = 3600;
+    @objc public static let MIN_PIR_REPORT_INTERVAL_VALUE = 5;
 
     @objc public static let JSON_FIELD_TRIGGER_OBJ_LIST = "trObj"
     @objc public static let JSON_FIELD_TRIGGER_INDEX = "trIdx";
@@ -106,7 +116,7 @@ import Foundation
         return triggerAdvTime ?? KBCfgBase.INVALID_INT
     }
 
-    public func setTriggerAction(_ action:Int)
+    @objc public func setTriggerAction(_ action:Int)
     {
         self.triggerAction = action
     }
@@ -116,7 +126,7 @@ import Foundation
      
      :param: mode if set to 0x01, the trigger advertisement content of UUID = configured UUID + trigger type.
     */
-    public func setTriggerAdvChangeMode(_ mode:Int)
+    @objc public func setTriggerAdvChangeMode(_ mode:Int)
     {
         triggerAdvChangeMode = mode
     }
@@ -129,22 +139,22 @@ import Foundation
             For Humidity trigger: This parameter indicates the humidity threshold. unit is 1%
             For Temperature trigger: This parameter indicates the temperature threshold. unit is 1 Celsius
     */
-    public func setTriggerPara(_ para:Int)
+    @objc public func setTriggerPara(_ para:Int)
     {
         triggerPara = para
     }
     
-    public func setTriggerIndex(_ index:Int)
+    @objc public func setTriggerIndex(_ index:Int)
     {
         triggerIndex = index
     }
     
-    public func setTriggerType(_ type: Int)
+    @objc public func setTriggerType(_ type: Int)
     {
         triggerType = type
     }
 
-    @discardableResult public func setTriggerAdvSlot(_ slot: Int) ->Bool {
+    @objc @discardableResult public func setTriggerAdvSlot(_ slot: Int) ->Bool {
         if (slot <= KBCfgAdvBase.MAX_SLOT_INDEX)
         {
             self.triggerAdvSlot = slot
@@ -155,7 +165,7 @@ import Foundation
         }
     }
     
-    @discardableResult public func setTriggerAdvTime(_ time : Int) ->Bool
+    @objc @discardableResult public func setTriggerAdvTime(_ time : Int) ->Bool
     {
         if (time >= KBCfgTrigger.MIN_TRIGGER_ADV_TIME
                 && time <= KBCfgTrigger.MAX_TRIGGER_ADV_TIME) {
@@ -167,7 +177,7 @@ import Foundation
         }
     }
     
-    @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
+    @objc @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
     {
         var nUpdatePara = super.updateConfig(para)
         if let tempValue = para[KBCfgTrigger.JSON_FIELD_TRIGGER_INDEX] as? Int {
@@ -209,7 +219,7 @@ import Foundation
     }
 
     
-    public override func toDictionary()->Dictionary<String, Any>
+    @objc public override func toDictionary()->Dictionary<String, Any>
     {
         var cfgDicts = super.toDictionary()
         

@@ -39,9 +39,10 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.0.4'
+pod 'kbeaconlib2','1.0.8'
 ```
-
+This library is also open source, please refer to this link.  
+[kbeaconlib](https://github.com/kkmhogen/kbeaconlib2)  
 
 2. Add the Bluetooth permissions declare in your project plist file (Target->Info). As follows:  
 * Privacy - Bluetooth Always Usage Description
@@ -280,6 +281,7 @@ For example, advertisement type was set to “iBeacon + TLM + System”, then th
 |Slot No.|0|1|2|3|4|
 |----|----|----|----|----|----|
 |`Adv type`|iBeacon|TLM |System|None|None|
+|`Adv Mode`|Legacy|Coded PHY|2M PHY|Legacy|Legacy|
 |`Adv Interval(ms)`|1022.5|8000.0|8000.0|NA|NA|
 |`Tx power(dBm)`|0|4|-12|NA|NA|
 
@@ -973,7 +975,7 @@ The app can configure KBeacon to start broadcasting after detecting an abnormali
     slot1TriggerAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E3")
     slot1TriggerAdv.setMajorID(0)
     slot1TriggerAdv.setMinorID(2)
-    
+
     //set trigger
     let configArray = [triggerAdv, slot1TriggerAdv]
     self.beacon!.modifyConfig(array:configArray) { (result, exception) in
@@ -1024,26 +1026,27 @@ The app can configure KBeacon to start broadcasting after detecting an abnormali
 }
 ```
 
-3. Real-time reporting of measurement results to the app
+3. Report temperature&humidity to app periodically
 ```swift
-func onTHMeasurementResult2AppRealtime(_ sender: Any)
+//After enable periodically trigger, then the device will periodically send the temperature and humidity data to app whether it was changed or not.
+func enableTHPeriodicallyTriggerRpt2App(_ sender: Any)
 {
     guard self.beacon!.isConnected(),
         let commCfg = self.beacon!.getCommonCfg(),
-        commCfg.isSupportTrigger(KBTriggerType.HTHumidityAbove) else
+        commCfg.isSupportTrigger(KBTriggerType.HTHumidityPeriodically) else
     {
         print("not allowed to set trigger")
         return
     }
 
-    let triggerApp = KBCfgTrigger(0, triggerType: KBTriggerType.HTHumidityAbove)
+    let triggerApp = KBCfgTrigger(0, triggerType: KBTriggerType.HTHumidityPeriodically)
     triggerApp.setTriggerAction(KBTriggerAction.ReportToApp)
-    triggerApp.setTriggerPara(0)  //always True
+    triggerApp.setTriggerPara(60)  //tx measure result every 60 seconds
     self.beacon!.modifyConfig(obj:triggerApp) { (result, exception) in
         if (result)
         {
             //subscribe HT notification
-            self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTHumidityAbove, notifyDelegate: self) { (result, exception) in
+            self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTHumidityPeriodically, notifyDelegate: self) { (result, exception) in
                 if (result){
                     print("subscribe trigger notification success")
                 }else{
@@ -1060,7 +1063,12 @@ func onTHMeasurementResult2AppRealtime(_ sender: Any)
  ```
 
 #### 4.3.4.3 Watchband cutoff trigger
-The app can configure KBeacon to start broadcasting after detecting watchband was cutoff.   
+The Cutoff trigger is suitable for tamper-evident beacon such as W3, W7. Or Door beacon such as the S1.  
+When the cut-off was detected, the beacon will send the specfic advertisement to the cloud/backend and trigger the alert, the administrator will response and help.  
+*Wristband Beacon  
+![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/main/wristbandCutoffTrigger.png?raw=true)  
+*CutoffWatchband  
+![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/main/doorCutoffTrigger.png?raw=true)  
 * CutoffWatchband
 ```swift
 func onEnableCutoffTrigger()
@@ -1074,12 +1082,12 @@ func onEnableCutoffTrigger()
     }
 
     //enable cutoff trigger
-    let cutoffTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.CutoffWatchband)
+    let cutoffTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.Cutoff)
     cutoffTrigger.setTriggerAction(KBTriggerAction.Advertisement)
     cutoffTrigger.setTriggerAdvSlot(0)  //please makesure the slot 0 was setting
     cutoffTrigger.setTriggerAdvTime(10)
     cutoffTrigger.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID)
-    
+
     self.beacon!.modifyConfig(obj: cutoffTrigger) { (result, exception) in
         if (result)
         {
@@ -1093,12 +1101,82 @@ func onEnableCutoffTrigger()
 }
  ```
 
+ #### 4.3.4.5 PIR trigger
+ ```swift
+func onEnablePIRTrigger()
+{
+   guard self.beacon!.isConnected(),
+       let commCfg = self.beacon!.getCommonCfg(),
+         commCfg.isSupportTrigger(KBTriggerType.PIRBodyInfraredDetected) else
+   {
+       print("device does not support cut off trigger")
+       return
+   }
 
-#### 4.3.5 Setup Temperature&Humidity sensor parameters
-If the device has some sensors, such as temperature and humidity sensors, we may need to set sensor parameters, such as the measurement period. Whether to save measurement records, etc.
+   //Save the PIR event to memory flash and report it to the APP at the same time
+   let pirTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.PIRBodyInfraredDetected)
+   pirTrigger.setTriggerAction(KBTriggerAction.Record | KBTriggerAction.ReportToApp)
 
+   //If the human infrared is repeatedly detected within 30 seconds, it will no longer be record/reported.
+   pirTrigger.setTriggerPara(30);
 
-#### 4.3.5.1 Config measure and log paramaters
+   self.beacon!.modifyConfig(obj: pirTrigger) { (result, exception) in
+       if (result)
+       {
+           print("Enable cutoff trigger success")
+       }
+       else
+       {
+           print("Enable cutoff trigger failed")
+       }
+   }
+}    
+ ```
+
+#### 4.3.5 sensor parameters
+If the device has sensors, such as temperature and humidity sensors, we may need to setting the sensor parameters, such as the measurement interval.
+For some sensors, we may not want it to work all the time, such as the Door sensor, we may only want it to work at night. The advantage of this is, the power consumption can be reduced, and the unnecessary trigger can also be reduced.
+
+#### 4.3.5.1 Config disable period paramaters
+The sensors that support configuring a disable period include: Door sensor, PIR sensor.
+```swift
+//set disable period parameters
+func setPIRDisablePeriod()
+{
+   guard self.beacon!.isConnected(),
+       let commCfg = self.beacon!.getCommonCfg(),
+         commCfg.isSupportTrigger(KBTriggerType.PIRBodyInfraredDetected) else
+   {
+       print("device does not support cut off trigger")
+       return
+   }
+
+   let sensorPara = KBCfgSensorBase()
+   sensorPara.setSensorType(KBSensorType.PIR)
+
+   //set disable period from 8:00AM to 20:00 PM
+   let disablePeriod = KBTimeRange()
+   disablePeriod.localStartHour = 8
+   disablePeriod.localStartMinute = 0
+   disablePeriod.localEndHour = 20
+   disablePeriod.localEndMinute = 0
+   sensorPara.setDisablePeriod0(disablePeriod)
+
+   self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
+       if (result)
+       {
+           print("Enable disable period success")
+       }
+       else
+       {
+           print("Enable disable period failed")
+       }
+   }
+}
+```
+
+#### 4.3.5.2 Config temperature and humidity measure parameters and log parameters
+For temperature and humidity sensors, we can set the measurement interval. In addition, we can use the device as a Logger, and we can set the log conditions.
 ```swift
 func setTHSensorMeasureParameters()
 {
@@ -1146,33 +1224,65 @@ func setTHSensorMeasureParameters()
 
 
 #### 4.3.5.3 Read sensor history records
-1. read history summary information.
-```swift
-self.mSensorDataMsg!.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
-    if (!result)
-    {
-        self.mTimerLoading?.invalidate()
-        self.mTableView.mj_header!.endRefreshing()
-        self.showMsgDlog(title: "failed", message: getString("LOAD_HISTORY_DATA_FAILED"))
-        return
-    }
+For some beacon devices, it can logging the trigger events to memory flash. Such as Door open and close events, PIR detection events, temperature and humidity recording. For these devices, we can read these saved histories record through the APP or Gateway.
 
-    self.mHasReadDataInfo = true
-    if let infRsp = obj as? ReadHTSensorInfoRsp
-    {
-        if (infRsp.unreadRecordNumber == 0)
+1. Read history summary information.  
+With this command, we can read the total number of records and the number of unread records in the device. Next, we can read the specified record. Or read the records that have not been read.  
+
+```swift
+//read temperature and humidity history record info
+func readHTSensorDataInfo()
+{
+    let readHtRecordInfo = KBHumidityDataMsg()
+    readHtRecordInfo.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+        if (!result)
         {
-            self.showNoMoreDataMessage(0)
+            //read ht record info failed
+            print("read ht record info failed")
+            return
         }
-        else
+
+        if let infRsp = obj as? ReadSensorInfoRsp
         {
-            self.startReadNextRecordPage()
+            if (infRsp.unreadRecordNumber == 0)
+            {
+                print("no unread data in device")
+            }
+            else
+            {
+                print("there is \(infRsp.unreadRecordNumber) ht record in device")
+            }
         }
-    }
-})
+    })
+}
+
+//read cutoff history info example
+func readCutSensorDataInfo()
+{
+    let readCutoffRecordInfo = KBCutoffDataMsg()
+    readCutoffRecordInfo.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+        if (!result)
+        {
+            print("read record info failed")
+            return
+        }
+
+        if let infRsp = obj as? ReadSensorInfoRsp
+        {
+            if (infRsp.unreadRecordNumber == 0)
+            {
+                print("no unread data in device")
+            }
+            else
+            {
+                print("there is \(infRsp.unreadRecordNumber) cut off record in device")
+            }
+        }
+    })
+}
 ```
 
-2.  Read log history records  
+2.  Read sensor history records  
   The SDK provides the following three ways to read records.
   * KBSensorReadOption.NewRecord:  read history records and move next. After app reading records, the KBeacon device will move the pointer to the next unreaded record. If the app send read request again, the KBeacon device sends next unread records and move the pointer to next.
 
@@ -1406,6 +1516,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
 https://github.com/NordicSemiconductor/IOS-Pods-DFU-Library
 
 ## 6. Change log
+* 2022.6.1 v1.31 Add PIR sensor
 * 2021.6.20 v1.30 Support slot adv
 * 2021.1.30 v1.24 Support alarm trigger action
 * 2020.11.1 v1.23 Support humidity sensor

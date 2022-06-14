@@ -96,7 +96,7 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
             }
 
             self.mHasReadDataInfo = true
-            if let infRsp = obj as? ReadHTSensorInfoRsp
+            if let infRsp = obj as? ReadSensorInfoRsp
             {
                 if (infRsp.unreadRecordNumber == 0)
                 {
@@ -118,6 +118,24 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
             self.mTableView.mj_header!.endRefreshing()
         })
     }
+    
+    //for override
+    func parseReadKBRecordResponse(_ rspList : [NSObject] )->[CfgHTHistoryRecord]
+    {
+        var cfgList : [CfgHTHistoryRecord] = []
+        
+        for cutRecord in rspList
+        {
+            if let dataRsp = cutRecord as? KBHumidityRecord
+            {
+                let htRecord = CfgHTHistoryRecord()
+                htRecord.record = dataRsp
+                cfgList.append(htRecord)
+            }
+        }
+        
+        return cfgList
+    }
 
     func startReadNextRecordPage()
     {
@@ -133,10 +151,11 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
                             return
                         }
 
-                        if let dataRsp = obj as? ReadHTSensorDataRsp
+                        if let dataRsp = obj as? KBReadSensorRsp
                         {
                             //add data
-                            self.mRecordMgr!.appendRecords(dataRsp.readDataRspList)
+                            let htRecordList = self.parseReadKBRecordResponse(dataRsp.readDataRspList)
+                            self.mRecordMgr!.appendRecords(htRecordList)
 
                             if (dataRsp.readDataNextPos == CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS)
                             {
@@ -189,18 +208,18 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         if let cell = tableView.dequeueReusableCell(withIdentifier:"seqHTRecordCell") as? HTSensorTableViewCell,
-           let record = self.mRecordMgr!.get(index: indexPath.row)
+           let object = self.mRecordMgr!.get(index: indexPath.row)
         {
-            let strUTCTime = self.mRecordMgr!.localTimeFromUTCSeconds(record.utcTime)
+            let strUTCTime = self.mRecordMgr!.localTimeFromUTCSeconds(object.record.utcTime)
             cell.labelUTC.text = strUTCTime
             cell.labelTemperature.text =  String(format:"%@: %.2f%@",
                                                  arguments: [getString("BEACON_TEMP"),
-                                record.temperature,
+                                                             object.record.temperature,
                                 getString("BEACON_TEMP_UINT")])
             
             cell.labelHumidity.text =  String(format:"%@: %.2f% %",
                                               arguments: [getString("BEACON_HUM"),
-                                              record.humidity])
+                                                          object.record.humidity])
             return cell
         }else{
             return UITableViewCell()

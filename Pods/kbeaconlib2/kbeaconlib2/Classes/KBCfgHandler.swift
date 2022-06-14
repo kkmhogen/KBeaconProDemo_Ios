@@ -31,14 +31,18 @@ internal class KBCfgHandler {
         KBTriggerType.BtnSingleClick: KBCfgTrigger.self,
         KBTriggerType.BtnDoubleClick: KBCfgTrigger.self,
         KBTriggerType.BtnTripleClick: KBCfgTrigger.self,
-        KBTriggerType.CutoffWatchband: KBCfgTrigger.self,
+        KBTriggerType.Cutoff: KBCfgTrigger.self,
         KBTriggerType.HTTempAbove: KBCfgTrigger.self,
         KBTriggerType.HTTempBelow: KBCfgTrigger.self,
         KBTriggerType.HTHumidityAbove: KBCfgTrigger.self,
-        KBTriggerType.HTHumidityBelow: KBCfgTrigger.self
+        KBTriggerType.HTHumidityBelow: KBCfgTrigger.self,
+        KBTriggerType.HTHumidityPeriodically: KBCfgTrigger.self,
+        KBTriggerType.PIRBodyInfraredDetected: KBCfgTrigger.self
     ]
     static var kbCfgSensorObjects :Dictionary<Int, KBCfgSensorBase.Type> = [
-        KBSensorType.HTHumidity: KBCfgSensorHT.self
+        KBSensorType.HTHumidity: KBCfgSensorHT.self,
+        KBSensorType.Cutoff: KBCfgSensorBase.self,
+        KBSensorType.PIR: KBCfgSensorBase.self,
     ]
     
     internal init()
@@ -425,7 +429,9 @@ internal class KBCfgHandler {
             //check the trigger
             if let triggerObj = cfgObj as? KBCfgTrigger
             {
-                if (triggerObj.getTriggerAction() & KBTriggerAction.Advertisement) > 0
+                let triggerAction = triggerObj.getTriggerAction()
+                if (KBCfgBase.INVALID_INT != triggerAction) &&
+                        ((triggerAction & KBTriggerAction.Advertisement) > 0)
                 {
                     if (triggerObj.getTriggerAdvSlot() == KBCfgBase.INVALID_INT)
                     {

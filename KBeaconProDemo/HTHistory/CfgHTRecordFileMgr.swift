@@ -10,7 +10,7 @@ import kbeaconlib2
 
 class CfgHTRecordFileMgr : NSObject
 {
-    public var mSensorRecordList = [KBHumidityRecord]()
+    public var mSensorRecordList = [CfgHTHistoryRecord]()
     
     let RECORD_FILE_NAME_PREFEX = "_ht_sensor_record.txt"
     let RECORD_FILE_NAME = "_ht_sensor_record.txt"
@@ -33,7 +33,7 @@ class CfgHTRecordFileMgr : NSObject
         let strMacAddress = mac.replacingOccurrences(of: ":", with: "")
         mRecordFileName = "\(strMacAddress)\(RECORD_FILE_NAME_PREFEX)";
         mDeviceMac = strMacAddress;
-        mSensorRecordList = [KBHumidityRecord]()
+        mSensorRecordList = [CfgHTHistoryRecord]()
 
         //read record from file
         let pathDocuments = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
@@ -44,7 +44,7 @@ class CfgHTRecordFileMgr : NSObject
             {
                 if let dicts = obj as? [String:Any]
                 {
-                    mSensorRecordList.append(KBHumidityRecord(dicts: dicts))
+                    mSensorRecordList.append(CfgHTHistoryRecord(dicts: dicts))
                 }
             }
         }
@@ -65,7 +65,7 @@ class CfgHTRecordFileMgr : NSObject
         return Bundle.main.bundleURL.appendingPathComponent(fileName).path
     }
     
-    func get(index : Int)->KBHumidityRecord?
+    func get(index : Int)->CfgHTHistoryRecord?
     {
         let nMaxIndex = self.mSensorRecordList.count - 1
         let nReverseIndex =  nMaxIndex - index
@@ -73,7 +73,7 @@ class CfgHTRecordFileMgr : NSObject
         return self.mSensorRecordList[nReverseIndex]
     }
 
-    func appendRecords(_ recordList : [KBHumidityRecord])
+    func appendRecords(_ recordList : [CfgHTHistoryRecord])
     {
         for  record in recordList
         {
@@ -82,7 +82,7 @@ class CfgHTRecordFileMgr : NSObject
         mIsFileChange = true
     }
     
-    func appendRecord(_ record : KBHumidityRecord)
+    func appendRecord(_ record : CfgHTHistoryRecord)
     {
         self.mSensorRecordList.append(record)
         mIsFileChange = true
@@ -105,11 +105,11 @@ class CfgHTRecordFileMgr : NSObject
         let strWriteLine = "&body=UTC \t Temperature \t Humidity\n"
         strBUilder.append(strWriteLine)
 
-        for  record in self.mSensorRecordList
+        for object in self.mSensorRecordList
         {
-            let strNearbyUtcTime = localTimeFromUTCSeconds(record.utcTime)
+            let strNearbyUtcTime = localTimeFromUTCSeconds(object.record.utcTime)
             let strWriteLine = String(format:"%@\t%.2f\t%.2f\n",
-                                  strNearbyUtcTime, record.temperature, record.humidity)
+                                      strNearbyUtcTime, object.record.temperature, object.record.humidity)
             strBUilder.append(strWriteLine)
         }
         

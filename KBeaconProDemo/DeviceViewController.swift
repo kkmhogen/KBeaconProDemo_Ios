@@ -1017,25 +1017,25 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
-    //After enable realtime data to app, then the device will periodically send the temperature and humidity data to app whether it was changed or not.
-    func onTHMeasurementResult2AppRealtime(_ sender: Any)
+    //After enable periodically trigger, then the device will periodically send the temperature and humidity data to app whether it was changed or not.
+    func enableTHPeriodicallyTriggerRpt2App(_ sender: Any)
     {
         guard self.beacon!.isConnected(),
             let commCfg = self.beacon!.getCommonCfg(),
-            commCfg.isSupportTrigger(KBTriggerType.HTHumidityAbove) else
+            commCfg.isSupportTrigger(KBTriggerType.HTHumidityPeriodically) else
         {
             print("not allowed to set trigger")
             return
         }
 
-        let triggerApp = KBCfgTrigger(0, triggerType: KBTriggerType.HTHumidityAbove)
+        let triggerApp = KBCfgTrigger(0, triggerType: KBTriggerType.HTHumidityPeriodically)
         triggerApp.setTriggerAction(KBTriggerAction.ReportToApp)
-        triggerApp.setTriggerPara(0)  //always True
+        triggerApp.setTriggerPara(60)  //tx measure result every 60 seconds
         self.beacon!.modifyConfig(obj:triggerApp) { (result, exception) in
             if (result)
             {
                 //subscribe HT notification
-                self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTHumidityAbove, notifyDelegate: self) { (result, exception) in
+                self.beacon!.subscribeSensorDataNotify(KBTriggerType.HTHumidityPeriodically, notifyDelegate: self) { (result, exception) in
                     if (result){
                         print("subscribe trigger notification success")
                     }else{
@@ -1050,18 +1050,70 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
+    //read temperature and humidity history record info
+    func readHTSensorDataInfo()
+    {
+        let readHtRecordInfo = KBHumidityDataMsg()
+        readHtRecordInfo.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+            if (!result)
+            {
+                //read ht record info failed
+                print("read ht record info failed")
+                return
+            }
+
+            if let infRsp = obj as? ReadSensorInfoRsp
+            {
+                if (infRsp.unreadRecordNumber == 0)
+                {
+                    print("no unread data in device")
+                }
+                else
+                {
+                    print("there is \(infRsp.unreadRecordNumber) ht record in device")
+                }
+            }
+        })
+    }
+    
+    //read cutoff history info example
+    func readCutSensorDataInfo()
+    {
+        let readCutoffRecordInfo = KBCutoffDataMsg()
+        readCutoffRecordInfo.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+            if (!result)
+            {
+                print("read record info failed")
+                return
+            }
+
+            if let infRsp = obj as? ReadSensorInfoRsp
+            {
+                if (infRsp.unreadRecordNumber == 0)
+                {
+                    print("no unread data in device")
+                }
+                else
+                {
+                    print("there is \(infRsp.unreadRecordNumber) cut off record in device")
+                }
+            }
+        })
+    
+    }
+    
     func onEnableCutoffTrigger()
     {
         guard self.beacon!.isConnected(),
             let commCfg = self.beacon!.getCommonCfg(),
-            commCfg.isSupportTrigger(KBTriggerType.CutoffWatchband) else
+              commCfg.isSupportTrigger(KBTriggerType.Cutoff) else
         {
             print("device does not support cut off trigger")
             return
         }
 
         //enable cutoff trigger
-        let cutoffTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.CutoffWatchband)
+        let cutoffTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.Cutoff)
         cutoffTrigger.setTriggerAction(KBTriggerAction.Advertisement)
         cutoffTrigger.setTriggerAdvSlot(0)  //please makesure the slot 0 was setting
         cutoffTrigger.setTriggerAdvTime(10)
@@ -1075,6 +1127,68 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             else
             {
                 print("Enable cutoff trigger failed")
+            }
+        }
+    }
+    
+    func onEnablePIRTrigger()
+    {
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportTrigger(KBTriggerType.PIRBodyInfraredDetected) else
+        {
+            print("device does not support cut off trigger")
+            return
+        }
+
+        //Save the PIR event to memory flash and report it to the APP at the same time
+        let pirTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.PIRBodyInfraredDetected)
+        pirTrigger.setTriggerAction(KBTriggerAction.Record | KBTriggerAction.ReportToApp)
+        
+        //If the human infrared is repeatedly detected within 30 seconds, it will no longer be record/reported.
+        pirTrigger.setTriggerPara(30);
+        
+        self.beacon!.modifyConfig(obj: pirTrigger) { (result, exception) in
+            if (result)
+            {
+                print("Enable cutoff trigger success")
+            }
+            else
+            {
+                print("Enable cutoff trigger failed")
+            }
+        }
+    }
+    
+    func setPIRDisablePeriod()
+    {
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportTrigger(KBTriggerType.PIRBodyInfraredDetected) else
+        {
+            print("device does not support cut off trigger")
+            return
+        }
+
+        let sensorPara = KBCfgSensorBase()
+        sensorPara.setSensorType(KBSensorType.PIR)
+
+        //set disable period from 8:00AM to 20:00 PM
+        let disablePeriod = KBTimeRange()
+        disablePeriod.localStartHour = 8
+        disablePeriod.localStartMinute = 0
+        disablePeriod.localEndHour = 20
+        disablePeriod.localEndMinute = 0
+        sensorPara.setDisablePeriod0(disablePeriod)
+
+        self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
+            if (result)
+            {
+                print("Enable disable period success")
+            }
+            else
+            {
+                print("Enable disable period failed")
             }
         }
     }

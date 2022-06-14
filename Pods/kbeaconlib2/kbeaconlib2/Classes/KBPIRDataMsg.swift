@@ -1,15 +1,16 @@
 //
-//  KBHumidityDataMsg.swift
-//  KBeacon2
+//  KBPIRDataMsg.swift
+//  KBeaconPro
 //
-//  Created by hogen on 2021/5/26.
+//  Created by Shuhui Hu on 2022/6/5.
 //
 
 import Foundation
 
-@objc public class KBHumidityDataMsg : KBSensorDataMsgBase
+@objc public class KBPIRDataMsg : KBSensorDataMsgBase
 {
-    @objc public static let KBSensorDataTypeHumidity = Int(2)
+    @objc public static let KBSensorDataTypePIR = Int(8)
+    @objc public static let PIR_RECORD_LEN = 5
     
     @objc public override init()
     {
@@ -17,16 +18,16 @@ import Foundation
 
     @objc public override func getSensorDataType()->Int
     {
-        return KBHumidityDataMsg.KBSensorDataTypeHumidity
+        return KBPIRDataMsg.KBSensorDataTypePIR
     }
 
     @objc public override func parseSensorDataResponse(_ beacon:KBeacon, dataPtr:Int, response:Data)->Any?
     {
         //sensor data type
         var nReadIndex = dataPtr;
-        if (response[nReadIndex] != KBSensorType.HTHumidity)
+        if (response[nReadIndex] != KBPIRDataMsg.KBSensorDataTypePIR)
         {
-            NSLog("read HT response data type failed")
+            NSLog("read pir response data type failed")
             return nil
         }
         nReadIndex += 1
@@ -38,7 +39,7 @@ import Foundation
 
         //check payload length
         let nPayLoad = (response.count - nReadIndex);
-        if (nPayLoad % 8 != 0)
+        if (nPayLoad % KBPIRDataMsg.PIR_RECORD_LEN != 0)
         {
             readDataRsp.readDataNextPos = KBSensorDataMsgBase.INVALID_DATA_RECORD_POS;
             NSLog("parse HT response data failed")
@@ -46,13 +47,13 @@ import Foundation
         }
 
         //read record
-        if (nPayLoad >= 8)
+        if (nPayLoad >= KBPIRDataMsg.PIR_RECORD_LEN)
         {
             var nRecordPtr = nReadIndex;
-            let nTotalRecordLen = nPayLoad / 8
+            let nTotalRecordLen = nPayLoad / KBPIRDataMsg.PIR_RECORD_LEN
             for _ in 0..<nTotalRecordLen
             {
-                let record = KBHumidityRecord();
+                let record = KBPIRRecord();
                 
                 //utc time
                 record.utcTime = ByteConvert.bytesTo4Long(value: response, offset: nRecordPtr)
@@ -62,11 +63,8 @@ import Foundation
                 }
                 nRecordPtr += 4;
 
-                record.temperature = KBUtility.signedBytes2Float(byte1: Int8(bitPattern:response[nRecordPtr]), byte2: response[nRecordPtr + 1]);
-                nRecordPtr += 2;
-
-                record.humidity = KBUtility.signedBytes2Float(byte1: Int8(bitPattern:response[nRecordPtr]), byte2: response[nRecordPtr+1]);
-                nRecordPtr += 2;
+                record.pirIndication = response[nRecordPtr];
+                nRecordPtr += 1;
 
                 readDataRsp.readDataRspList.append(record)
             }

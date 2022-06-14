@@ -23,7 +23,7 @@ import Foundation
     //sid
     private var sid : String?
 
-    public required init()
+    @objc public required init()
     {
         super.init(advType: KBAdvType.EddyUID);
     }

@@ -9,7 +9,7 @@ import Foundation
 
 @objc public class KBCfgAdvEddyTLM : KBCfgAdvBase
 {
-    public required init()
+    @objc public required init()
     {
         super.init(advType: KBAdvType.EddyTLM);
     }

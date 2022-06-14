@@ -198,6 +198,36 @@ import Foundation
         }
     }
     
+    //is support history
+    @objc public func isSupportHistoryRecord()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x100000) > 0
+        }else{
+            return false
+        }
+    }
+    
+    //is support cutoff sensor
+    @objc public func isSupportCutoffSensor()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x10) > 0
+        }else{
+            return false
+        }
+    }
+    
+    //is support pir sensor
+    @objc public func isSupportPIRSensor()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x20) > 0
+        }else{
+            return false
+        }
+    }
+    
     //is support button
     @objc public func isSupportTrigger(_ triggerType:Int)->Bool
     {
