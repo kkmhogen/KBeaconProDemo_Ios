@@ -713,6 +713,8 @@ func updateModifyParaToDevice()
  |`Adv slot`|0|0|1|NA|NA|
  |`Para`|NA|NA|4|NA|NA|
  |`Adv duration`|10|10|30|NA|NA|
+ |`Adv interval`|400.0|1000.0|500.0|NA|NA|
+ |`Adv TX power`|4|-4|0|NA|NA|
 
  The trigger advertisement has follow parameters:
  * Trigger No: Trigger instance number, the device supports up to 5 Triggers by default, the No is 0 ~ 4.
@@ -721,6 +723,8 @@ func updateModifyParaToDevice()
  * Trigger Adv slot: When the Trigger event happened, which advertisement Slot  starts to broadcasting
  * Trigger parameters: For motion trigger, the parameter is acceleration sensitivity. For temperature above trigger, you can set to the temperature threshold.
  *	Trigger Adv duration: The advertisement duration when trigger event happened. Unit is second.  
+ *	Trigger Adv TX power: The advertisement TX power when trigger event happened. Unit is dBm.
+ *	Trigger Adv interval: The advertisement interval when trigger event happened. Unit is ms.
 
 
  Example 1: Trigger only advertisment  
@@ -757,7 +761,7 @@ When you set multiple triggers to the same slot broadcast, you can turn on the T
 1. Enable or button trigger event to advertisement.  
 
 ```swift
-//enable button press trigger event to slot1 advertisement
+//enable button press trigger event to slot0 advertisement
 func enableBtnTriggerEvtToSlot1Advertisement()
 {
     //check if device can support button trigger capibility
@@ -768,17 +772,10 @@ func enableBtnTriggerEvtToSlot1Advertisement()
         return
     }
 
-    //trigger index is 0
-    let btnTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.BtnSingleClick)
-    //set trigger action to app
-    btnTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
-    btnTriggerPara.setTriggerAdvSlot(1)
-    btnTriggerPara.setTriggerAdvTime(20)   //advertisement 5 seconds
-
     //slot 0 default advertisement (alive advertisement)
     let slot0DefaultAdv = KBCfgAdvIBeacon()
     slot0DefaultAdv.setSlotIndex(0)
-    slot0DefaultAdv.setAdvPeriod(1285.0)
+    slot0DefaultAdv.setAdvPeriod(2000.0)
     slot0DefaultAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
     slot0DefaultAdv.setAdvConnectable(true)
     slot0DefaultAdv.setAdvTriggerOnly(false)   //always advertisement
@@ -786,26 +783,29 @@ func enableBtnTriggerEvtToSlot1Advertisement()
     slot0DefaultAdv.setMajorID(1)
     slot0DefaultAdv.setMinorID(4)
 
-    //slot 1 trigger advertisement parameters
-    let slot1TriggerAdv = KBCfgAdvIBeacon()
-    slot1TriggerAdv.setSlotIndex(1)
-    slot1TriggerAdv.setAdvPeriod(152.5)
-    slot1TriggerAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
-    slot1TriggerAdv.setAdvConnectable(false)
-    slot1TriggerAdv.setAdvTriggerOnly(true)   //only advertisement when trigger happened
-    slot1TriggerAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E2")
-    slot1TriggerAdv.setMajorID(0)
-    slot1TriggerAdv.setMinorID(2)
+    //trigger index is 0
+    let btnTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.BtnSingleClick)
+    //set trigger action to app
+    btnTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
+    btnTriggerPara.setTriggerAdvSlot(0)
+    btnTriggerPara.setTriggerAdvTime(10)   //advertisement 10 seconds
+    btnTriggerPara.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID)
 
-    let configArray = [btnTriggerPara, slot0DefaultAdv, slot1TriggerAdv]
+    //option trigger para, if the following parameters are omited
+    //the trigger broadcasting interval is 2000ms and the TX power is 0dBm
+    btnTriggerPara.setTriggerAdvPeriod(200.0)
+    btnTriggerPara.setTriggerAdvTxPower(KBAdvTxPower.RADIO_Neg4dBm)
+
+
+    let configArray = [btnTriggerPara, slot0DefaultAdv]
     self.beacon!.modifyConfig(array:configArray) { (result, exception) in
         if (result)
         {
-            print("config trigger success")
+            self.showDialogMsg("success", message: "Config button trigger success")
         }
         else
         {
-            print("config trigger failed");
+            self.showDialogMsg("Error", message: "Config button trigger failed")
         }
     }
 }
@@ -896,7 +896,8 @@ The KBeacon can start broadcasting when it detects motion. Also the app can sett
 
 Enabling motion trigger is similar to push button trigger, which will not be described in detail here.
 
-1. Enable or motion trigger feature.  
+1. Enable motion trigger feature.  
+ 	![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/main/motion_trigger_example.jpg?raw=true)
 
 ```swift
 // the iBeacon broadcast duration is 10 seconds.
@@ -905,23 +906,30 @@ Enabling motion trigger is similar to push button trigger, which will not be des
     //check if device can support motion trigger capibility
     guard self.beacon!.isConnected(),
         let commCfg = self.beacon!.getCommonCfg(),
-       commCfg.isSupportTrigger(KBTriggerType.AccMotion) else
+        commCfg.isSupportTrigger(KBTriggerType.AccMotion) else
     {
         print("not allowed to modify motion parameters")
         return
     }
 
     //trigger index is 0
-    let accTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.AccMotion)
+    let accTriggerPara = KBCfgTriggerMotion()
     //set trigger action to app
     accTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
-    accTriggerPara.setTriggerAdvSlot(1)
-    accTriggerPara.setTriggerAdvTime(5)   //advertisement 5 seconds
-    accTriggerPara.setTriggerPara(3)    //motion sensitivity
+    accTriggerPara.setTriggerAdvSlot(0)
+    accTriggerPara.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID)
+    accTriggerPara.setTriggerAdvTime(60)   //advertisement 5 seconds
+    accTriggerPara.setTriggerAdvPeriod(200.0)
+    accTriggerPara.setTriggerAdvTxPower(KBAdvTxPower.RADIO_Neg4dBm)
+
+    //add acc motion para
+    accTriggerPara.setTriggerPara(5)    //motion sensitivity, unit is 16mg
+    accTriggerPara.setAccODR(KBCfgTriggerMotion.ACC_ODR_25_HZ)
+    accTriggerPara.setWakeupDuration(5)
 
     //we assumption the slot1 already config to iBeacon parameters
     //otherwise you need to config the slot1 parameters
-    //please reference the enableBtnTriggerEvtToSlot1Advertisement for configruation
+    //please reference the enableBtnTriggerEvtToSlot1Advertisement for configruation slot1
     //...
 
     //enable motion trigger
@@ -1099,7 +1107,7 @@ func onEnableCutoffTrigger()
         }
     }
 }
-``` 
+```
 
  #### 4.3.4.5 PIR trigger
  ```swift
@@ -1369,7 +1377,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
  For some KBeacon device that has buzzer function. The app can ring device. For ring command, it has 5 parameters:
  * msg: msg type is 'ring'
  * ringTime: unit is ms. The KBeacon will start flash/alert for 'ringTime' millisecond  when receive this command.
- * ringType: 0x1:beep alert only; 0x2 led flash ; 0x0 turn off ring;
+ * ringType: 0x1:beep alert only; 0x2 led flash ; 0x4 moto, 0x0 turn off ring;
  * ledOn: optional parameters, unit is ms. The LED will flash at interval (ledOn + ledOff).  This parameters is valid when ringType set to 0x0 or 0x1.
  * ledOff: optional parameters, unit is ms. the LED will flash at interval (ledOn + ledOff).  This parameters is valid when ringType set to 0x0 or 0x1.  
 

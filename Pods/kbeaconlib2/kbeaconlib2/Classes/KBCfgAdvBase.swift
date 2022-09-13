@@ -130,7 +130,7 @@ import Foundation
     //set adv period
     @objc @discardableResult public func setAdvPeriod(_ advPeriod: Float) ->Bool
     {
-        if (advPeriod <= KBCfgAdvBase.MAX_ADV_PERIOD && advPeriod >= KBCfgAdvBase.MIN_ADV_PERIOD)
+        if (advPeriod >= KBCfgAdvBase.MIN_ADV_PERIOD)
         {
             self.advPeriod = advPeriod
             return true

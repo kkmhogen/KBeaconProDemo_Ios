@@ -157,7 +157,7 @@ class KBDFUViewController : UIViewController, ConnStateDelegate,DFUServiceDelega
             if (result )
             {
                 self.mInDfuState = true
-                if let selectedFirmware = DFUFirmware.init(urlToZipFile: URL(fileURLWithPath: path!))
+                if let selectedFirmware = try? DFUFirmware.init(urlToZipFile: URL(fileURLWithPath: path!))
                 {
                     let queue = DispatchQueue.main
                     let initiator = DFUServiceInitiator.init(queue: queue, delegateQueue: queue, progressQueue: queue, loggerQueue: queue)

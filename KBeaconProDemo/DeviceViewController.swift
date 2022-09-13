@@ -560,7 +560,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
-    //enable button press trigger event to slot1 advertisement
+    //enable button press trigger event to slot0 advertisement
     func enableBtnTriggerEvtToSlot1Advertisement()
     {
         //check if device can support button trigger capibility
@@ -570,14 +570,6 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             self.showDialogMsg("Fail", message: "device does not support button trigger")
             return
         }
-                
-        //trigger index is 0
-        let btnTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.BtnSingleClick)
-        //set trigger action to app
-        btnTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
-        btnTriggerPara.setTriggerAdvSlot(1)
-        btnTriggerPara.setTriggerAdvTime(10)   //advertisement 10 seconds
-        btnTriggerPara.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeDisable)
         
         //slot 0 default advertisement (alive advertisement)
         let slot0DefaultAdv = KBCfgAdvIBeacon()
@@ -589,19 +581,22 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         slot0DefaultAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0")
         slot0DefaultAdv.setMajorID(1)
         slot0DefaultAdv.setMinorID(4)
+                
+        //trigger index is 0
+        let btnTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.BtnSingleClick)
+        //set trigger action to app
+        btnTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
+        btnTriggerPara.setTriggerAdvSlot(0)
+        btnTriggerPara.setTriggerAdvTime(10)   //advertisement 10 seconds
+        btnTriggerPara.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID)
         
-        //slot 1 trigger advertisement parameters
-        let slot1TriggerAdv = KBCfgAdvIBeacon()
-        slot1TriggerAdv.setSlotIndex(1)
-        slot1TriggerAdv.setAdvPeriod(152.5)
-        slot1TriggerAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
-        slot1TriggerAdv.setAdvConnectable(false)
-        slot1TriggerAdv.setAdvTriggerOnly(true)   //only advertisement when trigger happened
-        slot1TriggerAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E2")
-        slot1TriggerAdv.setMajorID(0)
-        slot1TriggerAdv.setMinorID(2)
+        //option trigger para, if the following parameters are omited
+        //the trigger broadcasting interval is 2000ms and the TX power is 0dBm
+        btnTriggerPara.setTriggerAdvPeriod(200.0)
+        btnTriggerPara.setTriggerAdvTxPower(KBAdvTxPower.RADIO_Neg4dBm)
         
-        let configArray = [btnTriggerPara, slot0DefaultAdv, slot1TriggerAdv]
+        
+        let configArray = [btnTriggerPara, slot0DefaultAdv]
         self.beacon!.modifyConfig(array:configArray) { (result, exception) in
             if (result)
             {
@@ -734,12 +729,19 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
                 
         //trigger index is 0
-        let accTriggerPara = KBCfgTrigger(0, triggerType: KBTriggerType.AccMotion)
+        let accTriggerPara = KBCfgTriggerMotion()
         //set trigger action to app
         accTriggerPara.setTriggerAction(KBTriggerAction.Advertisement)
-        accTriggerPara.setTriggerAdvSlot(1)
-        accTriggerPara.setTriggerAdvTime(5)   //advertisement 5 seconds
-        accTriggerPara.setTriggerPara(3)    //motion sensitivity
+        accTriggerPara.setTriggerAdvSlot(0)
+        accTriggerPara.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID)
+        accTriggerPara.setTriggerAdvTime(60)   //advertisement 5 seconds
+        accTriggerPara.setTriggerAdvPeriod(200.0)
+        accTriggerPara.setTriggerAdvTxPower(KBAdvTxPower.RADIO_Neg4dBm)
+        
+        //add acc motion para
+        accTriggerPara.setTriggerPara(5)    //motion sensitivity, unit is 16mg
+        accTriggerPara.setAccODR(KBCfgTriggerMotion.ACC_ODR_25_HZ)
+        accTriggerPara.setWakeupDuration(5)
         
         //we assumption the slot1 already config to iBeacon parameters
         //otherwise you need to config the slot1 parameters

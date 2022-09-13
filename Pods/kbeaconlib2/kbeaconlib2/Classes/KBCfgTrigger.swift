@@ -48,6 +48,9 @@ import Foundation
     @objc public static let JSON_FIELD_TRIGGER_ADV_CHANGE_MODE = "trAChg"
     @objc public static let JSON_FIELD_TRIGGER_ADV_SLOT = "slot"
     @objc public static let JSON_FIELD_TRIGGER_ADV_TIME = "trATm"
+    @objc public static let JSON_FIELD_TRIGGER_ADV_PERIOD = "trAPrd";
+    @objc public static let JSON_FIELD_TRIGGER_ADV_POWER = "trAPwr";
+    
 
     //trigger index
     var triggerIndex: Int
@@ -69,6 +72,12 @@ import Foundation
 
     //trigger advertise time
     var triggerAdvTime : Int?
+    
+    //trigger adv period
+    var triggerAdvPeriod : Float?
+    
+    //trigger adv tx power
+    var triggerAdvTxPower : Int?
     
     @objc public required override init(){
         triggerType = KBTriggerType.AccMotion
@@ -115,6 +124,16 @@ import Foundation
     {
         return triggerAdvTime ?? KBCfgBase.INVALID_INT
     }
+    
+    @objc public func getTriggerAdvPeriod()->Float
+    {
+        return triggerAdvPeriod ?? KBCfgBase.INVALID_FLOAT
+    }
+    
+    @objc public func getTriggerAdvTxPower()->Int
+    {
+        return triggerAdvTxPower ?? KBCfgBase.INVALID_INT
+    }
 
     @objc public func setTriggerAction(_ action:Int)
     {
@@ -160,7 +179,6 @@ import Foundation
             self.triggerAdvSlot = slot
             return true
         }else{
-            //throw KBException(cause:KBErrorType.CfgInputInvalid, desc:"trigger slot invalid");
             return false
         }
     }
@@ -172,7 +190,27 @@ import Foundation
             self.triggerAdvTime = time
             return true
         }else{
-            //throw KBException(cause:KBErrorType.CfgInputInvalid, desc:"trigger adv time invalid");
+            return false
+        }
+    }
+    
+    @objc @discardableResult public func setTriggerAdvPeriod(_ advPeriod : Float) ->Bool
+    {
+        if (advPeriod >= KBCfgAdvBase.MIN_ADV_PERIOD) {
+            self.triggerAdvPeriod = advPeriod
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //set trigger adv tx power
+    @objc @discardableResult public func setTriggerAdvTxPower(_ txPower:Int) ->Bool
+    {
+        if (txPower >= KBAdvTxPower.RADIO_TXPOWER_MIN_TXPOWER && txPower <= KBAdvTxPower.RADIO_TXPOWER_MAX_TXPOWER) {
+            self.triggerAdvTxPower = txPower;
+            return true
+        } else {
             return false
         }
     }
@@ -214,7 +252,18 @@ import Foundation
             triggerAdvTime = tempValue
             nUpdatePara += 1
         }
+        
+        if let tempValue = para[KBCfgTrigger.JSON_FIELD_TRIGGER_ADV_POWER] as? Int {
+            triggerAdvTxPower = tempValue;
+            nUpdatePara += 1
+        }
 
+
+        let nTempFloat = parseFloat(para[KBCfgTrigger.JSON_FIELD_TRIGGER_ADV_PERIOD]);
+        if (nTempFloat != nil) {
+            triggerAdvPeriod = nTempFloat!.floatValue
+            nUpdatePara += 1
+        }
         return nUpdatePara;
     }
 
@@ -247,6 +296,15 @@ import Foundation
         
         if let tempValue = triggerPara{
             cfgDicts[KBCfgTrigger.JSON_FIELD_TRIGGER_PARA] = tempValue
+        }
+        
+        //tx power
+        if let tempValue = triggerAdvTxPower{
+            cfgDicts[KBCfgTrigger.JSON_FIELD_TRIGGER_ADV_POWER] = tempValue
+        }
+        
+        if let tempValue = triggerAdvPeriod{
+            cfgDicts[KBCfgTrigger.JSON_FIELD_TRIGGER_ADV_PERIOD] = tempValue
         }
 
         return cfgDicts;

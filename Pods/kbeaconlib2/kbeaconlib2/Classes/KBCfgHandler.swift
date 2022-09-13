@@ -25,7 +25,7 @@ internal class KBCfgHandler {
         KBAdvType.System: KBCfgAdvSystem.self]
     
     static var kbCfgTriggerObjects : Dictionary<Int, KBCfgTrigger.Type> = [
-        KBTriggerType.AccMotion: KBCfgTrigger.self,
+        KBTriggerType.AccMotion: KBCfgTriggerMotion.self,
         KBTriggerType.TriggerNull: KBCfgTrigger.self,
         KBTriggerType.BtnLongPress: KBCfgTrigger.self,
         KBTriggerType.BtnSingleClick: KBCfgTrigger.self,
