@@ -13,5 +13,5 @@ import Foundation
     @objc public static let HTHumidity = 0x2
     @objc public static let Cutoff = 0x8
     @objc public static let PIR = 0x10
-
+    @objc public static let Light = 0x20
 }

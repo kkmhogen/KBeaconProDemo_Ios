@@ -39,7 +39,7 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.0.8'
+pod 'kbeaconlib2','1.1.1'
 ```
 This library is also open source, please refer to this link.  
 [kbeaconlib](https://github.com/kkmhogen/kbeaconlib2)  
@@ -169,23 +169,42 @@ func printScanPacket(_ advBeacon: KBeacon)
             if let sensorAdv = advPacket as? KBAdvPacketSensor
             {
                 print("-----Sensor----")
-                print("batt:\(sensorAdv.batteryLevel)")
+                //check if has battery level
+                if (sensorAdv.batteryLevel != KBCfgBase.INVALID_UINT16)
+                {
+                    print("batt:\(sensorAdv.batteryLevel)")
+                }
 
+                //check if has temperature
                 if (sensorAdv.temperature != KBCfgBase.INVALID_FLOAT)
                 {
                     print("temp:\(sensorAdv.temperature)")
                 }
+
+                //check if has humidity
                 if (sensorAdv.humidity != KBCfgBase.INVALID_FLOAT)
                 {
                     print("humidity:\(sensorAdv.humidity)")
                 }
 
-                //acc sensor
+                //check if has acc sensor
                 if let axisValue = sensorAdv.accSensor
                 {
                     print("  xAis:\(axisValue.xAis)")
                     print("  yAis:\(axisValue.yAis)")
                     print("  zAis:\(axisValue.zAis)")
+                }
+
+                //check if has pir indication
+                if (KBCfgBase.INVALID_UINT8 != sensorAdv.pirIndication)
+                {
+                    print("PIR indication:\(sensorAdv.pirIndication)")
+                }
+
+                //check if has light level
+                if (KBCfgBase.INVALID_UINT16 != sensorAdv.luxLevel)
+                {
+                    print("Light level:\(sensorAdv.luxLevel)")
                 }
             }
 
@@ -321,10 +340,12 @@ func updateDeviceToView()
         print("support System adv:\(pCommonCfg.isSupportKBSystem())")
         print("support button:\(pCommonCfg.isSupportButton())")
         print("support beep:\(pCommonCfg.isSupportBeep())")
-        print("support accleration:\(pCommonCfg.isSupportAccSensor())")
-        print("support humidify:\(pCommonCfg.isSupportHumiditySensor())")
+        print("support accSensor:\(pCommonCfg.isSupportAccSensor())")
+        print("support humidity:\(pCommonCfg.isSupportHumiditySensor())")
         print("support max Tx power:\(pCommonCfg.getMaxTxPower())")
         print("support min Tx power:\(pCommonCfg.getMinTxPower())")
+        print("support pir:\(pCommonCfg.isSupportPIRSensor())")
+        print("support light sensor:\(pCommonCfg.isSupportLightSensor())")
 
         //adv type list
         if let advSlotList = self.beacon!.getSlotCfgList(){
@@ -1110,6 +1131,8 @@ func onEnableCutoffTrigger()
 ```
 
  #### 4.3.4.5 PIR trigger
+ PIR trigger is a detection based on human infrared.  The S2 product can detect whether the human body is moving within the range of 0-8 meters. You can set the device to trigger a broadcast when it detected human body moves. You can also set a Trigger to record the event when a human body is detected to move. The S2 device can record up to 40,000 trigger events.
+
  ```swift
 func onEnablePIRTrigger()
 {
@@ -1131,22 +1154,54 @@ func onEnablePIRTrigger()
    self.beacon!.modifyConfig(obj: pirTrigger) { (result, exception) in
        if (result)
        {
-           print("Enable cutoff trigger success")
+           print("Enable pir trigger success")
        }
        else
        {
-           print("Enable cutoff trigger failed")
+           print("Enable pir trigger failed")
        }
    }
 }    
  ```
 
-#### 4.3.5 sensor parameters
+ #### 4.3.4.5 Light trigger
+ The S3 device can simultaneously detect light level and human body infrared (PIR). You can set up S3 devices to broadcast light level information. You can also set it to trigger a broadcast when the detected light level exceeds or falls below a specified threshold.  S3 devices can record trigger events, up to 4000 trigger events can be recorded.
+ ```swift
+ @IBAction func onEnableLightBelowTrigger(_ sender: Any) {
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportTrigger(KBTriggerType.LightLUXBelow) else
+        {
+            print("device does not support light sensor")
+            return
+        }
+
+        //Save the light below event to memory flash and report it to the APP at the same time
+        let lightTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.LightLUXBelow)
+        lightTrigger.setTriggerAction(KBTriggerAction.Record | KBTriggerAction.ReportToApp)
+
+        //If the light level < 50, it will trigger an record/report event.
+        lightTrigger.setTriggerPara(50);
+
+        self.beacon!.modifyConfig(obj: lightTrigger) { (result, exception) in
+            if (result)
+            {
+                print("Enable light trigger success")
+            }
+            else
+            {
+                print("Enable light trigger failed")
+            }
+        }
+    }
+ ```
+
+### 4.3.5 sensor parameters
 If the device has sensors, such as temperature and humidity sensors, we may need to setting the sensor parameters, such as the measurement interval.
 For some sensors, we may not want it to work all the time, such as the Door sensor, we may only want it to work at night. The advantage of this is, the power consumption can be reduced, and the unnecessary trigger can also be reduced.
 
 #### 4.3.5.1 Config disable period paramaters
-The sensors that support configuring a disable period include: Door sensor, PIR sensor.
+The sensors that support configuring a disable period include: Door sensor(S1), PIR sensor(S2).
 ```swift
 //set disable period parameters
 func setPIRDisablePeriod()
@@ -1184,7 +1239,7 @@ func setPIRDisablePeriod()
 ```
 
 #### 4.3.5.2 Config temperature and humidity measure parameters and log parameters
-For temperature and humidity sensors, we can set the measurement interval. In addition, we can use the device as a Logger, and we can set the log conditions.
+For temperature and humidity sensors, we can set the measurement interval. In addition, we can use the device as a temperature and humidity Logger, and we can set the log conditions.
 ```swift
 func setTHSensorMeasureParameters()
 {
@@ -1202,7 +1257,6 @@ func setTHSensorMeasureParameters()
         return
     }
 
-    //set trigger adv slot information
     let sensorHTPara = KBCfgSensorHT()
     //enable humidity sensor
     sensorHTPara.setLogEnable(true)
@@ -1231,10 +1285,60 @@ func setTHSensorMeasureParameters()
 ```
 
 
-#### 4.3.5.3 Read sensor history records
-For some beacon devices, it can logging the trigger events to memory flash. Such as Door open and close events, PIR detection events, temperature and humidity recording. For these devices, we can read these saved histories record through the APP or Gateway.
 
-1. Read history summary information.  
+##### 4.3.5.2.1 Config light sensor measure parameters and log parameters
+For device has light sensors, we can set the measurement interval. The shorter the measurement interval, the greater the power consumption. In addition, we can use the device as a light level Logger, and we can set the log conditions.
+```swift
+func setLightSensorMeasureParameters()
+{
+  if (!self.beacon!.isConnected())
+  {
+      print("Device is not connected")
+      return
+  }
+
+  //check device capability
+  if let oldCommonCfg = self.beacon!.getCommonCfg(),
+     oldCommonCfg.isSupportLightSensor()
+  {
+      print("Device does not supported light sensor")
+      return
+  }
+
+  let sensorPara = KBCfgSensorLight()
+  //enable light logger
+  sensorPara.setLogEnable(true)
+
+  //unit is second, set measure interval
+  sensorPara.setMeasureInterval(3)
+
+  //if abs(current light level - last saved light level) > 30, then save new record
+  sensorPara.setLogChangeThreshold(30)
+
+  //enable sensor advertisement
+  self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
+      if (result)
+      {
+          print("update light parameters success")
+      }
+      else
+      {
+          print("update light parameters failed")
+      }
+  }
+}
+```
+
+
+### 4.3.6 Read sensor events history records
+For some beacon devices, it can record trigger events into memory flash. Currently, the following events can be record:
+* Door open and close events
+* PIR detection events
+* temperature and humidity events
+* light events  
+For these devices, we can read these saved histories record through the APP or Gateway.
+
+##### 4.3.6.1 Read events summary information
 With this command, we can read the total number of records and the number of unread records in the device. Next, we can read the specified record. Or read the records that have not been read.  
 
 ```swift
@@ -1290,7 +1394,7 @@ func readCutSensorDataInfo()
 }
 ```
 
-2.  Read sensor history records  
+##### 4.3.6.2 Read sensor events records
   The SDK provides the following three ways to read records.
   * KBSensorReadOption.NewRecord:  read history records and move next. After app reading records, the KBeacon device will move the pointer to the next unreaded record. If the app send read request again, the KBeacon device sends next unread records and move the pointer to next.
 
@@ -1370,10 +1474,50 @@ self.mSensorDataMsg!.readSensorRecord(self.beacon!,
   })
 ```
 
-#### 4.3.6 Send command to device
+##### 4.3.6.3 Read sensor events records example
+Example1: read light events history records.
+```swift
+@IBAction func onReadLightEventHistory(_ sender: Any) {
+        let readLightRecordEvents = KBLightDataMsg()
+        readLightRecordEvents.readSensorRecord(self.beacon!, number: KBLightDataMsg.INVALID_DATA_RECORD_POS, option: KBSensorReadOption.NewRecord, max: 100) { result, obj, error in
+            if (!result)
+            {
+                //read light record info failed
+                NSLog("read light record history failed")
+                return
+            }
+
+            //utc time format
+            let formatter = DateFormatter()
+            formatter.dateFormat = "YYYY-MM-dd HH:mm:ss"
+
+            //foreach records
+            if let dataRsp = obj as? KBReadSensorRsp
+            {
+                for record in dataRsp.readDataRspList
+                {
+                    if let lightRecord = record as? KBLightRecord
+                    {
+                        //utc second to local time
+                        let date = Date(timeIntervalSince1970: Double(lightRecord.utcTime))
+                        let dateString = formatter.string(from: date)
+
+                        NSLog("read light record:, utc:%@, pir:%d, light level:%d", dateString, lightRecord.pirIndication, lightRecord.lightLevel)
+                    }
+                }
+
+                if (dataRsp.readDataNextPos == CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS)
+                {
+                    NSLog("read history complete")
+                }
+            }
+        }
+    }
+```
+### 4.3.7 Send command to device
 After app connect to device success, the app can send command to device.  
 All command message between app and KBeacon are JSON format. Our SDK provide Hash Map to encapsulate these JSON message.
-#### 4.3.6.1 Ring device
+#### 4.3.7.1 Ring device
  For some KBeacon device that has buzzer function. The app can ring device. For ring command, it has 5 parameters:
  * msg: msg type is 'ring'
  * ringTime: unit is ms. The KBeacon will start flash/alert for 'ringTime' millisecond  when receive this command.
@@ -1417,7 +1561,39 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
      })
 }
 ```
-#### 4.3.6.2 Reset configuration to default
+
+#### 4.3.7.2 Power off device
+ The app can use follow command to power off device. For all beacons with buttons, it can support power off operation. After shutting down, you can turn on the device by long pressing the device button.
+ * msg: message type is 'admin'
+
+```swift
+//set parameter to default
+@IBAction func powerOffDevice(_ sender: Any)
+{
+    guard self.beacon!.isConnected() else
+    {
+        print("devie not connected")
+        return
+    }
+
+
+    var paraDicts = [String:Any]()
+    paraDicts["msg"] = "admin"
+    paraDicts["stype"] = "pwroff"
+    self.beacon!.sendCommand(paraDicts, callback: { (result, except) in
+        if (result)
+        {
+            NSLog("send power off command to device success");
+        }
+        else
+        {
+            NSLog("send power off command to device failed");
+        }
+    })
+}
+```
+
+#### 4.3.7.3 Reset configuration to default
  The app can use follow command to reset all configurations to default.
  * msg: message type is 'reset'
 
@@ -1448,7 +1624,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
 }
 ```
 
-#### 4.3.7 Error cause in configurations/command
+### 4.3.8 Error cause in configurations/command
  App may get errors during the configuration. The KBException has follow values.
  * KBErrorCode.CfgReadNull: Device return null parameters
  * KBErrorCode.CfgBusy: device is busy, please make sure last configuration complete

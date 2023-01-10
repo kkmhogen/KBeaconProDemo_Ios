@@ -157,7 +157,9 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             print("support button:\(pCommonCfg.isSupportButton())")
             print("support beep:\(pCommonCfg.isSupportBeep())")
             print("support accleration:\(pCommonCfg.isSupportAccSensor())")
-            print("support humidify:\(pCommonCfg.isSupportHumiditySensor())")
+            print("support humidity:\(pCommonCfg.isSupportHumiditySensor())")
+            print("support pir:\(pCommonCfg.isSupportPIRSensor())")
+            print("support light sensor:\(pCommonCfg.isSupportLightSensor())")
             print("support max Tx power:\(pCommonCfg.getMaxTxPower())")
             print("support min Tx power:\(pCommonCfg.getMinTxPower())")
             
@@ -1133,6 +1135,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
+    //enable pir trigger
     func onEnablePIRTrigger()
     {
         guard self.beacon!.isConnected(),
@@ -1153,11 +1156,11 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         self.beacon!.modifyConfig(obj: pirTrigger) { (result, exception) in
             if (result)
             {
-                print("Enable cutoff trigger success")
+                print("Enable PIR trigger success")
             }
             else
             {
-                print("Enable cutoff trigger failed")
+                print("Enable PIR trigger failed")
             }
         }
     }
@@ -1195,6 +1198,112 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
+    //enable light trigger
+    @IBAction func onEnableLightBelowTrigger(_ sender: Any) {
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportTrigger(KBTriggerType.LightLUXBelow) else
+        {
+            print("device does not support light sensor")
+            return
+        }
+
+        //Save the light below event to memory flash and report it to the APP at the same time
+        let lightTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.LightLUXBelow)
+        lightTrigger.setTriggerAction(KBTriggerAction.Record | KBTriggerAction.ReportToApp)
+        
+        //If the light level < 50, it will trigger an record/report event.
+        lightTrigger.setTriggerPara(50);
+        
+        self.beacon!.modifyConfig(obj: lightTrigger) { (result, exception) in
+            if (result)
+            {
+                print("Enable light trigger success")
+            }
+            else
+            {
+                print("Enable light trigger failed")
+            }
+        }
+    }
+
+    
+    @IBAction func onReadLightEventHistory(_ sender: Any) {
+        let readLightRecordEvents = KBLightDataMsg()
+        readLightRecordEvents.readSensorRecord(self.beacon!, number: KBLightDataMsg.INVALID_DATA_RECORD_POS, option: KBSensorReadOption.NewRecord, max: 100) { result, obj, error in
+            if (!result)
+            {
+                //read light record info failed
+                NSLog("read light record history failed")
+                return
+            }
+            
+            //utc time format
+            let formatter = DateFormatter()
+            formatter.dateFormat = "YYYY-MM-dd HH:mm:ss"
+            
+            //foreach records
+            if let dataRsp = obj as? KBReadSensorRsp
+            {
+                for record in dataRsp.readDataRspList
+                {
+                    if let lightRecord = record as? KBLightRecord
+                    {
+                        //utc second to local time
+                        let date = Date(timeIntervalSince1970: Double(lightRecord.utcTime))
+                        let dateString = formatter.string(from: date)
+                        
+                        NSLog("read light record:, utc:%@, pir:%d, light level:%d", dateString, lightRecord.pirIndication, lightRecord.lightLevel)
+                    }
+                }
+                
+                if (dataRsp.readDataNextPos == CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS)
+                {
+                    NSLog("read history complete")
+                }
+            }
+        }
+    }
+                              
+    func setLightSensorMeasureParameters()
+    {
+        if (!self.beacon!.isConnected())
+        {
+            print("Device is not connected")
+            return
+        }
+
+        //check device capability
+        if let oldCommonCfg = self.beacon!.getCommonCfg(),
+           oldCommonCfg.isSupportLightSensor()
+        {
+            print("Device does not supported light sensor")
+            return
+        }
+
+        let sensorPara = KBCfgSensorLight()
+        //enable light logger
+        sensorPara.setLogEnable(true)
+
+        //unit is second, set measure interval
+        sensorPara.setMeasureInterval(3)
+
+        //if abs(current light level - last saved light level) > 30, then save new record
+        sensorPara.setLogChangeThreshold(30)
+
+        //enable sensor advertisement
+        self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
+            if (result)
+            {
+                print("update light parameters success")
+            }
+            else
+            {
+                print("update light parameters failed")
+            }
+        }
+    }
+
     
     @IBAction func onRingDevice(_ sender: Any)
     {

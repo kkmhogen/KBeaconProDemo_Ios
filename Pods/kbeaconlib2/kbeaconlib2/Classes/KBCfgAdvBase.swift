@@ -11,7 +11,7 @@ import Foundation
 {
     @objc public static let DEFAULT_ADV_PERIOD = Float(1000.0)
     @objc public static let MIN_ADV_PERIOD = Float(100.0)
-    @objc public static let MAX_ADV_PERIOD = Float(20000.0)
+    @objc public static let MAX_ADV_PERIOD = Float(40000.0)
 
     @objc public static let MAX_SLOT_INDEX = 4
     @objc public static let INVALID_SLOT_INDEX = 0xff

@@ -37,12 +37,15 @@ internal class KBCfgHandler {
         KBTriggerType.HTHumidityAbove: KBCfgTrigger.self,
         KBTriggerType.HTHumidityBelow: KBCfgTrigger.self,
         KBTriggerType.HTHumidityPeriodically: KBCfgTrigger.self,
-        KBTriggerType.PIRBodyInfraredDetected: KBCfgTrigger.self
+        KBTriggerType.PIRBodyInfraredDetected: KBCfgTrigger.self,
+        KBTriggerType.LightLUXAbove: KBCfgTrigger.self,
+        KBTriggerType.LightLUXBelow: KBCfgTrigger.self
     ]
     static var kbCfgSensorObjects :Dictionary<Int, KBCfgSensorBase.Type> = [
         KBSensorType.HTHumidity: KBCfgSensorHT.self,
         KBSensorType.Cutoff: KBCfgSensorBase.self,
         KBSensorType.PIR: KBCfgSensorBase.self,
+        KBSensorType.Light: KBCfgSensorLight.self,
     ]
     
     internal init()

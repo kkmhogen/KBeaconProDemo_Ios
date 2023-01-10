@@ -33,5 +33,8 @@ import Foundation
 
     //PIR indication
     @objc public static let PIRBodyInfraredDetected = 13
-
+    
+    //Light lux level
+    @objc public static let LightLUXAbove = 14   //light lux above
+    @objc public static let LightLUXBelow = 15   //light lux below
 }

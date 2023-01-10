@@ -1304,8 +1304,15 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     
     private func handleBeaconIndData(data:Data, index:Int)
     {
-        let dataType = Int(data[index])
-        if let sensorInstance = mNotifyData2ClassMap[dataType]
+        let dataType = (Int(data[index]) & 0x3F)
+        
+        if let sensorAllInstance = mNotifyData2ClassMap[KBTriggerType.TriggerNull]
+        {
+            let range = (index+1)..<data.count
+            let data = data.subdata(in: range)
+            sensorAllInstance.onNotifyDataReceived(self, evt:dataType, data:data)
+        }
+        else if let sensorInstance = mNotifyData2ClassMap[dataType]
         {
             let range = (index+1)..<data.count
             let data = data.subdata(in: range)

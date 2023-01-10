@@ -20,7 +20,7 @@ import Foundation
     @objc public static let MIN_REFERENCE_POWER = -100
     @objc public static let MAX_REFERENCE_POWER = 10
     @objc public static let MIN_ADV_PERIOD_MS = Float(100.0)
-    @objc public static let MAX_ADV_PERIOD_MS = Float(20000.0)
+    @objc public static let MAX_ADV_PERIOD_MS = Float(40000.0)
 
     @objc public static let JSON_FIELD_MAX_SLOT_NUM = "maxSlot"
     @objc public static let  JSON_FIELD_BEACON_MODEL = "model"
@@ -31,17 +31,21 @@ import Foundation
     @objc public static let JSON_FIELD_MAX_TRIGGER_NUM = "maxTg"
     @objc public static let  JSON_FIELD_BASIC_CAPABILITY = "bCap"
     @objc public static let JSON_FIELD_TRIG_CAPABILITY = "trCap"
+    @objc public static let JSON_FIELD_BATTERY_PERCENT = "btPt"
 
     //configurable parameters
     @objc public static let  JSON_FIELD_DEV_NAME = "name"
     @objc public static let  JSON_FIELD_PWD = "pwd"
     @objc public static let  JSON_FIELD_MEA_PWR = "meaPwr"
     @objc public static let  JSON_FIELD_AUTO_POWER_ON = "atPwr"
+    @objc public static let  JSON_FIELD_MAX_ADV_PERIOD = "maxPrd";
 
     //basic capiblity
     private var maxSlot: Int?
     
     private var maxTrigger: Int?
+    
+    private var maxAdvPeriod: Float?
     
     private var basicCapability: Int?
 
@@ -50,6 +54,8 @@ import Foundation
     private var maxTxPower: Int?
 
     private var minTxPower: Int?
+    
+    private var batteryPercent: Int?
     
     private var  model: String?
 
@@ -69,6 +75,11 @@ import Foundation
     @objc public func getMaxSlot()->Int
     {
         return maxSlot ?? 5
+    }
+    
+    @objc public func getMaxAdvPeriod()->Float
+    {
+        return maxAdvPeriod ?? 10000.0
     }
     
     @objc public func getMaxTrigger()->Int
@@ -228,6 +239,16 @@ import Foundation
         }
     }
     
+    //is support light sensor
+    @objc public func isSupportLightSensor()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x40) > 0
+        }else{
+            return false
+        }
+    }
+    
     //is support button
     @objc public func isSupportTrigger(_ triggerType:Int)->Bool
     {
@@ -362,6 +383,11 @@ import Foundation
             nUpdatePara += 1
         }
         
+        if let tempValue = para[KBCfgCommon.JSON_FIELD_MAX_ADV_PERIOD] as? Float {
+            maxAdvPeriod = tempValue
+            nUpdatePara += 1
+        }
+        
         if let tempValue = para[KBCfgCommon.JSON_FIELD_BASIC_CAPABILITY] as? Int {
             basicCapability = tempValue
             nUpdatePara += 1
@@ -392,6 +418,12 @@ import Foundation
         //auto power on
         if let tempValue = para[KBCfgCommon.JSON_FIELD_AUTO_POWER_ON] as? Int {
             alwaysPowerOn = (tempValue > 0)
+            nUpdatePara += 1
+        }
+        
+        //battery percent
+        if let tempValue = para[KBCfgCommon.JSON_FIELD_BATTERY_PERCENT] as? Int {
+            batteryPercent = tempValue
             nUpdatePara += 1
         }
 

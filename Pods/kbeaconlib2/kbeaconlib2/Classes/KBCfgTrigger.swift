@@ -39,6 +39,10 @@ import Foundation
     @objc public static let KBTriggerConditionPIRRepeatRptInterval = 30;
     @objc public static let MAX_PIR_REPORT_INTERVAL_VALUE = 3600;
     @objc public static let MIN_PIR_REPORT_INTERVAL_VALUE = 5;
+    
+    //Light level
+    @objc public static let MAX_LIGHT_LEVEL_VALUE = 65535
+    @objc public static let MIN_LIGHT_LEVEL_VALUE = 1
 
     @objc public static let JSON_FIELD_TRIGGER_OBJ_LIST = "trObj"
     @objc public static let JSON_FIELD_TRIGGER_INDEX = "trIdx";

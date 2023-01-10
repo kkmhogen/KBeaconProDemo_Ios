@@ -289,23 +289,43 @@ class RootViewController: UIViewController ,UITextFieldDelegate, UITableViewData
                 if let sensorAdv = advPacket as? KBAdvPacketSensor
                 {
                     print("-----Sensor----")
-                    print("batt:\(sensorAdv.batteryLevel)")
                     
+                    //check if has battery level
+                    if (sensorAdv.batteryLevel != KBCfgBase.INVALID_UINT16)
+                    {
+                        print("batt:\(sensorAdv.batteryLevel)")
+                    }
+                    
+                    //check if has temperature
                     if (sensorAdv.temperature != KBCfgBase.INVALID_FLOAT)
                     {
                         print("temp:\(sensorAdv.temperature)")
                     }
+                    
+                    //check if has humidity
                     if (sensorAdv.humidity != KBCfgBase.INVALID_FLOAT)
                     {
                         print("humidity:\(sensorAdv.humidity)")
                     }
                     
-                    //acc sensor
+                    //check if has acc sensor
                     if let axisValue = sensorAdv.accSensor
                     {
                         print("  xAis:\(axisValue.xAis)")
                         print("  yAis:\(axisValue.yAis)")
                         print("  zAis:\(axisValue.zAis)")
+                    }
+                    
+                    //check if has pir indication
+                    if (KBCfgBase.INVALID_UINT8 != sensorAdv.pirIndication)
+                    {
+                        print("PIR indication:\(sensorAdv.pirIndication)")
+                    }
+        
+                    //check if has light level
+                    if (KBCfgBase.INVALID_UINT16 != sensorAdv.luxLevel)
+                    {
+                        print("Light level:\(sensorAdv.luxLevel)")
                     }
                 }
                 

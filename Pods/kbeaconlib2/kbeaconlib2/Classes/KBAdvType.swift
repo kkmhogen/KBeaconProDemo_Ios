@@ -24,7 +24,7 @@ import Foundation
     @objc public static let EddyTLMString = "TLM"
     @objc public static let EddyURLString = "URL"
     @objc public static let SystemString  = "System"
-    @objc public static let AdvNullString  = "Null"
+    @objc public static let AdvNullString  = "Disabled"
     
     @objc public static func getAdvTypeString(_ advType:Int)->String
     {

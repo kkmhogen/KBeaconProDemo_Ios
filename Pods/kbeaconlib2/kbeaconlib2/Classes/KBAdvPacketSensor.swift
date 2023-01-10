@@ -17,6 +17,7 @@ import Foundation
     public static let SENSOR_MASK_ACC_AIX = 8
     public static let SENSOR_MASK_CUTOFF = 0x10
     public static let SENSOR_MASK_PIR = 0x20
+    public static let SENSOR_MASK_LUX = 0x40
 
     //acceleration sensor data
     @objc public var accSensor: KBAccSensorValue?
@@ -31,7 +32,7 @@ import Foundation
     @objc public var version: UInt = 0
 
     //battery level, uint is mV
-    @objc public var batteryLevel: Int16 = 0
+    @objc public var batteryLevel: UInt16 = KBCfgBase.INVALID_UINT16
     
     //adv packet version
     @objc public var cutoff: UInt8 = KBCfgBase.INVALID_UINT8
@@ -39,6 +40,9 @@ import Foundation
     //PIR indication
     @objc public var pirIndication: UInt8 = KBCfgBase.INVALID_UINT8
     
+    //Light level
+    @objc public var luxLevel: UInt16 = KBCfgBase.INVALID_UINT16
+
     internal required init() {
         
         super.init()
@@ -73,7 +77,7 @@ import Foundation
                 return false;
             }
             
-            batteryLevel = Int16(Int16(data[nSrvIndex]) << 8) + Int16(data[nSrvIndex + 1]);
+            batteryLevel = UInt16(Int16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex + 1]);
             nSrvIndex += 2
         }
         
@@ -147,6 +151,18 @@ import Foundation
             
             pirIndication = data[nSrvIndex]
             nSrvIndex += 1
+        }
+        
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_LUX) > 0)
+        {
+            if (nSrvIndex > data.count - 2)
+            {
+                return false;
+            }
+            
+            luxLevel = (UInt16(data[nSrvIndex]) << 8)
+            luxLevel += UInt16(data[nSrvIndex+1])
+            nSrvIndex += 2
         }
         
         return true;
