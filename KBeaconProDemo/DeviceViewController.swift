@@ -1306,26 +1306,27 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
-    func setPIRDisablePeriod()
+    //set door sensor sleep in night to reduce power comsumption
+    func setCutoffSleepPeriod()
     {
         guard self.beacon!.isConnected(),
             let commCfg = self.beacon!.getCommonCfg(),
-              commCfg.isSupportTrigger(KBTriggerType.PIRBodyInfraredDetected) else
+              commCfg.isSupportCutoffSensor() else
         {
             print("device does not support cut off trigger")
             return
         }
 
         let sensorPara = KBCfgSensorBase()
-        sensorPara.setSensorType(KBSensorType.PIR)
+        sensorPara.setSensorType(KBSensorType.Cutoff)
 
         //set disable period from 8:00AM to 20:00 PM
-        let disablePeriod = KBTimeRange()
-        disablePeriod.localStartHour = 8
-        disablePeriod.localStartMinute = 0
-        disablePeriod.localEndHour = 20
-        disablePeriod.localEndMinute = 0
-        sensorPara.setDisablePeriod0(disablePeriod)
+        let sleepPeriod = KBTimeRange()
+        sleepPeriod.localStartHour = 20
+        sleepPeriod.localStartMinute = 0
+        sleepPeriod.localEndHour = 8
+        sleepPeriod.localEndMinute = 0
+        sensorPara.setDisablePeriod0(sleepPeriod)
 
         self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
             if (result)

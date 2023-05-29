@@ -1198,47 +1198,9 @@ func onEnablePIRTrigger()
 
 ### 4.3.5 sensor parameters
 If the device has sensors, such as temperature and humidity sensors, we may need to setting the sensor parameters, such as the measurement interval.
-For some sensors, we may not want it to work all the time, such as the Door sensor, we may only want it to work at night. The advantage of this is, the power consumption can be reduced, and the unnecessary trigger can also be reduced.
+There are also some beacons, which can save sensor events to non-volatile memory, so that the app or gateway can obtain these historical records. Therefore, we may need to configure the conditions for recording events, such as recording an event when the temperature changes by more than 3 degrees.
 
-#### 4.3.5.1 Config disable period paramaters
-The sensors that support configuring a disable period include: Door sensor(S1), PIR sensor(S2).
-```swift
-//set disable period parameters
-func setPIRDisablePeriod()
-{
-   guard self.beacon!.isConnected(),
-       let commCfg = self.beacon!.getCommonCfg(),
-         commCfg.isSupportTrigger(KBTriggerType.PIRBodyInfraredDetected) else
-   {
-       print("device does not support cut off trigger")
-       return
-   }
-
-   let sensorPara = KBCfgSensorBase()
-   sensorPara.setSensorType(KBSensorType.PIR)
-
-   //set disable period from 8:00AM to 20:00 PM
-   let disablePeriod = KBTimeRange()
-   disablePeriod.localStartHour = 8
-   disablePeriod.localStartMinute = 0
-   disablePeriod.localEndHour = 20
-   disablePeriod.localEndMinute = 0
-   sensorPara.setDisablePeriod0(disablePeriod)
-
-   self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
-       if (result)
-       {
-           print("Enable disable period success")
-       }
-       else
-       {
-           print("Enable disable period failed")
-       }
-   }
-}
-```
-
-#### 4.3.5.2 Config temperature and humidity measure parameters and log parameters
+#### 4.3.5.1 Config temperature and humidity sensor parameters
 For temperature and humidity sensors, we can set the measurement interval. In addition, we can use the device as a temperature and humidity Logger, and we can set the log conditions.
 ```swift
 func setTHSensorMeasureParameters()
@@ -1258,6 +1220,7 @@ func setTHSensorMeasureParameters()
     }
 
     let sensorHTPara = KBCfgSensorHT()
+
     //enable humidity sensor
     sensorHTPara.setLogEnable(true)
 
@@ -1283,9 +1246,7 @@ func setTHSensorMeasureParameters()
 }
 ```
 
-
-
-##### 4.3.5.2.1 Config light sensor measure parameters and log parameters
+##### 4.3.5.2 Config light sensor parameters
 For device has light sensors, we can set the measurement interval. The shorter the measurement interval, the greater the power consumption. In addition, we can use the device as a light level Logger, and we can set the log conditions.
 ```swift
 func setLightSensorMeasureParameters()
@@ -1327,7 +1288,46 @@ func setLightSensorMeasureParameters()
 }
 ```
 
-##### 4.3.5.2.2 Other sensor parameters configruation
+#### 4.3.5.3 Config sleep period parameters
+For some sensors, we may not want it to work all the time, such as the Door sensor, we may only want it to work at night. The advantage of this is, the power consumption can be reduced, and the unnecessary trigger can also be reduced.
+The sensors that support configuring sleep period include: Door sensor(S1), PIR sensor(S2).
+```swift
+//set disable period parameters
+func setCutoffSleepPeriod()
+{
+    guard self.beacon!.isConnected(),
+        let commCfg = self.beacon!.getCommonCfg(),
+          commCfg.isSupportCutoffSensor() else
+    {
+        print("device does not support cut off trigger")
+        return
+    }
+
+    let sensorPara = KBCfgSensorBase()
+    sensorPara.setSensorType(KBSensorType.Cutoff)
+
+    //set disable period from 8:00AM to 20:00 PM
+    let disablePeriod = KBTimeRange()
+    disablePeriod.localStartHour = 20
+    disablePeriod.localStartMinute = 0
+    disablePeriod.localEndHour = 8
+    disablePeriod.localEndMinute = 0
+    sensorPara.setDisablePeriod0(disablePeriod)
+
+    self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
+        if (result)
+        {
+            print("Enable disable period success")
+        }
+        else
+        {
+            print("Enable disable period failed")
+        }
+    }
+}
+```
+
+##### 4.3.5.4 Other sensor parameters configruation
 Other sensors, such as PIR sensors and VOC sensors, have a similar method for setting parameters, and will not be given example here.
 
 ```swift
@@ -1793,6 +1793,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
 https://github.com/NordicSemiconductor/IOS-Pods-DFU-Library
 
 ## 6. Change log
+* 2023.5.20 v1.32 Add VOC and CO2 sensor
 * 2022.6.1 v1.31 Add PIR sensor
 * 2021.6.20 v1.30 Support slot adv
 * 2021.1.30 v1.24 Support alarm trigger action
