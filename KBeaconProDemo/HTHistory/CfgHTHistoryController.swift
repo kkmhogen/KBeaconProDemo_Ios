@@ -19,14 +19,12 @@ public class HTSensorTableViewCell : UITableViewCell
     @IBOutlet weak var labelHumidity: UILabel!
 }
 
-class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, UITableViewDelegate
+class CfgHTHistoryController : UIViewController,UITableViewDataSource, UITableViewDelegate
 {
     @IBOutlet weak var mTableView: UITableView!
     
     public var beacon : KBeacon?
-    
-    private var mSensorDataMsg : KBHumidityDataMsg?
-    
+        
     private var mTimerLoading : Timer?
     
     private var mLoadByHeadRefresh: Bool = false
@@ -51,9 +49,7 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
 
         self.mTableView.delegate = self;
         self.mTableView.dataSource = self;
-        
-        self.mSensorDataMsg = KBHumidityDataMsg()
-        
+                
         mTableView.delegate = self
         mTableView.dataSource = self
         mTableView.separatorInset = UIEdgeInsets.zero;
@@ -86,7 +82,7 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
     func startReadFirstPage()
     {
         //set status to loading
-        self.mSensorDataMsg!.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+        self.beacon!.readSensorDataInfo(KBSensorType.HTHumidity, callback: { (result, infoRsp, exception) in
             if (!result)
             {
                 self.mTimerLoading?.invalidate()
@@ -96,9 +92,9 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
             }
 
             self.mHasReadDataInfo = true
-            if let infRsp = obj as? ReadSensorInfoRsp
+            if let htInfoPara = infoRsp
             {
-                if (infRsp.unreadRecordNumber == 0)
+                if (htInfoPara.unreadRecordNumber == 0)
                 {
                     self.showNoMoreDataMessage(0)
                 }
@@ -111,7 +107,7 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
         
         self.mTimerLoading?.invalidate()
         self.mTimerLoading = Timer.scheduledTimer(
-            withTimeInterval: CfgSensorDataHistoryController.HISTORY_LOAD_TIMEOUT_SEC,
+            withTimeInterval: CfgHTHistoryController.HISTORY_LOAD_TIMEOUT_SEC,
             repeats: false,
             block: { (timer) in
             self.showMsgDlog(title: "failed", message: getString("LOAD_HISTORY_DATA_TIMEOUT"))
@@ -126,7 +122,7 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
         
         for cutRecord in rspList
         {
-            if let dataRsp = cutRecord as? KBHumidityRecord
+            if let dataRsp = cutRecord as? KBRecordHumidity
             {
                 let htRecord = CfgHTHistoryRecord()
                 htRecord.record = dataRsp
@@ -139,11 +135,11 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
 
     func startReadNextRecordPage()
     {
-        self.mSensorDataMsg!.readSensorRecord(self.beacon!,
-                                              number: CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS,
-                      option: KBSensorReadOption.NewRecord,
-                      max: 30,
-                      callback: { (result, obj, exception) in
+        self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
+                                      number: KBRecordDataRsp.INVALID_DATA_RECORD_POS,
+                                      option: KBSensorReadOption.NewRecord,
+                                      max: 100,
+                                      callback: { (result, recordRsp, exception) in
                         if (!result)
                         {
                             self.mTimerLoading?.invalidate()
@@ -151,13 +147,13 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
                             return
                         }
 
-                        if let dataRsp = obj as? KBReadSensorRsp
+                        if let dataRsp = recordRsp
                         {
                             //add data
                             let htRecordList = self.parseReadKBRecordResponse(dataRsp.readDataRspList)
                             self.mRecordMgr!.appendRecords(htRecordList)
 
-                            if (dataRsp.readDataNextPos == CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS)
+                            if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
                             {
                                 self.showNoMoreDataMessage(dataRsp.readDataRspList.count)
                             }
@@ -254,7 +250,8 @@ class CfgSensorDataHistoryController : UIViewController,UITableViewDataSource, U
         
         //ok action
         let okAction = UIAlertAction(title: getString("DLG_OK"), style: .default) { (action) in
-            self.mSensorDataMsg?.clearSensorRecord(self.beacon!, callback: { (result, obj, except) in
+            self.beacon!.clearSensorRecord(KBSensorType.HTHumidity,
+                                          callback: { (result, obj, except) in
                 if result
                 {
                     self.mRecordMgr?.clearHistoryRecord()

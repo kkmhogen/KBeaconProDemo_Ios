@@ -88,74 +88,93 @@ internal class KBAdvPacketHandler : NSObject
             return false;
         }
         
-        guard let kbServiceData = advData["kCBAdvDataServiceData"] as? Dictionary<CBUUID, NSData> else {
-            return false
-        }
         var advType = KBAdvType.AdvNull
         var advDataIndex = 0
         
-        
-        //check if include eddystone data
-        if let eddyAdvData = kbServiceData[KBUtility.PARCE_UUID_EDDYSTONE] as Data?,
-           eddyAdvData.count > 1
+        //get manufacture
+        if let kkmManufactureData = advData["kCBAdvDataManufacturerData"] as? Data,
+           kkmManufactureData.count > 3,
+           (kkmManufactureData[0] == 0x53 && kkmManufactureData[1] == 0xA)
         {
-            //eddytone url adv
-            if (eddyAdvData[0] == 0x10
-                    && eddyAdvData.count >= KBAdvPacketEddyURL.MIN_EDDYSTONE_ADV_LEN)
-            {
-                advType = KBAdvType.EddyURL;
-            }
-            //eddystone uid adv
-            else if (eddyAdvData[0] == 0x0
-                        && eddyAdvData.count >= KBAdvPacketEddyUID.MIN_EDDY_UID_ADV_LEN)
-            {
-                advType = KBAdvType.EddyUID;
-            }
-            //eddystone tlm adv
-            else if (eddyAdvData[0] == 0x20
-                        && eddyAdvData.count >= KBAdvPacketEddyTLM.MIN_EDDY_TLM_ADV_LEN)
-            {
-                advType = KBAdvType.EddyTLM;
-            }
-            else if (eddyAdvData[0] == 0x21
-                        && eddyAdvData.count >= KBAdvPacketSensor.MIN_SENSOR_ADV_LEN)
+            if (kkmManufactureData[2] == 0x21
+                        && kkmManufactureData.count >= KBAdvPacketSensor.MIN_SENSOR_ADV_LEN)
             {
                 advType = KBAdvType.Sensor;
             }
-            else if (eddyAdvData[0] == 0x22
-                        && eddyAdvData.count >= KBAdvPacketSystem.MIN_ADV_PACKET_LEN)
+            else if (kkmManufactureData[2] == 0x22
+                        && kkmManufactureData.count >= KBAdvPacketSystem.MIN_ADV_PACKET_LEN)
             {
                 advType = KBAdvType.System;
             }
-            else
-            {
-                advType = KBAdvType.AdvNull;
-            }
-            
-            advDataIndex = 1
-            pAdvData = eddyAdvData
+            advDataIndex = 3
+            pAdvData = kkmManufactureData
         }
         
-        if let kbResponseData = kbServiceData[KBUtility.PARCE_UUID_KB_EXT_DATA] as Data?
-           , kbResponseData.count >= 6
+        //get google services data
+        if let kbServiceData = advData["kCBAdvDataServiceData"] as? Dictionary<CBUUID, NSData>
         {
-            var nBattPercent = kbResponseData[0];
-            if (nBattPercent > 100)
+            //check if include eddystone data
+            if let eddyAdvData = kbServiceData[KBUtility.PARCE_UUID_EDDYSTONE] as Data?,
+               eddyAdvData.count > 1
             {
-                nBattPercent = 100;
-            }
-            rawBatteryPercent = nBattPercent
-            
-            
-            //beacon extend data
-            let beaconType = Int(kbResponseData[1])
-            if ((beaconType & 0x4) > 0
-                    && advType == KBAdvType.AdvNull)
-            {
-                //find ibeacon instance
-                advType = KBAdvType.IBeacon;
-                pAdvData = kbResponseData
+                //eddytone url adv
+                if (eddyAdvData[0] == 0x10
+                        && eddyAdvData.count >= KBAdvPacketEddyURL.MIN_EDDYSTONE_ADV_LEN)
+                {
+                    advType = KBAdvType.EddyURL;
+                }
+                //eddystone uid adv
+                else if (eddyAdvData[0] == 0x0
+                            && eddyAdvData.count >= KBAdvPacketEddyUID.MIN_EDDY_UID_ADV_LEN)
+                {
+                    advType = KBAdvType.EddyUID;
+                }
+                //eddystone tlm adv
+                else if (eddyAdvData[0] == 0x20
+                            && eddyAdvData.count >= KBAdvPacketEddyTLM.MIN_EDDY_TLM_ADV_LEN)
+                {
+                    advType = KBAdvType.EddyTLM;
+                }
+                else if (eddyAdvData[0] == 0x21
+                            && eddyAdvData.count >= KBAdvPacketSensor.MIN_SENSOR_ADV_LEN)
+                {
+                    advType = KBAdvType.Sensor;
+                }
+                else if (eddyAdvData[0] == 0x22
+                            && eddyAdvData.count >= KBAdvPacketSystem.MIN_ADV_PACKET_LEN)
+                {
+                    advType = KBAdvType.System;
+                }
+                else
+                {
+                    advType = KBAdvType.AdvNull;
+                }
+                
                 advDataIndex = 1
+                pAdvData = eddyAdvData
+            }
+            
+            if let kbResponseData = kbServiceData[KBUtility.PARCE_UUID_KB_EXT_DATA] as Data?
+               , kbResponseData.count >= 6
+            {
+                var nBattPercent = kbResponseData[0];
+                if (nBattPercent > 100)
+                {
+                    nBattPercent = 100;
+                }
+                rawBatteryPercent = nBattPercent
+                
+                
+                //beacon extend data
+                let beaconType = Int(kbResponseData[1])
+                if ((beaconType & 0x4) > 0
+                        && advType == KBAdvType.AdvNull)
+                {
+                    //find ibeacon instance
+                    advType = KBAdvType.IBeacon;
+                    pAdvData = kbResponseData
+                    advDataIndex = 1
+                }
             }
         }
         

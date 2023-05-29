@@ -122,6 +122,31 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
         return true;
     }
     
+    //scanning beacon
+    @objc @discardableResult public func startScanningAllDevice()->Bool
+    {
+        //check if ble function enable
+        if (self.centralBLEState == BLECentralMgrState.Unauthorized
+                || self.centralBLEState == BLECentralMgrState.PowerOff
+                || self.centralBLEState == BLECentralMgrState.Unknown)
+        {
+            return false
+        }
+        
+        //stop privous scan
+        cbBeaconMgr.stopScan()
+        cbBeaconMgr.delegate = self
+        
+        //scan option
+        let scanOption = [CBCentralManagerScanOptionAllowDuplicatesKey:NSNumber(true)]
+        
+        //set scan filter
+        cbBeaconMgr.scanForPeripherals(withServices: nil, options: scanOption)
+        NSLog("start central ble device scanning");
+        
+        return true;
+    }
+    
     //check if is scanning
     @objc public var isScanning:Bool{
         get{

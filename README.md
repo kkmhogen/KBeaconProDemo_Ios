@@ -39,7 +39,7 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.1.1'
+pod 'kbeaconlib2','1.1.2'
 ```
 This library is also open source, please refer to this link.  
 [kbeaconlib](https://github.com/kkmhogen/kbeaconlib2)  
@@ -1028,7 +1028,7 @@ The app can configure KBeacon to start broadcasting after detecting an abnormali
         let commCfg = self.beacon!.getCommonCfg(),
        commCfg.isSupportHumiditySensor() else
     {
-        print("not allowed to read history log")
+        print("not allowed to set trigger")
         return
     }
 
@@ -1270,7 +1270,6 @@ func setTHSensorMeasureParameters()
     //unit is 0.1 Celsius, if abs(current temperature - last saved temperature) > 0.5, then save new record
     sensorHTPara.setTemperatureChangeThreshold(5)
 
-    //enable sensor advertisement
     self.beacon!.modifyConfig(obj: sensorHTPara) { (result, exception) in
         if (result)
         {
@@ -1315,7 +1314,6 @@ func setLightSensorMeasureParameters()
   //if abs(current light level - last saved light level) > 30, then save new record
   sensorPara.setLogChangeThreshold(30)
 
-  //enable sensor advertisement
   self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
       if (result)
       {
@@ -1329,6 +1327,37 @@ func setLightSensorMeasureParameters()
 }
 ```
 
+##### 4.3.5.2.2 Other sensor parameters configruation
+Other sensors, such as PIR sensors and VOC sensors, have a similar method for setting parameters, and will not be given example here.
+
+```swift
+func setPIRSensorParameters()
+{
+    let sensorPara = KBCfgSensorPIR()
+
+    //enable logger
+    sensorPara.setLogEnable(true)
+
+    //unit is second, set measure interval
+    sensorPara.setMeasureInterval(2)
+
+    //set backoff time to 30 seconds
+    //After the beacon detects and log a PIR event, if a new PIR is detected in the next 30 seconds,
+    //the event will be ignored.
+    sensorPara.setLogBackoffTime(30)
+
+    self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
+        if (result)
+        {
+            print("update pir parameters success")
+        }
+        else
+        {
+            print("update pir parameters failed")
+        }
+    }
+}
+```
 
 ### 4.3.6 Read sensor events history records
 For some beacon devices, it can record trigger events into memory flash. Currently, the following events can be record:
@@ -1345,8 +1374,7 @@ With this command, we can read the total number of records and the number of unr
 //read temperature and humidity history record info
 func readHTSensorDataInfo()
 {
-    let readHtRecordInfo = KBHumidityDataMsg()
-    readHtRecordInfo.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+    beacon!.readSensorDataInfo(KBSensorType.HTHumidity, callback: { (result, obj, exception) in
         if (!result)
         {
             //read ht record info failed
@@ -1354,7 +1382,7 @@ func readHTSensorDataInfo()
             return
         }
 
-        if let infRsp = obj as? ReadSensorInfoRsp
+        if let infRsp = obj
         {
             if (infRsp.unreadRecordNumber == 0)
             {
@@ -1362,7 +1390,7 @@ func readHTSensorDataInfo()
             }
             else
             {
-                print("there is \(infRsp.unreadRecordNumber) ht record in device")
+                print("there is \(infRsp.unreadRecordNumber) temperature record in device")
             }
         }
     })
@@ -1371,15 +1399,14 @@ func readHTSensorDataInfo()
 //read cutoff history info example
 func readCutSensorDataInfo()
 {
-    let readCutoffRecordInfo = KBCutoffDataMsg()
-    readCutoffRecordInfo.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+    beacon!.readSensorDataInfo(KBSensorType.Cutoff, callback: { (result, obj, exception) in
         if (!result)
         {
             print("read record info failed")
             return
         }
 
-        if let infRsp = obj as? ReadSensorInfoRsp
+        if let infRsp = obj
         {
             if (infRsp.unreadRecordNumber == 0)
             {
@@ -1387,7 +1414,7 @@ func readCutSensorDataInfo()
             }
             else
             {
-                print("there is \(infRsp.unreadRecordNumber) cut off record in device")
+                print("there are \(infRsp.unreadRecordNumber) cut off record in device")
             }
         }
     })
@@ -1404,115 +1431,181 @@ func readCutSensorDataInfo()
 
    Example1: The app read the temperature and humidity records. Each time the records was read, the pointer will move to next.
 ```swift
-self.mSensorDataMsg!.readSensorRecord(self.beacon!,
-                                          number: CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS,
-                  option: KBSensorReadOption.NewRecord,
-                  max: 30,
-                  callback: { (result, obj, exception) in
-      if (!result)
-      {
-          self.mTimerLoading?.invalidate()
-          self.showMsgDlog(title: "failed", message: getString("LOAD_HISTORY_DATA_FAILED"))
-          return
-      }
+func readTempHistoryRecordExample()
+{
+    self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
+                                  number: KBRecordDataRsp.INVALID_DATA_RECORD_POS,
+                                  option: KBSensorReadOption.NewRecord,
+                                  max: 50,
+                                  callback: { (result, recordRsp, exception) in
+        if (!result)
+        {
+            print("read history record failed:%d", exception!.errorCode)
+            return
+        }
 
-      if let dataRsp = obj as? ReadHTSensorDataRsp
-      {
-          //add data
-          self.mRecordMgr!.appendRecords(dataRsp.readDataRspList)
-          ...
-      }
-  })
+        if let dataRsp = recordRsp
+        {
+            for record in dataRsp.readDataRspList
+            {
+                if let tempRecord  = record as? KBRecordHumidity
+                {
+                    let date = Date(timeIntervalSince1970: Double(tempRecord.utcTime))
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "YYYY/MM/dd HH:mm:ss"
+                    let dateString = formatter.string(from: date)
+
+                    print("record time:\(dateString), temp:\(tempRecord.temperature), hum:\(tempRecord.humidity)")
+                }
+            }
+
+            if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
+            {
+                print("read all un-read record complete")
+            }
+            else
+            {
+                print("next un-read record no:\(dataRsp.readDataNextPos)")
+            }
+        }
+      })
+}
 ```  
 
   Example2: The app read the temperature and humidity records without moving pointer.
   The device has 100 records sorted by time, the app want to reading 10 records and start from the No 99. The Kbeacon will send records #99 ~ #90 to app by reverse order.     
   If the app does not known the last record no, then the value can set to INVALID_DATA_RECORD_POS.
 ```swift
-self.mSensorDataMsg!.readSensorRecord(self.beacon!,
-                                          number: CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS,
-                  option: KBSensorReadOption.ReverseOrder,
-                  max: 10,
-                  callback: { (result, obj, exception) in
-      if (!result)
-      {
-          self.mTimerLoading?.invalidate()
-          self.showMsgDlog(title: "failed", message: getString("LOAD_HISTORY_DATA_FAILED"))
-          return
-      }
+var mNextReadReverseIndex = KBRecordDataRsp.INVALID_DATA_RECORD_POS;
+func readTempHistoryRecordReverseExample()
+{
+    self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
+                                  number: mNextReadReverseIndex,
+                                  option: KBSensorReadOption.ReverseOrder,
+                                  max: 10,
+                                  callback: { (result, recordRsp, exception) in
+        if (!result)
+        {
+            print("read history record failed:%d", exception!.errorCode)
+            return
+        }
 
-      if let dataRsp = obj as? ReadHTSensorDataRsp
-      {
-          //add data
-          self.mRecordMgr!.appendRecords(dataRsp.readDataRspList)
-          ...
-      }
-  })
+        if let dataRsp = recordRsp
+        {
+            for record in dataRsp.readDataRspList
+            {
+                if let tempRecord  = record as? KBRecordHumidity
+                {
+                    let date = Date(timeIntervalSince1970: Double(tempRecord.utcTime))
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "YYYY/MM/dd HH:mm:ss"
+                    let dateString = formatter.string(from: date)
+
+                    print("record time:\(dateString), temp:\(tempRecord.temperature), hum:\(tempRecord.humidity)")
+                }
+            }
+
+            if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
+            {
+                print("read all record complete")
+            }
+            else
+            {
+                self.mNextReadReverseIndex = dataRsp.readDataNextPos
+                print("move index to privous no:\(self.mNextReadReverseIndex)")
+            }
+        }
+      })
+}
 ```  
 
  Example3: The app read the temperature and humidity records without moving pointer.
  The device has 100 records sorted by time, the app want to reading 20 records and start from No 10. The Kbeacon will send records #10 ~ #29 to app.  
 ```swift
-self.mSensorDataMsg!.readSensorRecord(self.beacon!,
-                                          number:10,
-                  option: KBSensorReadOption.NormalOrder,
-                  max: 20,
-                  callback: { (result, obj, exception) in
-      if (!result)
-      {
-          self.mTimerLoading?.invalidate()
-          self.showMsgDlog(title: "failed", message: getString("LOAD_HISTORY_DATA_FAILED"))
-          return
-      }
+var mNextReadNormalIndex = UInt32(10);
+public func readTempHistoryRecordNormalExample()
+{
+    self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
+                                  number: mNextReadNormalIndex,
+                                  option: KBSensorReadOption.NormalOrder,
+                                  max: 10,
+                                  callback: { (result, recordRsp, exception) in
+        if (!result)
+        {
+            print("read history record failed:%d", exception!.errorCode)
+            return
+        }
 
-      if let dataRsp = obj as? ReadHTSensorDataRsp
-      {
-          //add data
-          self.mRecordMgr!.appendRecords(dataRsp.readDataRspList)
-          ...
-      }
-  })
+        if let dataRsp = recordRsp
+        {
+            for record in dataRsp.readDataRspList
+            {
+                if let tempRecord  = record as? KBRecordHumidity
+                {
+                    let date = Date(timeIntervalSince1970: Double(tempRecord.utcTime))
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "YYYY/MM/dd HH:mm:ss"
+                    let dateString = formatter.string(from: date)
+
+                    print("record time:\(dateString), temp:\(tempRecord.temperature), hum:\(tempRecord.humidity)")
+                }
+            }
+
+            if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
+            {
+                print("read all record complete")
+            }
+            else
+            {
+                self.mNextReadNormalIndex = dataRsp.readDataNextPos
+                print("move index to next record no:\(self.mNextReadNormalIndex)")
+            }
+        }
+      })
+}
 ```
 
 ##### 4.3.6.3 Read sensor events records example
 Example1: read light events history records.
 ```swift
 @IBAction func onReadLightEventHistory(_ sender: Any) {
-        let readLightRecordEvents = KBLightDataMsg()
-        readLightRecordEvents.readSensorRecord(self.beacon!, number: KBLightDataMsg.INVALID_DATA_RECORD_POS, option: KBSensorReadOption.NewRecord, max: 100) { result, obj, error in
-            if (!result)
-            {
-                //read light record info failed
-                NSLog("read light record history failed")
-                return
-            }
+  beacon!.readSensorRecord(KBSensorType.Light,
+                            number:KBRecordDataRsp.INVALID_DATA_RECORD_POS,
+                            option: KBSensorReadOption.NewRecord,
+                            max: 100) { result, obj, error in
+      if (!result)
+      {
+          //read light record info failed
+          NSLog("read light record history failed")
+          return
+      }
 
-            //utc time format
-            let formatter = DateFormatter()
-            formatter.dateFormat = "YYYY-MM-dd HH:mm:ss"
+      //utc time format
+      let formatter = DateFormatter()
+      formatter.dateFormat = "YYYY-MM-dd HH:mm:ss"
 
-            //foreach records
-            if let dataRsp = obj as? KBReadSensorRsp
-            {
-                for record in dataRsp.readDataRspList
-                {
-                    if let lightRecord = record as? KBLightRecord
-                    {
-                        //utc second to local time
-                        let date = Date(timeIntervalSince1970: Double(lightRecord.utcTime))
-                        let dateString = formatter.string(from: date)
+      //foreach records
+      if let dataRsp = obj
+      {
+          for record in dataRsp.readDataRspList
+          {
+              if let lightRecord = record as? KBRecordLight
+              {
+                  //utc second to local time
+                  let date = Date(timeIntervalSince1970: Double(lightRecord.utcTime))
+                  let dateString = formatter.string(from: date)
 
-                        NSLog("read light record:, utc:%@, pir:%d, light level:%d", dateString, lightRecord.pirIndication, lightRecord.lightLevel)
-                    }
-                }
+                  NSLog("read light record:, utc:%@, type:%d, light level:%d", dateString, lightRecord.type, lightRecord.lightLevel)
+              }
+          }
 
-                if (dataRsp.readDataNextPos == CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS)
-                {
-                    NSLog("read history complete")
-                }
-            }
-        }
-    }
+          if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
+          {
+              NSLog("read history complete")
+          }
+      }
+  }
+}
 ```
 ### 4.3.7 Send command to device
 After app connect to device success, the app can send command to device.  

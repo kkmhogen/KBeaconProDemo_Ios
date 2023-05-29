@@ -10,16 +10,16 @@ import kbeaconlib2
 
 
 public class CfgHTHistoryRecord {
-    @objc public var record : KBHumidityRecord
+    @objc public var record : KBRecordHumidity
     
     @objc public  init()
     {
-        record = KBHumidityRecord()
+        record = KBRecordHumidity()
     }
     
     @objc public required init(dicts dictPara:[String:Any])
     {
-        record = KBHumidityRecord()
+        record = KBRecordHumidity()
                 
         self.fromDictory(dictPara)
     }
@@ -30,7 +30,7 @@ public class CfgHTHistoryRecord {
     
     @objc public init(decode aDecoder: NSCoder)
     {
-        record = KBHumidityRecord()
+        record = KBRecordHumidity()
 
         //decode prope
         record.utcTime       = UInt32(bitPattern: aDecoder.decodeInt32(forKey: "utc"))

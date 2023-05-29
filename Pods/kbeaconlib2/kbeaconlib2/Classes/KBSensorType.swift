@@ -14,4 +14,6 @@ import Foundation
     @objc public static let Cutoff = 0x8
     @objc public static let PIR = 0x10
     @objc public static let Light = 0x20
+    @objc public static let VOC = 0x40
+    @objc public static let CO2 = 0x41
 }

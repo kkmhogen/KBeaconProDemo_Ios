@@ -44,8 +44,10 @@ internal class KBCfgHandler {
     static var kbCfgSensorObjects :Dictionary<Int, KBCfgSensorBase.Type> = [
         KBSensorType.HTHumidity: KBCfgSensorHT.self,
         KBSensorType.Cutoff: KBCfgSensorBase.self,
-        KBSensorType.PIR: KBCfgSensorBase.self,
+        KBSensorType.PIR: KBCfgSensorPIR.self,
         KBSensorType.Light: KBCfgSensorLight.self,
+        KBSensorType.VOC: KBCfgSensorVOC.self,
+        KBSensorType.CO2: KBCfgSensorCO2.self
     ]
     
     internal init()
@@ -336,10 +338,10 @@ internal class KBCfgHandler {
             if let deviceSensorObj = KBCfgHandler.createCfgSensorObject(sensorType){
                 kbDeviceCfgSensorLists.append(deviceSensorObj);
                 deviceSensorObj.updateConfig(sensorPara)
-                print("add new sensor object(type:\(sensorType) to device config buffer\n")
+                print("add new sensor object type:\(sensorType) to config buffer")
                 return deviceSensorObj
             }else{
-                NSLog("updateDeviceCfgSensorFromParas update device create sensor object failed, trigger type:%d", sensorType)
+                NSLog("updateDeviceCfgSensorFromParas update device create sensor object failed, sensor type:%d", sensorType)
             }
         }
         

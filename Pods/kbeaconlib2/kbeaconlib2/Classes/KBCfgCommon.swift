@@ -209,6 +209,27 @@ import Foundation
         }
     }
     
+    //is support humidity voc
+    @objc public func isSupportVOCSensor()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x80) > 0
+        }else{
+            return false
+        }
+    }
+    
+    //is support humidity voc
+    @objc public func isSupportCO2Sensor()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x1000000) > 0
+        }else{
+            return false
+        }
+    }
+
+    
     //is support history
     @objc public func isSupportHistoryRecord()->Bool
     {

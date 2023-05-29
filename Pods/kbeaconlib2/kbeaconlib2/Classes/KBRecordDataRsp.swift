@@ -1,5 +1,5 @@
 //
-//  KBReadSensorResponse.swift
+//  KBRecordDataRsp.swift
 //  KBeaconPro
 //
 //  Created by Shuhui Hu on 2022/6/6.
@@ -7,8 +7,11 @@
 
 import Foundation
 
-@objc public class KBReadSensorRsp : NSObject
+@objc public class KBRecordDataRsp : NSObject
 {
+    public static let INVALID_DATA_RECORD_POS = UInt32(4294967295)
+
+    
     @objc public var readDataNextPos: UInt32
 
     @objc public var readDataRspList : [NSObject]

@@ -10,7 +10,11 @@ import CoreBluetooth
 
 
 //on reads sensor complete
-public typealias onReadSensorComplete = (_ result:Bool, _ rspData:Data?, _ error:KBException?)->Void
+public typealias onReadSensorInfoCallback = (_ result:Bool, _ infoRsp:KBRecordInfoRsp?, _ error:KBException?)->Void
+
+public typealias onReadSensorRecordCallback = (_ result:Bool, _ recordRsp:KBRecordDataRsp?, _ error:KBException?)->Void
+
+public typealias onExecuteSensorCommandCallback = (_ result:Bool, _ data:Data?, _ error:KBException?)->Void
 
 public typealias onReadConfigComplete = (_ result:Bool, _ rspData:[String:Any]?, _ error:KBException?)->Void
 
@@ -55,9 +59,47 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     case ACTION_WRITE_CMD = 2
     case ACTION_IDLE = 0
     case ACTION_USR_READ_CFG = 4
-    case ACTION_READ_SENSOR = 5
+    case ACTION_SENSOR_READ_INFO = 5
     case ACTION_ENABLE_NTF = 6
+    case ACTION_DISABLE_NTF = 7
+    case ACTION_SENSOR_READ_RECORD = 8
+    case ACTION_SENSOR_EXE_COMMAND = 9
+    
 }
+
+@objc class ActionCommand : NSObject
+{
+    var actionType : ActionType
+    
+    var actionTimeout : Double
+
+    var readCfgCallback: onReadConfigComplete?
+
+    var commandCallback: onActionComplete?
+    
+    var readSensorInfoCallback : onReadSensorInfoCallback?
+    
+    var readSensorRecordCallback : onReadSensorRecordCallback?
+    
+    var exeSensorCmdCallback : onExecuteSensorCommandCallback?
+    
+    var downDataBuff:Data?
+    
+    var downDataType : Int?
+    
+    var receiveData: Data?
+    
+    var tobeCfgData: [KBCfgBase]?
+    
+
+    @objc public init(_ type : ActionType, timeout: Double)
+    {
+        actionType = type;
+        actionTimeout = timeout;
+        
+        super.init()
+    }
+};
 
 @objc public class KBeacon :NSObject, CBPeripheralDelegate, KBAuthDelegate
 {
@@ -192,10 +234,18 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         }
     }
     
+
+    
+
+    //command msg buffer list
+    private var mActionList : [ActionCommand]
+    
     //private local variable
     private weak var mBeaconMgr : KBeaconsMgr?
     
     private var mAdvPacketMgr: KBAdvPacketHandler
+    
+    private var mSensorRecordsMgr : KBRecordDataHandler
     
     //config manager
     private var mCfgMgr:KBCfgHandler
@@ -203,34 +253,14 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     //authentication handler;
     private var mAuthHandler: KBAuthHandler?
     
-    //read data subtype
-    private var mNextInitReadCfgSubtype:Int
-    
     //connecting timer
     private var mConnectingTimer:Timer?
     private var mDisconnectingTimer:Timer?
     private var mActionTimer:Timer?
-    
-    //download data
-    private var mByDownloaDatas:Data?
-    private var mByDownDataType:Int?
+
     
     //action type state
-    private var mActionStatus:ActionType
-    
-    private var mReadCfgCallback: onReadConfigComplete?
-    
-    private var mWriteCfgCallback: onActionComplete?
-    
-    private var mWriteCmdCallback: onActionComplete?
-    
-    private var mReadSensorCallback: onReadSensorComplete?
-    
-    private var mEnableSubsribeNotifyCallback: onActionComplete?
-    
-    private var mReceiveData: Data
-    
-    private var mTobeCfgData: [KBCfgBase]?
+    private var mActionDoing:Bool
     
     private var mNotifyData2ClassMap:[Int:NotifyDataDelegate]
     
@@ -290,19 +320,19 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     //buffer size
     private static let MAX_BUFFER_DATA_SIZE = 1024
     
-    internal override init()
+    public override init()
     {
         mNotifyData2ClassMap = [Int:NotifyDataDelegate]()
-        mActionStatus = ActionType.ACTION_IDLE
+        mActionDoing = false
         mCloseReason = KBConnEvtReason.ConnException
         state = KBConnState.Disconnected
         mAdvPacketMgr = KBAdvPacketHandler();
-        mNextInitReadCfgSubtype = 0
-        mReceiveData = Data()
+        mSensorRecordsMgr = KBRecordDataHandler();
+        mActionList = []
         mCfgMgr = KBCfgHandler()
     }
     
-    internal func attach2Device(peripheral:CBPeripheral, beaconMgr:KBeaconsMgr)
+    public func attach2Device(peripheral:CBPeripheral, beaconMgr:KBeaconsMgr)
     {
         cbPeripheral = peripheral
         peripheral.delegate = self
@@ -344,6 +374,8 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             return false
         }
         self.delegate = delegate
+        mActionDoing = false
+        mActionList.removeAll()
         self.mAuthHandler = KBAuthHandler(password: password, connPara: connPara, delegate: self)
         state = KBConnState.Connecting
         
@@ -527,14 +559,6 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         
         if mNotifyData2ClassMap.isEmpty
         {
-            if (self.mActionStatus != ActionType.ACTION_IDLE)
-            {
-                if let ntfCallback = callback {
-                    ntfCallback(false, KBException(KBErrorCode.CfgBusy, desc:"Device was busy"))
-                }
-                return;
-            }
-            
             if (state != KBConnState.Connected)
             {
                 if let ntfCallback = callback {
@@ -544,21 +568,14 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             }
             
             //save callback
-            let bResult = startEnableNotification(serviceID: KBUtility.KB_CFG_SERVICES_UUID, charID: KBUtility.KB_IND_CHAR_UUID, enable: true)
-            if (bResult)
-            {
-                self.mEnableSubsribeNotifyCallback = callback
-                self.mToAddedSubscribeInstance = notifyDelegate
-                self.mToAddedTriggerType = triggerType
-                
-                startNewAction(action: ActionType.ACTION_ENABLE_NTF, timeout:5.0)
-            }
-            else
-            {
-                if let ntfCallback = callback {
-                    ntfCallback(false, KBException(KBErrorCode.CfgNotSupport, desc:"Enable BLE notification failed"))
-                }
-            }
+            self.mToAddedSubscribeInstance = notifyDelegate
+            self.mToAddedTriggerType = triggerType
+            
+            let action = ActionCommand(ActionType.ACTION_ENABLE_NTF, timeout: 3.0)
+            action.commandCallback = callback
+            mActionList.append(action)
+            
+            executeNextAction()
         } else {
             mNotifyData2ClassMap[triggerType] = notifyDelegate
             if let ntfCallback = callback {
@@ -585,13 +602,6 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         
         if (self.mNotifyData2ClassMap.count == 1)
         {
-            if (mActionStatus != ActionType.ACTION_IDLE)
-            {
-                if let ntfCallback = callback {
-                    ntfCallback(false, KBException(KBErrorCode.CfgBusy, desc:"Device was busy"))
-                }
-                return;
-            }
             if (state != KBConnState.Connected)
             {
                 if let ntfCallback = callback {
@@ -603,12 +613,12 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             //save callback
             mToAddedSubscribeInstance = nil;
             mToAddedTriggerType = 0;
-            let bResult = startEnableNotification(serviceID: KBUtility.KB_CFG_SERVICES_UUID, charID: KBUtility.KB_IND_CHAR_UUID, enable: false)
-            if (bResult)
-            {
-                mEnableSubsribeNotifyCallback = callback
-                startNewAction(action: ActionType.ACTION_ENABLE_NTF, timeout:3.0)
-            }
+            
+            let action = ActionCommand(ActionType.ACTION_DISABLE_NTF, timeout: 3.0)
+            action.commandCallback = callback
+            mActionList.append(action)
+            
+            executeNextAction()
         } else {
             self.mNotifyData2ClassMap[triggerType] = nil
             if let ntfCallback = callback {
@@ -620,15 +630,6 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     //send json command message to device
     @objc public func sendCommand(_ cmdPara:[String:Any], callback:onActionComplete?)
     {
-        if (mActionStatus != ActionType.ACTION_IDLE)
-        {
-            if let actionCallback = callback
-            {
-                actionCallback(false, KBException(KBErrorCode.CfgBusy, desc: "Device was busy"))
-            }
-            return;
-        }
-        
         if (state != KBConnState.Connected)
         {
             if let actionCallback = callback
@@ -641,13 +642,13 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         //save callback
         if let jsonString = KBCfgHandler.cmdParaToJsonString(cmdPara)
         {
-            self.mTobeCfgData = nil
-            mWriteCmdCallback = callback;
+            let action = ActionCommand(ActionType.ACTION_WRITE_CMD, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
+            action.commandCallback = callback
+            action.downDataType = KBeacon.CENT_PERP_TX_JSON_DATA
+            action.downDataBuff = jsonString.data(using: String.Encoding.utf8)
+            mActionList.append(action)
             
-            mByDownloaDatas = jsonString.data(using: String.Encoding.utf8)
-            mByDownDataType = KBeacon.CENT_PERP_TX_JSON_DATA
-            self.startNewAction(action: ActionType.ACTION_WRITE_CMD, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
-            self.sendNextCfgData(seq: 0)
+            executeNextAction()
         }
         else
         {
@@ -661,15 +662,6 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     //read config by raw json message
     @objc public func readConfig(_ reqMsg: [String:Any], callback:onReadConfigComplete?)
     {
-        if (mActionStatus != ActionType.ACTION_IDLE)
-        {
-            if let readCallback = callback
-            {
-                readCallback(false, nil, KBException(KBErrorCode.CfgBusy, desc:"Device was busy"));
-            }
-            return;
-        }
-        
         if (state != KBConnState.Connected)
         {
             if let readCallback = callback
@@ -679,17 +671,16 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             return
         }
         
-        if (configReadBeaconParamaters(reqMsg, actionType: ActionType.ACTION_USR_READ_CFG))
-        {
-            mReadCfgCallback = callback
-        }
-        else
+        if reqMsg.isEmpty
         {
             if let readCallback = callback
             {
                 readCallback(false, nil, KBException( KBErrorCode.CfgInputInvalid, desc:"Parameter invalid"));
             }
+            return
         }
+        
+        startReadBeaconParamaters(reqMsg, actionType: ActionType.ACTION_USR_READ_CFG, callback: callback)
     }
     
     //read common parameters from device,
@@ -734,7 +725,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         var reqPara = [String:Any]()
         reqPara[KBCfgBase.JSON_MSG_TYPE_KEY] = KBCfgBase.JSON_MSG_TYPE_GET_PARA
         reqPara[KBCfgBase.JSON_FIELD_SUBTYPE] = KBCfgType.SensorPara
-        reqPara[KBCfgSensorBase.JSON_FIELD_SENSOR_TYPE] = sensorType
+        reqPara[KBCfgSensorBase.JSON_FIELD_SENSOR_TYPE] = UInt8(sensorType)
         
         readConfig(reqPara, callback: callback)
     }
@@ -742,15 +733,6 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     //modify config list
     @objc public func modifyConfig(array cfgArray:[KBCfgBase], callback: onActionComplete?)
     {
-        if (mActionStatus != ActionType.ACTION_IDLE)
-        {
-            if let actionCallback = callback
-            {
-                actionCallback(false, KBException(KBErrorCode.CfgBusy, desc:"Device was busy"));
-            }
-            return;
-        }
-        
         if (state != KBConnState.Connected)
         {
             if let actionCallback = callback
@@ -783,14 +765,15 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         }
         
         //save data
-        mByDownDataType = KBeacon.CENT_PERP_TX_JSON_DATA
-        mWriteCfgCallback = callback
-        mTobeCfgData = cfgArray
-        mByDownloaDatas = jsonString.data(using: String.Encoding.utf8)
+        let action = ActionCommand(ActionType.ACTION_WRITE_CFG, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
+        action.downDataBuff = jsonString.data(using: String.Encoding.utf8)
+        action.downDataType = KBeacon.CENT_PERP_TX_JSON_DATA
+        action.commandCallback = callback
+        action.tobeCfgData = cfgArray
+        mActionList.append(action)
         
         //write data
-        startNewAction(action: ActionType.ACTION_WRITE_CFG, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
-        sendNextCfgData(seq: 0)
+        executeNextAction()
     }
     
     //modify single config
@@ -799,40 +782,6 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         var cfgArray = [KBCfgBase]()
         cfgArray.append(cfgObj)
         modifyConfig(array: cfgArray, callback: callback)
-    }
-    
-    //send sensor message to device
-    @objc public func sendSensorMessage(_ reqMsg:Data, callback:onReadSensorComplete?)
-    {
-        guard reqMsg.count > 0 else{
-            NSLog("input paramaters is null")
-            return
-        }
-        
-        if (mActionStatus != ActionType.ACTION_IDLE)
-        {
-            if let request = callback
-            {
-                request(false, nil, KBException(KBErrorCode.CfgBusy, desc: "Device was busy"));
-            }
-            return;
-        }
-        
-        if (state != KBConnState.Connected)
-        {
-            if let request = callback
-            {
-                request(false, nil, KBException(KBErrorCode.CfgStateError, desc: "Device was disconnected"));
-            }
-            return;
-        }
-        
-        mReadSensorCallback = callback
-        mByDownloaDatas = reqMsg
-        mByDownDataType = KBeacon.CENT_PERP_TX_HEX_DATA
-        mReceiveData.removeAll()
-        self.startNewAction(action: ActionType.ACTION_READ_SENSOR, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
-        self.sendNextCfgData(seq: 0)
     }
     
     @objc public static func createCfgAdvObject(_ advType:Int)->KBCfgAdvBase?
@@ -850,7 +799,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         return KBCfgHandler.createCfgSensorObject(sensorType)
     }
     
-    internal func parseAdvPacket(advData:[String:Any], rssi:Int8)->Bool
+    public func parseAdvPacket(advData:[String:Any], rssi:Int8)->Bool
     {
         if let beaconName = advData["kCBAdvDataLocalName"] as? String{
             self.name = beaconName
@@ -879,15 +828,9 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         return false
     }
     
-    @discardableResult private func startNewAction(action:ActionType, timeout:Double)->Bool
+    @discardableResult private func startNewAction(timeout:Double)->Bool
     {
-        if (self.mActionStatus != ActionType.ACTION_IDLE)
-        {
-            NSLog("start new action failed during not idle");
-            return false
-        }
-        
-        mActionStatus = action
+        mActionDoing = true
         if (timeout > 0)
         {
             mActionTimer = Timer.scheduledTimer(timeInterval: timeout,
@@ -924,76 +867,141 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     }
     
     
-    private func cancelActionTimer()
+    @discardableResult private func cancelActionTimer()->ActionCommand?
     {
+        mActionDoing = false
+        
         if let actionTimer = mActionTimer,
            actionTimer.isValid
         {
             actionTimer.invalidate()
         }
-        mActionStatus = ActionType.ACTION_IDLE;
+        
+        if !mActionList.isEmpty
+        {
+            return mActionList.removeFirst()
+        }
+        else
+        {
+            return nil
+        }
+    }
+    
+    private func executeNextAction()
+    {
+        if (mActionDoing)
+        {
+          NSLog("action busy, now wait device enter idle");
+          return;
+        }
+        
+        if (state == KBConnState.Disconnecting || state == KBConnState.Disconnected)
+        {
+            return
+        }
+        
+        if mActionList.isEmpty
+        {
+            return
+        }
+
+        let action = mActionList[0]
+        if (action.actionType == ActionType.ACTION_ENABLE_NTF)
+        {
+            self.startEnableNotification(serviceID: KBUtility.KB_CFG_SERVICES_UUID, charID: KBUtility.KB_IND_CHAR_UUID, enable: true)
+        }
+        else if (action.actionType == ActionType.ACTION_DISABLE_NTF)
+        {
+            self.startEnableNotification(serviceID: KBUtility.KB_CFG_SERVICES_UUID, charID: KBUtility.KB_IND_CHAR_UUID, enable: false)
+        }
+        else
+        {
+          sendNextCfgData(seq: 0)
+        }
+
+        mActionDoing = true;
+        
+        mActionTimer = Timer.scheduledTimer(timeInterval: action.actionTimeout,
+                             target: self,
+                             selector: #selector(actionTimeout(_:)),
+                             userInfo: nil,
+                             repeats: false)
     }
     
     //connect device timeout
     @objc private func actionTimeout(_ timer:Timer)
     {
         let error = KBException(KBErrorCode.CfgTimeout, desc: "Read or write operation timeout")
+        mActionDoing = false
         
-        if (mActionStatus == ActionType.ACTION_INIT_READ_CFG)
+        let action = mActionList.removeFirst()
+        
+        if (action.actionType == ActionType.ACTION_INIT_READ_CFG)
         {
-            mActionStatus = ActionType.ACTION_IDLE;
             closeBeacon(reason: KBConnEvtReason.ConnTimeout)
+            return
         }
-        else if (mActionStatus == ActionType.ACTION_USR_READ_CFG)
+        else if (action.actionType == ActionType.ACTION_USR_READ_CFG)
         {
-            mActionStatus = ActionType.ACTION_IDLE;
-            if let readCallback = mReadCfgCallback
+            if let readCallback = action.readCfgCallback
             {
-                mReadCfgCallback = nil;
                 readCallback(false, nil, error);
             }
         }
-        else if (mActionStatus == ActionType.ACTION_WRITE_CFG)
+        else if (action.actionType == ActionType.ACTION_WRITE_CFG)
         {
-            mActionStatus = ActionType.ACTION_IDLE;
-            if let writeCfgCallback = mWriteCfgCallback
+            if let writeCfgCallback = action.commandCallback
             {
-                mWriteCfgCallback = nil;
                 writeCfgCallback(false, error);
             }
         }
-        else if (mActionStatus == ActionType.ACTION_WRITE_CMD)
+        else if (action.actionType == ActionType.ACTION_WRITE_CMD)
         {
-            mActionStatus = ActionType.ACTION_IDLE;
-            if let writeCmdCallback = mWriteCmdCallback
+            if let writeCmdCallback = action.commandCallback
             {
-                mWriteCfgCallback = nil;
                 writeCmdCallback(false, error);
             }
         }
-        else if (mActionStatus == ActionType.ACTION_READ_SENSOR)
+        else if (action.actionType == ActionType.ACTION_SENSOR_READ_INFO)
         {
-            mActionStatus = ActionType.ACTION_IDLE;
-            if let readSensorCallback = mReadSensorCallback
+            if let readSensorCallback = action.readSensorInfoCallback
             {
-                mReadSensorCallback = nil;
                 readSensorCallback(false, nil, error);
             }
         }
-        else if (mActionStatus == ActionType.ACTION_ENABLE_NTF)
+        else if (action.actionType == ActionType.ACTION_SENSOR_READ_RECORD)
         {
-            mActionStatus = ActionType.ACTION_IDLE;
-            if let notifyCallback = mEnableSubsribeNotifyCallback
+            if let readSensorCallback = action.readSensorRecordCallback
             {
-                mEnableSubsribeNotifyCallback = nil;
+                readSensorCallback(false, nil, error);
+            }
+        }
+        else if (action.actionType == ActionType.ACTION_SENSOR_EXE_COMMAND)
+        {
+            if let exeSensorCallback = action.exeSensorCmdCallback
+            {
+                exeSensorCallback(false, nil, error);
+            }
+        }
+        else if (action.actionType == ActionType.ACTION_ENABLE_NTF)
+        {
+            if let notifyCallback = action.commandCallback
+            {
                 notifyCallback(false, error);
             }
         }
+        
+        executeNextAction()
     }
     
     private func handleBeaconEnableSubscribeComplete()
     {
-        cancelActionTimer()
+        if mActionList.isEmpty
+        {
+            return
+        }
+        
+        let action = cancelActionTimer()
         
         if let subscribeInstance = mToAddedSubscribeInstance
         {
@@ -1007,9 +1015,9 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         }
         
         //callback
-        if let ntfCallback = mEnableSubsribeNotifyCallback {
-            mEnableSubsribeNotifyCallback = nil;
-            ntfCallback(true, nil)
+        if let callback = action!.commandCallback
+        {
+            callback(true, nil)
         }
     }
     
@@ -1052,8 +1060,11 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             if (self.state == KBConnState.Connecting)
             {
                 var readCfgTypeNum = 0
-                mNextInitReadCfgSubtype = 0
+                
+                //becase all config paramers can not send in one message, so we split the getCfg request
+                //to two message
                 var firstReadRoundSubType = 0
+                var secondReadRoundSubType = 0
                 
                 //common para
                 if (mAuthHandler!.connPara.readCommPara){
@@ -1075,7 +1086,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
                     }
                     else
                     {
-                        mNextInitReadCfgSubtype = (mNextInitReadCfgSubtype | KBCfgType.TriggerPara)
+                        secondReadRoundSubType = (secondReadRoundSubType | KBCfgType.TriggerPara)
                     }
                 }
                 
@@ -1087,16 +1098,27 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
                     }
                     else
                     {
-                        mNextInitReadCfgSubtype = (mNextInitReadCfgSubtype | KBCfgType.SensorPara)
+                        secondReadRoundSubType = (secondReadRoundSubType | KBCfgType.SensorPara)
                     }
                 }
                 
-                if (firstReadRoundSubType > 0)
+                if (firstReadRoundSubType > 0 || secondReadRoundSubType > 0)
                 {
-                    var readCfgReq = [String:Any]()
-                    readCfgReq[KBCfgBase.JSON_MSG_TYPE_KEY] = KBCfgBase.JSON_MSG_TYPE_GET_PARA
-                    readCfgReq[KBCfgBase.JSON_FIELD_SUBTYPE] =  firstReadRoundSubType
-                    configReadBeaconParamaters(readCfgReq, actionType: ActionType.ACTION_INIT_READ_CFG)
+                    if (firstReadRoundSubType > 0)
+                    {
+                        var readCfgReq = [String:Any]()
+                        readCfgReq[KBCfgBase.JSON_MSG_TYPE_KEY] = KBCfgBase.JSON_MSG_TYPE_GET_PARA
+                        readCfgReq[KBCfgBase.JSON_FIELD_SUBTYPE] =  firstReadRoundSubType
+                        startReadBeaconParamaters(readCfgReq, actionType: ActionType.ACTION_INIT_READ_CFG, callback: nil)
+                    }
+                    
+                    if (secondReadRoundSubType > 0)
+                    {
+                        var readCfgReq = [String:Any]()
+                        readCfgReq[KBCfgBase.JSON_MSG_TYPE_KEY] = KBCfgBase.JSON_MSG_TYPE_GET_PARA
+                        readCfgReq[KBCfgBase.JSON_FIELD_SUBTYPE] =  secondReadRoundSubType
+                        startReadBeaconParamaters(readCfgReq, actionType: ActionType.ACTION_INIT_READ_CFG, callback: nil)
+                    }
                 }
                 else
                 {
@@ -1109,34 +1131,51 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
                     else
                     {
                         //cancel connection timer
-                        if (self.mConnectingTimer?.isValid ?? false)
-                        {
-                            self.mConnectingTimer?.invalidate()
-                        }
-                        
-                        NSLog("Connect to \(self.connectionMac!) without read para complete");
-                        state = KBConnState.Connected
-                        
-                        self.delegate?.onConnStateChange(self,
-                                                         state: state, evt: KBConnEvtReason.ConnSuccess)
+                        notifyConnectSuccess()
                     }
                 }
             }
         }
     }
     
-    @discardableResult private func configReadBeaconParamaters(_ reqMsg: [String:Any], actionType:ActionType)->Bool
+    private func notifyConnectSuccess()
+    {
+        if (self.mConnectingTimer?.isValid ?? false)
+        {
+            self.mConnectingTimer?.invalidate()
+        }
+        
+        NSLog("Connect to \(self.connectionMac!) complete");
+        state = KBConnState.Connected
+        
+        self.delegate?.onConnStateChange(self,
+                                         state: state, evt: KBConnEvtReason.ConnSuccess)
+    }
+    
+    @discardableResult private func startReadBeaconParamaters(_ reqMsg: [String:Any],
+                                                               actionType:ActionType,
+                                                              callback:onReadConfigComplete?)->Bool
     {
         if let jsonString = KBCfgHandler.cmdParaToJsonString(reqMsg)
         {
-            mByDownloaDatas = jsonString.data(using: String.Encoding.utf8)
-            mByDownDataType = KBeacon.CENT_PERP_TX_JSON_DATA
-            self.mReceiveData.removeAll()
+            NSLog("%@", jsonString)
+            let action = ActionCommand(actionType, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
+            action.downDataBuff = jsonString.data(using: String.Encoding.utf8)
+            action.downDataType = KBeacon.CENT_PERP_TX_JSON_DATA
+            action.readCfgCallback = callback
+            mActionList.append(action)
             
             //start action
-            startNewAction(action:actionType, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
-            
-            return sendNextCfgData(seq: 0)
+            executeNextAction()
+            return true
+        }
+        else
+        {
+            if let readCallback = callback
+            {
+                readCallback(false, nil, KBException( KBErrorCode.CfgInputInvalid, desc:"JSON message invalid"))
+            }
+                
         }
         
         return false;
@@ -1232,15 +1271,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         {
             if (state == KBConnState.Connecting)
             {
-                //cancel connection timer
-                if (self.mConnectingTimer?.isValid ?? false)
-                {
-                    self.mConnectingTimer?.invalidate()
-                }
-                
-                NSLog("Connect to \(self.connectionMac!) with enable notify complete");
-                state = KBConnState.Connected
-                self.delegate?.onConnStateChange(self, state: state, evt: KBConnEvtReason.ConnSuccess)
+                notifyConnectSuccess()
             }
             else
             {
@@ -1330,6 +1361,11 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             return
         }
         let msgBodyLen = dataLen - KBeacon.DATA_ACK_HEAD_LEN
+        if mActionList.isEmpty
+        {
+            NSLog("action list is empty, discard ack message");
+            return
+        }
         
         //data sequence
         let nReqDataSeq = (UInt16(data[nReadIndex]) << 8) + UInt16(data[nReadIndex + 1])
@@ -1348,20 +1384,23 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             if (dataType == KBeacon.PERP_CENT_TX_JSON_ACK
                 || dataType == KBeacon.PERP_CENT_TX_HEX_ACK)
             {
+                let action = mActionList[0]
+                
                 if (msgBodyLen > 0)
                 {
-                    mReceiveData = data.subdata(in: nReadIndex..<data.count)
+                    action.receiveData = data.subdata(in: nReadIndex..<data.count)
                     
                     //inbound data, send report Ack
                     if (dataType == KBeacon.PERP_CENT_TX_HEX_ACK)
                     {
-                        self.configSendDataRptAck(ackSeq: UInt16(mReceiveData.count),
+                        self.configSendDataRptAck(ackSeq:
+                                                    UInt16(action.receiveData!.count),
                                                   dataType: UInt8(KBeacon.CENT_PERP_HEX_DATA_RPT_ACK),
                                                   cause: 0)
                     }
                     else
                     {
-                        self.configSendDataRptAck(ackSeq: UInt16(mReceiveData.count),
+                        self.configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count),
                                                   dataType: UInt8(KBeacon.CENT_PERP_DATA_RPT_ACK),
                                                   cause: 0)
                     }
@@ -1370,13 +1409,17 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         }
         else if(AckCause == KBeacon.BEACON_ACK_SUCCESS)
         {
-            if (ActionType.ACTION_READ_SENSOR == mActionStatus
-                || ActionType.ACTION_INIT_READ_CFG == mActionStatus
-                    || ActionType.ACTION_USR_READ_CFG == mActionStatus)
+            let action = mActionList[0]
+
+            if (ActionType.ACTION_SENSOR_READ_INFO == action.actionType
+                || ActionType.ACTION_SENSOR_READ_RECORD == action.actionType
+                || ActionType.ACTION_SENSOR_EXE_COMMAND == action.actionType
+                || ActionType.ACTION_INIT_READ_CFG == action.actionType
+                || ActionType.ACTION_USR_READ_CFG == action.actionType)
             {
                 if (msgBodyLen > 0)
                 {
-                    mReceiveData = data.subdata(in: nReadIndex..<data.count)
+                    action.receiveData = data.subdata(in: nReadIndex..<data.count)
                 }
                 
                 //handle ack data
@@ -1389,38 +1432,37 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
                     self.handleHexRptDataComplete()
                 }
             }
-            else if (ActionType.ACTION_WRITE_CFG == mActionStatus)
+            else if (ActionType.ACTION_WRITE_CFG == action.actionType)
             {
-                self.cancelActionTimer()
+                let action = self.cancelActionTimer()
                 
                 //update config to local
-                if (self.mTobeCfgData != nil)
+                if (action!.tobeCfgData != nil)
                 {
-                    mCfgMgr.updateDeviceConfig(mTobeCfgData!)
-                    self.mTobeCfgData = nil
+                    mCfgMgr.updateDeviceConfig(action!.tobeCfgData!)
                 }
                 
                 //downloa data command complete
-                if let writeCallback = mWriteCfgCallback
+                if let writeCallback = action!.commandCallback
                 {
-                    mWriteCfgCallback = nil
                     writeCallback(true, nil)
                 }
             }
-            else if (ActionType.ACTION_WRITE_CMD == mActionStatus)
+            else if (ActionType.ACTION_WRITE_CMD == action.actionType)
             {
-                self.cancelActionTimer()
+                let action = self.cancelActionTimer()
                 
-                if let writeCallback = mWriteCmdCallback
+                if let writeCallback = action?.commandCallback
                 {
-                    mWriteCmdCallback = nil
                     writeCallback(true, nil)
                 }
             }
+            
+            executeNextAction()
         }
         else if (AckCause == KBeacon.BEACON_ACK_EXPECT_NEXT)
         {
-            if (ActionType.ACTION_IDLE != mActionStatus)
+            if (mActionDoing)
             {
                 self.sendNextCfgData(seq: UInt16(nReqDataSeq))
             }
@@ -1431,53 +1473,52 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         }
         else
         {
+            let action = self.cancelActionTimer()!
             let except = KBException(Int(AckCause), desc: "device Ack fail")
-            if (ActionType.ACTION_INIT_READ_CFG == mActionStatus)
+            
+            if (ActionType.ACTION_INIT_READ_CFG == action.actionType)
             {
-                self.cancelActionTimer()
                 self.closeBeacon(reason: KBConnEvtReason.ConnException)
+                return
             }
-            else if (ActionType.ACTION_WRITE_CFG == mActionStatus)
+            else if (ActionType.ACTION_WRITE_CFG == action.actionType
+                || ActionType.ACTION_WRITE_CMD == action.actionType)
             {
-                self.cancelActionTimer()
-                self.mTobeCfgData = nil
-                
-                if let writeCallback = mWriteCfgCallback
+                if let writeCallback = action.commandCallback
                 {
-                    mWriteCfgCallback = nil;
                     writeCallback(false, except)
                 }
             }
-            else if (ActionType.ACTION_WRITE_CMD == mActionStatus)
+            else if (ActionType.ACTION_USR_READ_CFG == action.actionType)
             {
-                self.cancelActionTimer()
-                
-                if let writeCallback = mWriteCmdCallback
+                if let readCfgCallback = action.readCfgCallback
                 {
-                    mWriteCmdCallback = nil
-                    writeCallback(false, except)
-                }
-            }
-            else if (ActionType.ACTION_USR_READ_CFG == mActionStatus)
-            {
-                self.cancelActionTimer()
-                
-                if let readCfgCallback = mReadCfgCallback
-                {
-                    mReadCfgCallback = nil
                     readCfgCallback(false, nil, except)
                 }
             }
-            else if (ActionType.ACTION_READ_SENSOR == mActionStatus)
+            else if (ActionType.ACTION_SENSOR_READ_INFO == action.actionType)
             {
-                self.cancelActionTimer()
-                
-                if let readSendorCallback = mReadSensorCallback
+                if let readSensorCallback = action.readSensorInfoCallback
                 {
-                    mReadSensorCallback = nil;
-                    readSendorCallback(false, nil, except)
+                    readSensorCallback(false, nil, except)
                 }
             }
+            else if (ActionType.ACTION_SENSOR_READ_RECORD == action.actionType)
+            {
+                if let readSensorCallback = action.readSensorRecordCallback
+                {
+                    readSensorCallback(false, nil, except)
+                }
+            }
+            else if (ActionType.ACTION_SENSOR_EXE_COMMAND == action.actionType)
+            {
+                if let exeSensorCallback = action.exeSensorCmdCallback
+                {
+                    exeSensorCallback(false, nil, except)
+                }
+            }
+            
+            executeNextAction()
         }
     }
     
@@ -1491,48 +1532,53 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             NSLog("invalid report data length")
             return
         }
+        if (mActionList.isEmpty)
+        {
+            return;
+        }
         
         let nDataSeq = (UInt16(data[readIndex]) << 8) + UInt16(data[readIndex + 1])
         readIndex += 2
         print("device receive sequence data:\(nDataSeq)\n")
         
         //frame start
+        let action = mActionList[0]
         if (frmType == KBeacon.PDU_TAG_START)
         {
             //new read configruation
-            mReceiveData = data.subdata(in: readIndex..<data.count)
-            self.configSendDataRptAck(ackSeq: UInt16(mReceiveData.count),
+            action.receiveData = data.subdata(in: readIndex..<data.count)
+            self.configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count),
                                       dataType: dataType,
                                       cause: 0)
         }
-        else if (frmType == KBeacon.PDU_TAG_MIDDLE)
+        else if (frmType == KBeacon.PDU_TAG_MIDDLE && (action.receiveData != nil))
         {
-            if (nDataSeq != mReceiveData.count)
+            if (nDataSeq != action.receiveData!.count)
             {
-                print("device recieve an unexpected middle packet, expect seq:\(mReceiveData.count), received seq:\(nDataSeq)")
-                configSendDataRptAck(ackSeq: UInt16(mReceiveData.count), dataType: dataType, cause: 0x1)
+                print("device recieve an unexpected middle packet, expect seq:\(action.receiveData!.count), received seq:\(nDataSeq)")
+                configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count), dataType: dataType, cause: 0x1)
             }
             else
             {
                 let segData = data.subdata(in: readIndex..<data.count)
-                mReceiveData.append(segData)
-                self.configSendDataRptAck(ackSeq: UInt16(mReceiveData.count),
+                action.receiveData!.append(segData)
+                self.configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count),
                                           dataType: dataType,
                                           cause: 0)
             }
         }
-        else if (frmType == KBeacon.PDU_TAG_END)
+        else if (frmType == KBeacon.PDU_TAG_END && (action.receiveData != nil))
         {
-            if (nDataSeq != mReceiveData.count)
+            if (nDataSeq != action.receiveData!.count)
             {
-                print("device recieve an unexpected end packet, expect seq:\(mReceiveData.count), received seq:\(nDataSeq)")
-                configSendDataRptAck(ackSeq: UInt16(mReceiveData.count), dataType: dataType, cause: 0x1)
+                print("device recieve an unexpected end packet, expect seq:\(action.receiveData!.count), received seq:\(nDataSeq)")
+                configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count), dataType: dataType, cause: 0x1)
             }
             else
             {
                 let segData = data.subdata(in: readIndex..<data.count)
-                mReceiveData.append(segData)
-                self.configSendDataRptAck(ackSeq: UInt16(mReceiveData.count),
+                action.receiveData!.append(segData)
+                self.configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count),
                                           dataType: dataType,
                                           cause: 0)
                 bRcvDataCmp = true
@@ -1541,7 +1587,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         else if (frmType == KBeacon.PDU_TAG_SINGLE)
         {
             //new read message command
-            mReceiveData = data.subdata(in: readIndex..<data.count)
+            action.receiveData = data.subdata(in: readIndex..<data.count)
             //[self configSendDataRptAck: mReceiveData.length dataType:dataType  cause: 0];
             bRcvDataCmp = true;
         }
@@ -1556,41 +1602,67 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             {
                 self.handleHexRptDataComplete()
             }
+            
+            executeNextAction()
         }
     }
     
     private func handleHexRptDataComplete()
     {
-        self.cancelActionTimer()
-        if let readCallback = mReadSensorCallback
+        guard let action = self.cancelActionTimer() else
         {
-            mReadSensorCallback = nil
-            readCallback(true, mReceiveData, nil)
+            return
+        }
+                
+        if (action.actionType == ActionType.ACTION_SENSOR_READ_INFO)
+        {
+            if let readCallback = action.readSensorInfoCallback
+            {
+                let (success, result, exception) = self.mSensorRecordsMgr.parseSensorInfoResponse(rspdata: action.receiveData)
+                readCallback(success, result, exception)
+            }
+        }
+        else if (action.actionType == ActionType.ACTION_SENSOR_READ_RECORD)
+        {
+            if let readCallback = action.readSensorRecordCallback
+            {
+                let (success, result, exception) = self.mSensorRecordsMgr.parseSensorRecordResponse(rspdata: action.receiveData)
+                readCallback(success, result, exception)
+            }
+        }
+        else if (action.actionType == ActionType.ACTION_SENSOR_EXE_COMMAND)
+        {
+            if let readCallback = action.exeSensorCmdCallback
+            {
+                readCallback(true, action.receiveData, nil)
+            }
         }
     }
     
     private func handleJsonRptDataComplete()
     {
-        let jsonPara = try? JSONSerialization.jsonObject(with: mReceiveData,
+        if mActionList.isEmpty {
+            return
+        }
+        
+        let action = cancelActionTimer()!
+        guard let receiveData = action.receiveData else{
+            NSLog("data is empty");
+            return;
+        }
+        
+        let jsonPara = try? JSONSerialization.jsonObject(with: receiveData,
                                                          options:.allowFragments)
         if let dictRcvData = jsonPara as? [String: Any]
         {
-            if (mActionStatus == ActionType.ACTION_INIT_READ_CFG)
+            if (action.actionType == ActionType.ACTION_INIT_READ_CFG)
             {
-                //cancel action timer
-                self.cancelActionTimer()
-                
                 //get configruation
                 mCfgMgr.updateDeviceCfgFromJsonObject(dictRcvData)
                 
                 //check if has no read information
-                if (mNextInitReadCfgSubtype != 0) {
-                    var readCfgReq = [String:Any]()
-                    readCfgReq[KBCfgBase.JSON_MSG_TYPE_KEY] = KBCfgBase.JSON_MSG_TYPE_GET_PARA
-                    readCfgReq[KBCfgBase.JSON_FIELD_SUBTYPE] = mNextInitReadCfgSubtype
-                    mNextInitReadCfgSubtype = 0
-                    configReadBeaconParamaters(readCfgReq, actionType: ActionType.ACTION_INIT_READ_CFG)
-                }else {
+                if (mActionList.count == 0)
+                {
                     //change connection state
                     if self.isSupportSensorDataNotification() && mNotifyData2ClassMap.count > 0
                     {
@@ -1602,51 +1674,31 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
                         NSLog("Connect to \(self.connectionMac!) without enable notify complete");
                         
                         //cancel connection timer
-                        //cancel connection timer
-                        if (self.mConnectingTimer?.isValid ?? false)
-                        {
-                            self.mConnectingTimer?.invalidate()
-                        }
-                        
-                        self.state = KBConnState.Connected
-                        self.delegate?.onConnStateChange(self,
-                                                         state: state, evt: KBConnEvtReason.ConnSuccess)
+                        notifyConnectSuccess()
                     }
                 }
             }
-            else if (mActionStatus == ActionType.ACTION_USR_READ_CFG)
+            else if (action.actionType == ActionType.ACTION_USR_READ_CFG)
             {
-                self.cancelActionTimer()
-                
-                if let readCfgCallback = mReadCfgCallback
+                if let readCfgCallback = action.readCfgCallback
                 {
                     //get configruation
                     mCfgMgr.updateDeviceCfgFromJsonObject(dictRcvData)
-                    
-                    mReadCfgCallback = nil;
                     readCfgCallback(true, dictRcvData, nil);
                 }
-            }
-            else
-            {
-                self.cancelActionTimer()
-                NSLog("Unknown message receive");
             }
         }
         else
         {
             NSLog("Parse Json response failed");
-            if (mActionStatus == ActionType.ACTION_INIT_READ_CFG)
+            if (action.actionType == ActionType.ACTION_INIT_READ_CFG)
             {
                 self.closeBeacon(reason: KBConnEvtReason.ConnException)
             }
-            else if (mActionStatus == ActionType.ACTION_USR_READ_CFG)
+            else if (action.actionType == ActionType.ACTION_USR_READ_CFG)
             {
-                self.cancelActionTimer()
-                
-                if let readCfgCallback = mReadCfgCallback
+                if let readCfgCallback = action.readCfgCallback
                 {
-                    mReadCfgCallback = nil;
                     readCfgCallback(false, nil, KBException(KBErrorCode.CfgReadNull, desc: "Parse message from device failed"));
                 }
             }
@@ -1681,9 +1733,16 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     
     @discardableResult private func sendNextCfgData(seq nReqDataSeq:UInt16)->Bool
     {
-        guard let downDatas = mByDownloaDatas,
+        if mActionList.isEmpty
+        {
+            return false
+        }
+        
+        let action = mActionList[0]
+        
+        guard let downDatas = action.downDataBuff,
               let authHandler = mAuthHandler,
-              let downDataType = mByDownDataType,
+              let downDataType = action.downDataType,
               downDatas.count > 0 else{
             NSLog("data not inited");
             return false;
@@ -1737,6 +1796,8 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         let msgBody = downDatas.subdata(in: range)
         txData.append(msgBody)
         
+        NSLog("send message to device,len:%d", msgBody.count)
+        
         //write data to device
         return startWriteCfgValue(data: txData)
     }
@@ -1770,6 +1831,12 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         
         //clear action timer
         self.cancelActionTimer()
+        
+        //remove all action
+        while !mActionList.isEmpty
+        {
+            mActionList.removeFirst()
+        }
         
         //cancel connecting timer
         if (self.mConnectingTimer?.isValid ?? false)
@@ -1853,5 +1920,82 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         }
     }
     
- 
+    //read device sensor record
+    @objc public func readSensorDataInfo(_ sensorType:Int, callback: onReadSensorInfoCallback?)->Void
+    {
+        if (state != KBConnState.Connected)
+        {
+            if let response = callback
+            {
+                response(false, nil, KBException(KBErrorCode.CfgStateError, desc: "Device was disconnected"));
+            }
+            return;
+        }
+        
+        var reqInfoMsg = Data()
+        reqInfoMsg.append(UInt8(KBSensorMsgType.MsgReadSensorInfo))
+        reqInfoMsg.append(UInt8(sensorType))
+        
+        let action = ActionCommand(ActionType.ACTION_SENSOR_READ_INFO, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
+        action.downDataBuff = reqInfoMsg
+        action.downDataType = KBeacon.CENT_PERP_TX_HEX_DATA
+        action.readSensorInfoCallback = callback
+        mActionList.append(action)
+        
+        executeNextAction()
+    }
+    
+    @objc public func readSensorRecord(_ sensorType:Int,
+                                   number:UInt32,
+                                   option:KBSensorReadOption,
+                                   max:Int,
+                                   callback: onReadSensorRecordCallback?)->Void
+    {
+        if (state != KBConnState.Connected)
+        {
+            if let response = callback
+            {
+                response(false, nil, KBException(KBErrorCode.CfgStateError, desc: "Device was disconnected"));
+            }
+            return;
+        }
+        
+        let reqInfoMsg = mSensorRecordsMgr.makeReadSensorRecordRequest(sensorType, readNo: number, option: option, max: max)
+        
+        //add message
+        let action = ActionCommand(ActionType.ACTION_SENSOR_READ_RECORD, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
+        action.downDataBuff = reqInfoMsg
+        action.downDataType = KBeacon.CENT_PERP_TX_HEX_DATA
+        action.readSensorRecordCallback = callback
+        mActionList.append(action)
+        
+        executeNextAction()
+    }
+    
+    @objc public func clearSensorRecord(_ sensorType:Int, callback: onExecuteSensorCommandCallback?)
+    {
+        if (state != KBConnState.Connected)
+        {
+            if let response = callback
+            {
+                response(false, nil, KBException(KBErrorCode.CfgStateError, desc: "Device was disconnected"));
+            }
+            return;
+        }
+        
+        
+        var reqInfoMsg = Data()
+        reqInfoMsg.append(UInt8(KBSensorMsgType.MsgClearSensorRecord))
+        reqInfoMsg.append(UInt8(sensorType))
+        
+    
+        //add message
+        let action = ActionCommand(ActionType.ACTION_SENSOR_EXE_COMMAND, timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
+        action.downDataBuff = reqInfoMsg
+        action.downDataType = KBeacon.CENT_PERP_TX_HEX_DATA
+        action.exeSensorCmdCallback = callback
+        mActionList.append(action)
+        
+        executeNextAction()
+    }
 }

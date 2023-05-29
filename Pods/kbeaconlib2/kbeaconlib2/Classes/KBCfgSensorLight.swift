@@ -55,9 +55,18 @@ import Foundation
         return logChangeThreshold ?? KBCfgBase.INVALID_INT
     }
 
-    @objc public func setMeasureInterval(_ interval :Int)
+    @objc @discardableResult public func setMeasureInterval(_ interval :Int)->Bool
     {
-        measureInterval = interval
+        if (KBCfgSensorLight.MIN_MEASURE_INTERVAL >= interval
+            && KBCfgSensorLight.MAX_MEASURE_INTERVAL <= interval)
+        {
+            measureInterval = interval
+            return true
+        }
+        else
+        {
+            return false
+        }
     }
 
     @objc public func setLogChangeThreshold(_ threshold:Int)

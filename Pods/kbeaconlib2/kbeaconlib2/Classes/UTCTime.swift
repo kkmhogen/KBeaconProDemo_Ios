@@ -90,4 +90,14 @@ import Foundation
         
         return utcTime
     }
+    
+    public static func localTimeFromUTCSeconds(_ utcSecond : UInt32)->String
+    {
+        let date = Date(timeIntervalSince1970: Double(utcSecond))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "YYYY-MM-dd HH:mm:ss"
+        let dateString = formatter.string(from: date)
+        
+        return dateString
+    }
 }

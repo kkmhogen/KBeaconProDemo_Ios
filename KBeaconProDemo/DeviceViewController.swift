@@ -160,6 +160,8 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             print("support humidity:\(pCommonCfg.isSupportHumiditySensor())")
             print("support pir:\(pCommonCfg.isSupportPIRSensor())")
             print("support light sensor:\(pCommonCfg.isSupportLightSensor())")
+            print("support voc sensor:\(pCommonCfg.isSupportVOCSensor())")
+            print("support co2 sensor:\(pCommonCfg.isSupportCO2Sensor())")
             print("support max Tx power:\(pCommonCfg.getMaxTxPower())")
             print("support min Tx power:\(pCommonCfg.getMinTxPower())")
             
@@ -814,7 +816,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         sensorHTPara.setLogEnable(true)
 
         //unit is second, set measure temperature and humidity interval
-        sensorHTPara.setSensorHtMeasureInterval(2)
+        sensorHTPara.setSensorMeasureInterval(2)
 
         //unit is 0.1%, if abs(current humidity - last saved humidity) > 3, then save new record
         sensorHTPara.setHumidityChangeThreshold(30)
@@ -876,23 +878,43 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             print("not allowed to modify TH parameters")
             return
         }
+        
+        //sensor parameters
+        let iBeacon = KBCfgAdvIBeacon()
+        iBeacon.setSlotIndex(0)
+        iBeacon.setTxPower(KBAdvTxPower.RADIO_0dBm)
+        iBeacon.setAdvConnectable(true)    //not allowed connect
+        iBeacon.setAdvPeriod(1000)
+        iBeacon.setUuid("46c1350d-96cc-1a21-d426-dade602e539e")
+        iBeacon.setMajorID(12);
+        iBeacon.setMinorID(67)
+        
+        self.beacon!.modifyConfig(obj:iBeacon) { (result, exception) in
+            if (result)
+            {
+                print("Enable slot 0 to iBeacon adv success")
+            }
+            else
+            {
+                print("Enable slot 0 to iBeacon failed\(String(describing: exception?.errorCode))");
+            }
+        }
 
         //sensor parameters
         let sensorAdv = KBCfgAdvKSensor()
-        sensorAdv.setSlotIndex(2)
+        sensorAdv.setSlotIndex(1)
         sensorAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
         sensorAdv.setAdvConnectable(false)    //not allowed connect
         sensorAdv.setAdvPeriod(3000.0)
         sensorAdv.setHtSensorInclude(true)
-        
         self.beacon!.modifyConfig(obj:sensorAdv) { (result, exception) in
             if (result)
             {
-                print("Enable HT sensor adv success")
+                print("Enable slot 1 to HT sensor adv success")
             }
             else
             {
-                print("Enable HT sensor adv failed");
+                print("Enable slot 1 to HT sensor adv failed\(String(describing: exception?.errorCode))");
             }
         }
     }
@@ -1057,8 +1079,16 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
     //read temperature and humidity history record info
     func readHTSensorDataInfo()
     {
-        let readHtRecordInfo = KBHumidityDataMsg()
-        readHtRecordInfo.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportHumiditySensor(),
+              commCfg.isSupportHistoryRecord() else
+        {
+            print("not allowed to read history")
+            return
+        }
+        
+        beacon!.readSensorDataInfo(KBSensorType.HTHumidity, callback: { (result, obj, exception) in
             if (!result)
             {
                 //read ht record info failed
@@ -1066,7 +1096,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
                 return
             }
 
-            if let infRsp = obj as? ReadSensorInfoRsp
+            if let infRsp = obj
             {
                 if (infRsp.unreadRecordNumber == 0)
                 {
@@ -1074,37 +1104,148 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
                 }
                 else
                 {
-                    print("there is \(infRsp.unreadRecordNumber) ht record in device")
+                    print("there is \(infRsp.unreadRecordNumber) temperature record in device")
                 }
             }
         })
     }
     
     //read cutoff history info example
-    func readCutSensorDataInfo()
+    func readTempHistoryRecordExample()
     {
-        let readCutoffRecordInfo = KBCutoffDataMsg()
-        readCutoffRecordInfo.readSensorDataInfo(self.beacon!, callback: { (result, obj, exception) in
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportHumiditySensor(),
+              commCfg.isSupportHistoryRecord() else
+        {
+            print("not allowed to read history")
+            return
+        }
+        
+        self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
+                                      number: KBRecordDataRsp.INVALID_DATA_RECORD_POS,
+                                      option: KBSensorReadOption.NewRecord,
+                                      max: 50,
+                                      callback: { (result, recordRsp, exception) in
             if (!result)
             {
-                print("read record info failed")
+                print("read history record failed\(exception!.subErrorCode)")
                 return
             }
 
-            if let infRsp = obj as? ReadSensorInfoRsp
+            if let dataRsp = recordRsp
             {
-                if (infRsp.unreadRecordNumber == 0)
+                for record in dataRsp.readDataRspList
                 {
-                    print("no unread data in device")
+                    if let tempRecord  = record as? KBRecordHumidity
+                    {
+                        let date = Date(timeIntervalSince1970: Double(tempRecord.utcTime))
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "YYYY/MM/dd HH:mm:ss"
+                        let dateString = formatter.string(from: date)
+                        
+                        print("record time:\(dateString), temp:\(tempRecord.temperature), hum:\(tempRecord.humidity)")
+                    }
+                }
+                
+                if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
+                {
+                    print("read all un-read record complete")
                 }
                 else
                 {
-                    print("there is \(infRsp.unreadRecordNumber) cut off record in device")
+                    print("next un-read record no:\(dataRsp.readDataNextPos)")
                 }
             }
-        })
-    
+          })
     }
+    
+    
+    var mNextReadReverseIndex = KBRecordDataRsp.INVALID_DATA_RECORD_POS;
+    func readTempHistoryRecordReverseExample()
+    {
+        self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
+                                      number: mNextReadReverseIndex,
+                                      option: KBSensorReadOption.ReverseOrder,
+                                      max: 50,
+                                      callback: { (result, recordRsp, exception) in
+            if (!result)
+            {
+                print("read history record failed:%d", exception!.errorCode)
+                return
+            }
+
+            if let dataRsp = recordRsp
+            {
+                for record in dataRsp.readDataRspList
+                {
+                    if let tempRecord  = record as? KBRecordHumidity
+                    {
+                        let date = Date(timeIntervalSince1970: Double(tempRecord.utcTime))
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "YYYY/MM/dd HH:mm:ss"
+                        let dateString = formatter.string(from: date)
+                        
+                        print("record time:\(dateString), temp:\(tempRecord.temperature), hum:\(tempRecord.humidity)")
+                    }
+                }
+                
+                if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
+                {
+                    print("read all record complete")
+                }
+                else
+                {
+                    self.mNextReadReverseIndex = dataRsp.readDataNextPos
+                    print("move index to privous record no:\(self.mNextReadReverseIndex)")
+                }
+            }
+          })
+    }
+    
+    
+    var mNextReadNormalIndex = UInt32(0);
+    public func readTempHistoryRecordNormalExample()
+    {
+        self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
+                                      number: mNextReadNormalIndex,
+                                      option: KBSensorReadOption.NormalOrder,
+                                      max: 50,
+                                      callback: { (result, recordRsp, exception) in
+            if (!result)
+            {
+                print("read history record failed:%d", exception!.errorCode)
+                return
+            }
+
+            if let dataRsp = recordRsp
+            {
+                for record in dataRsp.readDataRspList
+                {
+                    if let tempRecord  = record as? KBRecordHumidity
+                    {
+                        let date = Date(timeIntervalSince1970: Double(tempRecord.utcTime))
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "YYYY/MM/dd HH:mm:ss"
+                        let dateString = formatter.string(from: date)
+                        
+                        print("record time:\(dateString), temp:\(tempRecord.temperature), hum:\(tempRecord.humidity)")
+                    }
+                }
+                
+                if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
+                {
+                    print("read all record complete")
+                }
+                else
+                {
+                    self.mNextReadNormalIndex = dataRsp.readDataNextPos
+                    print("move index to next record no:\(self.mNextReadNormalIndex)")
+                }
+            }
+          })
+    }
+    
     
     func onEnableCutoffTrigger()
     {
@@ -1229,8 +1370,10 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
 
     
     @IBAction func onReadLightEventHistory(_ sender: Any) {
-        let readLightRecordEvents = KBLightDataMsg()
-        readLightRecordEvents.readSensorRecord(self.beacon!, number: KBLightDataMsg.INVALID_DATA_RECORD_POS, option: KBSensorReadOption.NewRecord, max: 100) { result, obj, error in
+        beacon!.readSensorRecord(KBSensorType.Light,
+                                number:KBRecordDataRsp.INVALID_DATA_RECORD_POS,
+                                option: KBSensorReadOption.NewRecord,
+                                max: 100) { result, obj, error in
             if (!result)
             {
                 //read light record info failed
@@ -1243,24 +1386,65 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
             formatter.dateFormat = "YYYY-MM-dd HH:mm:ss"
             
             //foreach records
-            if let dataRsp = obj as? KBReadSensorRsp
+            if let dataRsp = obj
             {
                 for record in dataRsp.readDataRspList
                 {
-                    if let lightRecord = record as? KBLightRecord
+                    if let lightRecord = record as? KBRecordLight
                     {
                         //utc second to local time
                         let date = Date(timeIntervalSince1970: Double(lightRecord.utcTime))
                         let dateString = formatter.string(from: date)
                         
-                        NSLog("read light record:, utc:%@, pir:%d, light level:%d", dateString, lightRecord.pirIndication, lightRecord.lightLevel)
+                        NSLog("read light record:, utc:%@, type:%d, light level:%d", dateString, lightRecord.type, lightRecord.lightLevel)
                     }
                 }
                 
-                if (dataRsp.readDataNextPos == CfgSensorDataHistoryController.INVALID_DATA_RECORD_POS)
+                if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
                 {
                     NSLog("read history complete")
                 }
+            }
+        }
+    }
+    
+    func setPIRSensorParameters()
+    {
+        if (!self.beacon!.isConnected())
+        {
+            print("Device is not connected")
+            return
+        }
+
+        //check device capability
+        if let oldCommonCfg = self.beacon!.getCommonCfg(),
+           oldCommonCfg.isSupportPIRSensor()
+        {
+            print("Device does not supported light sensor")
+            return
+        }
+
+        let sensorPara = KBCfgSensorPIR()
+        //enable logger
+        sensorPara.setLogEnable(true)
+
+        //unit is second, set measure interval
+        sensorPara.setMeasureInterval(2)
+
+        //set backoff time to 30 seconds
+        //After the beacon detects and log a PIR event, if a new PIR is detected in the next 30 seconds,
+        //the event will be ignored.
+        sensorPara.setLogBackoffTime(30)
+
+        //enable sensor
+        self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
+            if (result)
+            {
+                print("update pir parameters success")
+            }
+            else
+            {
+                print("update pir parameters failed")
             }
         }
     }
@@ -1291,7 +1475,6 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         //if abs(current light level - last saved light level) > 30, then save new record
         sensorPara.setLogChangeThreshold(30)
 
-        //enable sensor advertisement
         self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
             if (result)
             {
@@ -1383,7 +1566,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         {
             dfuCtrl.beacon = self.beacon
         }
-        else if let viewHTLog = segue.destination as? CfgSensorDataHistoryController
+        else if let viewHTLog = segue.destination as? CfgHTHistoryController
         {
             viewHTLog.beacon = self.beacon
         }

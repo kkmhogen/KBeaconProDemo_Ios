@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0C090F54266F4C88005597E2 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0C090F53266F4C88005597E2 /* Localizable.strings */; };
-		0C1C42582682CFD2008BA962 /* CfgSensorDataHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1C42572682CFD2008BA962 /* CfgSensorDataHistoryController.swift */; };
+		0C1C42582682CFD2008BA962 /* CfgHTHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1C42572682CFD2008BA962 /* CfgHTHistoryController.swift */; };
 		0C1C425C2682D4FB008BA962 /* CfgHTRecordFileMgr.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1C425B2682D4FB008BA962 /* CfgHTRecordFileMgr.swift */; };
 		0C5A64FA26708A62006C739B /* KBeaconViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5A64F926708A61006C739B /* KBeaconViewCell.swift */; };
 		0C5F8009267F3DC20025A6D5 /* KBFirmwareDownload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5F8006267F3DC20025A6D5 /* KBFirmwareDownload.swift */; };
@@ -28,7 +28,7 @@
 
 /* Begin PBXFileReference section */
 		0C090F53266F4C88005597E2 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
-		0C1C42572682CFD2008BA962 /* CfgSensorDataHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CfgSensorDataHistoryController.swift; sourceTree = "<group>"; };
+		0C1C42572682CFD2008BA962 /* CfgHTHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CfgHTHistoryController.swift; sourceTree = "<group>"; };
 		0C1C425B2682D4FB008BA962 /* CfgHTRecordFileMgr.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CfgHTRecordFileMgr.swift; sourceTree = "<group>"; };
 		0C5A64F926708A61006C739B /* KBeaconViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBeaconViewCell.swift; sourceTree = "<group>"; };
 		0C5F8006267F3DC20025A6D5 /* KBFirmwareDownload.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KBFirmwareDownload.swift; sourceTree = "<group>"; };
@@ -65,7 +65,7 @@
 		0C1C42562682CFBE008BA962 /* HTHistory */ = {
 			isa = PBXGroup;
 			children = (
-				0C1C42572682CFD2008BA962 /* CfgSensorDataHistoryController.swift */,
+				0C1C42572682CFD2008BA962 /* CfgHTHistoryController.swift */,
 				0C1C425B2682D4FB008BA962 /* CfgHTRecordFileMgr.swift */,
 				11D8DCCA2858B2AE00B1A945 /* CfgHTHistoryRecord.swift */,
 			);
@@ -263,7 +263,7 @@
 				0C5F8009267F3DC20025A6D5 /* KBFirmwareDownload.swift in Sources */,
 				0C5F801B267F45160025A6D5 /* IndicatorViewController.swift in Sources */,
 				0C5F8014267F3F180025A6D5 /* DeviceViewController.swift in Sources */,
-				0C1C42582682CFD2008BA962 /* CfgSensorDataHistoryController.swift in Sources */,
+				0C1C42582682CFD2008BA962 /* CfgHTHistoryController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -18,6 +18,8 @@ import Foundation
     public static let SENSOR_MASK_CUTOFF = 0x10
     public static let SENSOR_MASK_PIR = 0x20
     public static let SENSOR_MASK_LUX = 0x40
+    public static let SENSOR_MASK_VOC = 0x80
+    public static let SENSOR_MASK_CO2 = 0x200
 
     //acceleration sensor data
     @objc public var accSensor: KBAccSensorValue?
@@ -27,9 +29,6 @@ import Foundation
 
     //humidity about sensor
     @objc public var humidity: Float = KBCfgBase.INVALID_FLOAT
-
-    //adv packet version
-    @objc public var version: UInt = 0
 
     //battery level, uint is mV
     @objc public var batteryLevel: UInt16 = KBCfgBase.INVALID_UINT16
@@ -42,6 +41,17 @@ import Foundation
     
     //Light level
     @objc public var luxLevel: UInt16 = KBCfgBase.INVALID_UINT16
+    
+    //voc
+    @objc public var vocElapseSec: UInt16 = KBCfgBase.INVALID_UINT16
+    @objc public var voc: UInt16 = KBCfgBase.INVALID_UINT16
+    @objc public var nox: UInt16 = KBCfgBase.INVALID_UINT16
+
+    //co2
+    @objc public var co2ElapseSec: UInt16 = KBCfgBase.INVALID_UINT16
+    @objc public var co2: UInt16 = KBCfgBase.INVALID_UINT16
+
+
 
     internal required init() {
         
@@ -63,12 +73,12 @@ import Foundation
         }
         var nSrvIndex = index;
         
-        //version
-        version = UInt(data[nSrvIndex])
+        //sensor mask High byte
+        let bySensorMaskHigh = Int(data[nSrvIndex])
         nSrvIndex += 1
                 
         //sensor mask
-        let bySensorMask = Int(data[nSrvIndex]);
+        let bySensorMask = (bySensorMaskHigh << 8) + Int(data[nSrvIndex]);
         nSrvIndex += 1
         if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_VOLTAGE) > 0)
         {
@@ -162,6 +172,36 @@ import Foundation
             
             luxLevel = (UInt16(data[nSrvIndex]) << 8)
             luxLevel += UInt16(data[nSrvIndex+1])
+            nSrvIndex += 2
+        }
+        
+        //get voc value
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_VOC) > 0) {
+            if (nSrvIndex > (data.count - 5)) {
+                return false;
+            }
+
+            vocElapseSec = UInt16(data[nSrvIndex] & 0xFF) * 10;
+            nSrvIndex += 1
+            
+            voc = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
+            nSrvIndex += 2
+
+            nox = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
+            nSrvIndex += 2
+
+        }
+
+        //get co2 value
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_CO2) > 0) {
+            if (nSrvIndex > (data.count - 3)) {
+                return false;
+            }
+
+            co2ElapseSec = UInt16(data[nSrvIndex] & 0xFF) * 10;
+            nSrvIndex += 1
+            
+            co2 = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
             nSrvIndex += 2
         }
         

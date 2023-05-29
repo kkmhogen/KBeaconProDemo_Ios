@@ -8,6 +8,9 @@
 import Foundation
 
 @objc public class KBCfgSensorBase : KBCfgBase{
+    @objc public static let JSON_SENSOR_TYPE_LOG_ENABLE = "log"
+    @objc public static let JSON_SENSOR_TYPE_MEASURE_INTERVAL = "msItvl"
+
     @objc public static let JSON_FIELD_SENSOR_OBJ_LIST = "srObj"
     
     @objc public static let JSON_FIELD_SENSOR_TYPE = "srType"

@@ -8,8 +8,6 @@
 import Foundation
 
 @objc public class KBCfgSensorHT : KBCfgSensorBase{
-    @objc public static let JSON_SENSOR_TYPE_HT_LOG_ENABLE = "log"
-    @objc public static  let JSON_SENSOR_TYPE_HT_MEASURE_INTERVAL = "msItvl"
     @objc public static  let JSON_SENSOR_TYPE_HT_TEMP_CHANGE_THD = "tsThd"
     @objc public static  let JSON_SENSOR_TYPE_HT_HUMIDITY_CHANGE_THD = "hsThd"
 
@@ -32,7 +30,7 @@ import Foundation
     private var logEnable: Bool?
 
     //measure interval
-    private var sensorHtMeasureInterval: Int?
+    private var measureInterval: Int?
 
     //temperature interval
     private var temperatureChangeThreshold: Int?
@@ -56,7 +54,7 @@ import Foundation
 
     @objc public func getSensorHtMeasureInterval()->Int
     {
-        return sensorHtMeasureInterval ?? KBCfgBase.INVALID_INT
+        return measureInterval ?? KBCfgBase.INVALID_INT
     }
 
     @objc public  func getTemperatureChangeThreshold()->Int
@@ -69,32 +67,59 @@ import Foundation
         return humidityChangeThreshold ?? KBCfgBase.INVALID_INT
     }
 
-    @objc public func setSensorHtMeasureInterval(_ interval :Int)
+    @objc @discardableResult public func setSensorMeasureInterval(_ interval :Int)->Bool
     {
-        sensorHtMeasureInterval = interval
+        if (KBCfgSensorHT.MIN_MEASURE_INTERVAL >= interval
+            && KBCfgSensorHT.MAX_MEASURE_INTERVAL <= interval)
+        {
+            measureInterval = interval
+            return true
+        }
+        else
+        {
+            return false
+        }
     }
 
-    @objc public func setTemperatureChangeThreshold(_ threshold:Int)
+    @objc @discardableResult public func setTemperatureChangeThreshold(_ threshold:Int)->Bool
     {
-        temperatureChangeThreshold = threshold;
+        if (KBCfgSensorHT.MIN_HT_TEMP_CHANGE_LOG_THD >= threshold
+            && KBCfgSensorHT.MAX_HT_TEMP_CHANGE_LOG_THD <= threshold)
+        {
+            temperatureChangeThreshold = threshold
+            return true
+        }
+        else
+        {
+            return false
+        }
     }
 
-    @objc public func setHumidityChangeThreshold(_ threshold:Int)
+    @objc @discardableResult public func setHumidityChangeThreshold(_ threshold:Int)->Bool
     {
-        humidityChangeThreshold = threshold
+        if (KBCfgSensorHT.MIN_HT_HUMIDITY_CHANGE_LOG_THD >= threshold
+            && KBCfgSensorHT.MAX_HT_HUMIDITY_CHANGE_LOG_THD <= threshold)
+        {
+            humidityChangeThreshold = threshold
+            return true
+        }
+        else
+        {
+            return false
+        }
     }
 
     @objc @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
     {
         var nUpdatePara = super.updateConfig(para)
 
-        if let tempValue = para[KBCfgSensorHT.JSON_SENSOR_TYPE_HT_LOG_ENABLE] as? Int {
+        if let tempValue = para[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_ENABLE] as? Int {
             logEnable = (tempValue > 0)
             nUpdatePara += 1
         }
 
-        if let tempValue = para[KBCfgSensorHT.JSON_SENSOR_TYPE_HT_MEASURE_INTERVAL] as? Int {
-            sensorHtMeasureInterval = tempValue
+        if let tempValue = para[KBCfgSensorBase.JSON_SENSOR_TYPE_MEASURE_INTERVAL] as? Int {
+            measureInterval = tempValue
             nUpdatePara += 1
         }
 
@@ -116,11 +141,11 @@ import Foundation
         var cfgDicts = super.toDictionary()
         
         if let tempValue = logEnable{
-            cfgDicts[KBCfgSensorHT.JSON_SENSOR_TYPE_HT_LOG_ENABLE] = (tempValue ? 1 : 0)
+            cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_ENABLE] = (tempValue ? 1 : 0)
         }
         
-        if let tempValue = sensorHtMeasureInterval{
-            cfgDicts[KBCfgSensorHT.JSON_SENSOR_TYPE_HT_MEASURE_INTERVAL] = tempValue
+        if let tempValue = measureInterval{
+            cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_MEASURE_INTERVAL] = tempValue
         }
 
         if let tempValue = temperatureChangeThreshold{
