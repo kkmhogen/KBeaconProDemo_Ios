@@ -39,7 +39,7 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.1.2'
+pod 'kbeaconlib2','1.1.3'
 ```
 This library is also open source, please refer to this link.  
 [kbeaconlib](https://github.com/kkmhogen/kbeaconlib2)  
