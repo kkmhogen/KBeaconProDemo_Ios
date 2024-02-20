@@ -20,6 +20,7 @@ import Foundation
     public static let SENSOR_MASK_LUX = 0x40
     public static let SENSOR_MASK_VOC = 0x80
     public static let SENSOR_MASK_CO2 = 0x200
+    public static let SENSOR_MASK_RECORD_NUM = 0x400
 
     //acceleration sensor data
     @objc public var accSensor: KBAccSensorValue?
@@ -50,8 +51,9 @@ import Foundation
     //co2
     @objc public var co2ElapseSec: UInt16 = KBCfgBase.INVALID_UINT16
     @objc public var co2: UInt16 = KBCfgBase.INVALID_UINT16
-
-
+    
+    //unread count
+    @objc public var newTHRecordNum: UInt16 = KBCfgBase.INVALID_UINT16
 
     internal required init() {
         
@@ -98,7 +100,7 @@ import Foundation
                 return false;
             }
             
-            let tempHeigh = Int8(bitPattern: data[nSrvIndex]);
+            let tempHeigh = data[nSrvIndex];
             nSrvIndex += 1
             let tempLow = data[nSrvIndex];
             nSrvIndex += 1
@@ -112,12 +114,16 @@ import Foundation
                 return false;
             }
             
-            let humHeigh = Int8(bitPattern: data[nSrvIndex])
+            let humHeigh = data[nSrvIndex]
             nSrvIndex += 1
             let humLow = data[nSrvIndex];
             nSrvIndex += 1
             
             humidity = KBUtility.signedBytes2Float(byte1: humHeigh, byte2: humLow)
+        }
+        else
+        {
+            humidity = KBCfgBase.INVALID_FLOAT
         }
         
         if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_ACC_AIX) > 0)
@@ -140,6 +146,10 @@ import Foundation
             accSensor!.zAis = Int16(bitPattern: tempZAis)
             nSrvIndex += 2
         }
+        else
+        {
+            accSensor = nil
+        }
         
         if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_CUTOFF) > 0)
         {
@@ -150,6 +160,10 @@ import Foundation
             
             cutoff = data[nSrvIndex]
             nSrvIndex += 1
+        }
+        else
+        {
+            cutoff = KBCfgBase.INVALID_UINT8
         }
         
         if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_PIR) > 0)
@@ -162,6 +176,10 @@ import Foundation
             pirIndication = data[nSrvIndex]
             nSrvIndex += 1
         }
+        else
+        {
+            pirIndication = KBCfgBase.INVALID_UINT8
+        }
         
         if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_LUX) > 0)
         {
@@ -173,6 +191,10 @@ import Foundation
             luxLevel = (UInt16(data[nSrvIndex]) << 8)
             luxLevel += UInt16(data[nSrvIndex+1])
             nSrvIndex += 2
+        }
+        else
+        {
+            luxLevel = KBCfgBase.INVALID_UINT16
         }
         
         //get voc value
@@ -189,7 +211,13 @@ import Foundation
 
             nox = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
             nSrvIndex += 2
-
+        }
+        else
+        {
+            vocElapseSec = KBCfgBase.INVALID_UINT16
+            voc = KBCfgBase.INVALID_UINT16
+            nox = KBCfgBase.INVALID_UINT16
+            
         }
 
         //get co2 value
@@ -203,6 +231,35 @@ import Foundation
             
             co2 = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
             nSrvIndex += 2
+        }
+        else
+        {
+            co2ElapseSec = KBCfgBase.INVALID_UINT16
+            co2 = KBCfgBase.INVALID_UINT16
+        }
+        
+        //record number
+        if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_RECORD_NUM) > 0) {
+            if (nSrvIndex > (data.count - 3)) {
+                return false;
+            }
+
+            let countMask = UInt16(data[nSrvIndex] & 0xFF);
+            nSrvIndex += 1
+            
+            if ((countMask & 0x1) > 0)
+            {
+                newTHRecordNum = (UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex+1])
+            }
+            else
+            {
+                newTHRecordNum = KBCfgBase.INVALID_UINT16
+            }
+            nSrvIndex += 2
+        }
+        else
+        {
+            newTHRecordNum = KBCfgBase.INVALID_UINT16
         }
         
         return true;

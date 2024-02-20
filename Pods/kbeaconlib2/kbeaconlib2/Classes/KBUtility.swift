@@ -187,14 +187,15 @@ public extension String {
         return nil //Characteristic not found on this service
     }
     
-    @objc static func signedBytes2Float(byte1:Int8, byte2:UInt8)->Float
+    @objc static func signedBytes2Float(byte1:UInt8, byte2:UInt8)->Float
     {
-        let nBytePointRight = ((Float)(byte2 & 0xFF)) / 256.0
         
-        if (byte1 < 0){
-            return Float(byte1) - nBytePointRight
-        }else{
-            return Float(byte1) + nBytePointRight
+        var combine = (Int(byte1) << 8) + Int(byte2);
+        if (combine >= 0x8000)
+        {
+          combine = combine - 0x10000;
         }
+        
+        return Float(Double(combine) / 256.0)
     }
 }

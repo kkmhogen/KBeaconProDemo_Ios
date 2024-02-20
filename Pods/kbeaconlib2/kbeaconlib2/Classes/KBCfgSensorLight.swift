@@ -8,8 +8,7 @@
 import Foundation
 
 @objc public class KBCfgSensorLight: KBCfgSensorBase{
-    @objc public static let JSON_SENSOR_TYPE_LUX_LOG_ENABLE = "log";
-    @objc public static let JSON_SENSOR_TYPE_LUX_MEASURE_INTERVAL = "msItvl";
+
     @objc public static let SON_SENSOR_TYPE_LUX_CHANGE_THD = "luxThd";
 
     //measure interval
@@ -25,6 +24,7 @@ import Foundation
 
     //log enable
     private var logEnable: Bool?
+
 
     //measure interval
     private var measureInterval: Int?
@@ -57,8 +57,8 @@ import Foundation
 
     @objc @discardableResult public func setMeasureInterval(_ interval :Int)->Bool
     {
-        if (KBCfgSensorLight.MIN_MEASURE_INTERVAL >= interval
-            && KBCfgSensorLight.MAX_MEASURE_INTERVAL <= interval)
+        if (KBCfgSensorLight.MIN_MEASURE_INTERVAL <= interval
+            && KBCfgSensorLight.MAX_MEASURE_INTERVAL >= interval)
         {
             measureInterval = interval
             return true
@@ -78,15 +78,21 @@ import Foundation
     {
         var nUpdatePara = super.updateConfig(para)
 
-        if let tempValue = para[KBCfgSensorLight.JSON_SENSOR_TYPE_LUX_LOG_ENABLE] as? Int {
+        if let tempValue = para[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_ENABLE] as? Int {
             logEnable = (tempValue > 0)
             nUpdatePara += 1
         }
+        
+        if let tempValue = para[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_INTERVAL] as? Int {
+            logInterval = tempValue
+            nUpdatePara += 1
+        }
 
-        if let tempValue = para[KBCfgSensorLight.JSON_SENSOR_TYPE_LUX_MEASURE_INTERVAL] as? Int {
+        if let tempValue = para[KBCfgSensorBase.JSON_SENSOR_TYPE_MEASURE_INTERVAL] as? Int {
             measureInterval = tempValue
             nUpdatePara += 1
         }
+
 
         if let tempValue = para[KBCfgSensorLight.SON_SENSOR_TYPE_LUX_CHANGE_THD] as? Int {
             logChangeThreshold = tempValue
@@ -101,11 +107,17 @@ import Foundation
         var cfgDicts = super.toDictionary()
         
         if let tempValue = logEnable{
-            cfgDicts[KBCfgSensorLight.JSON_SENSOR_TYPE_LUX_LOG_ENABLE] = (tempValue ? 1 : 0)
+            cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_ENABLE] = (tempValue ? 1 : 0)
         }
         
+        if let tempValue = logInterval{
+            cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_INTERVAL] = tempValue
+        }
+        
+
+        
         if let tempValue = measureInterval{
-            cfgDicts[KBCfgSensorLight.JSON_SENSOR_TYPE_LUX_MEASURE_INTERVAL] = tempValue
+            cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_MEASURE_INTERVAL] = tempValue
         }
 
         if let tempValue = logChangeThreshold{

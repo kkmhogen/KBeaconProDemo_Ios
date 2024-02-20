@@ -39,7 +39,7 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.1.3'
+pod 'kbeaconlib2','1.1.6'
 ```
 This library is also open source, please refer to this link.  
 [kbeaconlib](https://github.com/kkmhogen/kbeaconlib2)  
@@ -1196,6 +1196,50 @@ func onEnablePIRTrigger()
     }
  ```
 
+#### 4.3.4.6 Tilt angle trigger
+For some KBecon devices with 3-axis accelerometers, you can set the device to trigger based on the tilt angle.  
+Through the Tilt angle trigger, we can set an alarm when the product's tilt angle is below or above a specified threshold. Also, if the product remains in this tilted state, the trigger can also report it repeatedly.
+The tilt below angle range is 90 degrees to -90 degrees.
+When the product is placed upright, the angle is 90 degrees, and when the product is inverted, it is -90 degrees.  
+![avatar](https://github.com/kkmhogen/KBeaconProDemo_Ios/blob/main/tilt_angle.png?raw=true)
+
+ ```swift
+func enableAccAngleTrigger()
+{
+    guard self.beacon!.isConnected(),
+        let commCfg = self.beacon!.getCommonCfg(),
+          commCfg.isSupportTrigger(KBTriggerType.AccAngle) else
+    {
+        print("device does not support cut off trigger")
+        return
+    }
+
+    //set tilt angle trigger
+    let angleTrigger = KBCfgTriggerAngle()
+    angleTrigger.setTriggerAction(KBTriggerAction.Advertisement | KBTriggerAction.ReportToApp)
+    angleTrigger.setTriggerAdvSlot(0)
+
+    //When the Beacon tilt angle <= below angle threshold(45), a trigger event is sent.
+    angleTrigger.setTriggerPara(45)        
+
+    //above angle
+    angleTrigger.setAboveAngle(angle: 90)  
+
+    angleTrigger.setReportingInterval(5)   //set repeat report interval to 5 minutes
+
+    self.beacon!.modifyConfig(obj: angleTrigger) { (result, exception) in
+        if (result)
+        {
+            print("Enable angle trigger success")
+        }
+        else
+        {
+            print("Enable angle trigger failed")
+        }
+    }
+}
+ ```
+
 ### 4.3.5 sensor parameters
 If the device has sensors, such as temperature and humidity sensors, we may need to setting the sensor parameters, such as the measurement interval.
 There are also some beacons, which can save sensor events to non-volatile memory, so that the app or gateway can obtain these historical records. Therefore, we may need to configure the conditions for recording events, such as recording an event when the temperature changes by more than 3 degrees.
@@ -1225,13 +1269,18 @@ func setTHSensorMeasureParameters()
     sensorHTPara.setLogEnable(true)
 
     //unit is second, set measure temperature and humidity interval
-    sensorHTPara.setSensorHtMeasureInterval(2)
+    sensorHTPara.setMeasureInterval(3)
 
-    //unit is 0.1%, if abs(current humidity - last saved humidity) > 3, then save new record
-    sensorHTPara.setHumidityChangeThreshold(30)
+    //set log interval
+    sensorHTPara.setLogInterval(300)
 
-    //unit is 0.1 Celsius, if abs(current temperature - last saved temperature) > 0.5, then save new record
-    sensorHTPara.setTemperatureChangeThreshold(5)
+    //////If the following two parameters are set to 0, the Beacon will log temperature and humidity records every 300 seconds.
+
+    //unit is 0.1%, if abs(current humidity - last saved humidity) > 3, then log new record
+    sensorHTPara.setHumidityLogThreshold(30)
+
+    //unit is 0.1 Celsius, if abs(current temperature - last saved temperature) > 0.5, then log new record
+    sensorHTPara.setTemperatureLogThreshold(5)
 
     self.beacon!.modifyConfig(obj: sensorHTPara) { (result, exception) in
         if (result)
@@ -1758,8 +1807,8 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
  Through the DFU function, you can upgrade the firmware of the device. Our DFU function is based on Nordic's DFU library. In order to make it easier for you to integrate the DFU function, We add the DFU function into ibeacondemo demo project for your reference. The Demo about DFU includes the following class:
  * KBDFUViewController: DFU UI activity and procedure about how to download latest firmware.
  * KBFirmwareDownload: Responsible for download the JSON or firmware from KKM clouds.
- * DFUService: This DFU service that implementation Nordic's DFU library.
- ![avatar](https://github.com/kkmhogen/KBeaconDemo_Ios/blob/master/kbeacon_dfu__ios_arc.png)
+ * DFUService: This DFU service that implementation Nordic's DFU library.  
+ ![avatar](https://github.com/kkmhogen/KBeaconProDemo_Ios/blob/main/kbeacon_dfu__ios_arc.png?raw=true)
 
  ### 5.1 Add DFU function to the application.
  Edit Podfile:
@@ -1793,6 +1842,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
 https://github.com/NordicSemiconductor/IOS-Pods-DFU-Library
 
 ## 6. Change log
+* 2024.1.20 v1.33 Add tilt angle trigger
 * 2023.5.20 v1.32 Add VOC and CO2 sensor
 * 2022.6.1 v1.31 Add PIR sensor
 * 2021.6.20 v1.30 Support slot adv

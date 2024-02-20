@@ -34,7 +34,7 @@ import Foundation
     
     @objc public func getAccODR()->Int
     {
-        return accODR ?? KBCfgBase.INVALID_INT
+        return accODR ?? KBCfgTriggerMotion.ACC_ODR_25_HZ
     }
 
     @objc public func getWakeupDuration()->Int

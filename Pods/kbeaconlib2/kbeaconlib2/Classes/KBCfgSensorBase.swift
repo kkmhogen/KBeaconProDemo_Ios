@@ -10,7 +10,9 @@ import Foundation
 @objc public class KBCfgSensorBase : KBCfgBase{
     @objc public static let JSON_SENSOR_TYPE_LOG_ENABLE = "log"
     @objc public static let JSON_SENSOR_TYPE_MEASURE_INTERVAL = "msItvl"
-
+    
+    @objc public static let  JSON_SENSOR_TYPE_LOG_INTERVAL = "lgItvl";
+    
     @objc public static let JSON_FIELD_SENSOR_OBJ_LIST = "srObj"
     
     @objc public static let JSON_FIELD_SENSOR_TYPE = "srType"
@@ -19,23 +21,22 @@ import Foundation
     @objc public static let JSON_SENSOR_DISABLE_PERIOD1 = "dPrd1"
     @objc public static let JSON_SENSOR_DISABLE_PERIOD2 = "dPrd2"
     
+    //Log interval
+    @objc public static let DEFAULT_LOG_INTERVAL = 300;
+    @objc public static let MAX_LOG_INTERVAL = 14400;
+    @objc public static let MIN_LOG_INTERVAL = 1;
+    
     //sensor type
     internal var sensorType: Int
+    
+    //log interval
+    internal var logInterval: Int?
     
     internal var disablePeriod0: UInt32?
 
     internal var disablePeriod1: UInt32?
     
     internal var disablePeriod2: UInt32?
-
-    @objc public func getSensorType() ->Int {
-        return sensorType
-    }
-    
-    @objc public func setSensorType(_ type: Int)
-    {
-        self.sensorType = type
-    }
     
     @objc public override required init()
     {
@@ -46,6 +47,33 @@ import Foundation
         self.sensorType = sensorType
         
         super.init()
+    }
+    
+    @objc public func getSensorType() ->Int {
+        return sensorType
+    }
+
+    @objc public func setSensorType(_ type: Int)
+    {
+        self.sensorType = type
+    }
+    
+    @objc public func getLogInterval() ->Int{
+        return logInterval ?? KBCfgBase.INVALID_INT
+    }
+    
+    @objc @discardableResult public func setLogInterval(_ interval :Int)->Bool
+    {
+        if (KBCfgSensorBase.MIN_LOG_INTERVAL <= interval
+            && KBCfgSensorBase.MAX_LOG_INTERVAL >= interval)
+        {
+            logInterval = interval
+            return true
+        }
+        else
+        {
+            return false
+        }
     }
     
     @objc public func getDisablePeriod0()->KBTimeRange?
@@ -122,6 +150,11 @@ import Foundation
             disablePeriod2 = tempValue
             nUpdatePara += 1
         }
+        
+        if let tempValue = para[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_INTERVAL] as? Int {
+            logInterval = tempValue
+            nUpdatePara += 1
+        }
 
         return nUpdatePara;
     }
@@ -147,7 +180,14 @@ import Foundation
         {
             cfgDicts[KBCfgSensorBase.JSON_SENSOR_DISABLE_PERIOD2] = tempPeriod
         }
-                
+        
+        if let tempValue = logInterval{
+            cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_INTERVAL] = tempValue
+        }
         return cfgDicts;
+    }
+    
+    public override func toJsonObject() -> [String : Any] {
+        return toDictionary()
     }
 }

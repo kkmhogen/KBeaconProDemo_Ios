@@ -10,7 +10,6 @@ import Foundation
 @objc public class KBRecordCO2 : KBRecordBase{
     
     @objc public static let CO2_RECORD_LEN = UInt8(10)
-
     
     @objc public var utcTime : UInt32
     
@@ -57,11 +56,11 @@ import Foundation
         nRecordPtr += 2
         
         //temperature
-        temperature = KBUtility.signedBytes2Float(byte1: Int8(bitPattern:response[nRecordPtr]), byte2: response[nRecordPtr + 1]);
+        temperature = KBUtility.signedBytes2Float(byte1: response[nRecordPtr], byte2: response[nRecordPtr + 1]);
         nRecordPtr += 2;
 
         //humidity
-        humidity = KBUtility.signedBytes2Float(byte1: Int8(bitPattern:response[nRecordPtr]), byte2: response[nRecordPtr+1]);
+        humidity = KBUtility.signedBytes2Float(byte1: response[nRecordPtr], byte2: response[nRecordPtr+1]);
         nRecordPtr += 2;
         
         return true

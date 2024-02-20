@@ -39,7 +39,8 @@ internal class KBAdvPacketHandler : NSObject
         Int(KBAdvType.EddyURL): KBAdvPacketEddyURL.self,
         Int(KBAdvType.IBeacon): KBAdvPacketIBeacon.self,
         Int(KBAdvType.Sensor): KBAdvPacketSensor.self,
-        Int(KBAdvType.System): KBAdvPacketSystem.self
+        Int(KBAdvType.System): KBAdvPacketSystem.self,
+        Int(KBAdvType.AOA):KBAdvPacketAOA.self
         ]
     
     internal override init()
@@ -93,18 +94,25 @@ internal class KBAdvPacketHandler : NSObject
         
         //get manufacture
         if let kkmManufactureData = advData["kCBAdvDataManufacturerData"] as? Data,
-           kkmManufactureData.count > 3,
-           (kkmManufactureData[0] == 0x53 && kkmManufactureData[1] == 0xA)
+           kkmManufactureData.count > 3
         {
-            if (kkmManufactureData[2] == 0x21
-                        && kkmManufactureData.count >= KBAdvPacketSensor.MIN_SENSOR_ADV_LEN)
-            {
-                advType = KBAdvType.Sensor;
-            }
-            else if (kkmManufactureData[2] == 0x22
-                        && kkmManufactureData.count >= KBAdvPacketSystem.MIN_ADV_PACKET_LEN)
-            {
-                advType = KBAdvType.System;
+            if kkmManufactureData[0] == 0x53, kkmManufactureData[1] == 0x0A {
+                if (kkmManufactureData[2] == 0x21
+                            && kkmManufactureData.count >= KBAdvPacketSensor.MIN_SENSOR_ADV_LEN)
+                {
+                    advType = KBAdvType.Sensor;
+                }
+                else if (kkmManufactureData[2] == 0x22
+                            && kkmManufactureData.count >= KBAdvPacketSystem.MIN_ADV_PACKET_LEN)
+                {
+                    advType = KBAdvType.System;
+                }else if  kkmManufactureData[2] == 0x04 {
+                    advType = KBAdvType.AOA
+                }
+            }else if kkmManufactureData[0] == 0x0D, kkmManufactureData[1] == 0x00  {
+                if  kkmManufactureData[2] == 0x04 {
+                    advType = KBAdvType.AOA
+                }
             }
             advDataIndex = 3
             pAdvData = kkmManufactureData

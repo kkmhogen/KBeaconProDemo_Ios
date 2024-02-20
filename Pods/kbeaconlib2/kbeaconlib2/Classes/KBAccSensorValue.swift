@@ -15,3 +15,12 @@ import Foundation
     
     @objc public var zAis: Int16 = 0
 }
+
+@objc public class KBAccAOAValue : NSObject
+{
+    @objc public var xAis: Int8 = 0
+    
+    @objc public var yAis: Int8 = 0
+    
+    @objc public var zAis: Int8 = 0
+}

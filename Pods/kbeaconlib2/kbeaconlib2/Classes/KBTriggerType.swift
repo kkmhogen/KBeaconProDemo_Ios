@@ -14,7 +14,7 @@ import Foundation
 
     //motion sensor trigger
     @objc public static let AccMotion = 1
-
+    @objc public static let AccAngle = 2
     //push button trigger
     @objc public static let BtnLongPress = 3   //long press
     @objc public static let BtnSingleClick = 4   //single tap

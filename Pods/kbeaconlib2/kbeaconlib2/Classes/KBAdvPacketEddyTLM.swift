@@ -55,7 +55,7 @@ import Foundation
         nSrvIndex += 2
         
         //temputure
-        let tempHeigh = Int8(bitPattern:data[nSrvIndex]);
+        let tempHeigh = data[nSrvIndex];
         nSrvIndex += 1
         let tempLow = data[nSrvIndex];
         nSrvIndex += 1

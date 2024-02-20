@@ -33,7 +33,7 @@ import Foundation
     
     public override func getSenorType()->Int
     {
-        return KBSensorType.Cutoff
+        return KBSensorType.HTHumidity
     }
     
     public override func parseRecord(utcOffset: UInt32, response: Data, dataPtr: Int)->Bool
@@ -47,10 +47,10 @@ import Foundation
         }
         nRecordPtr += 4
         
-        temperature = KBUtility.signedBytes2Float(byte1: Int8(bitPattern:response[nRecordPtr]), byte2: response[nRecordPtr + 1]);
+        temperature = KBUtility.signedBytes2Float(byte1: response[nRecordPtr], byte2: response[nRecordPtr + 1]);
         nRecordPtr += 2;
 
-        humidity = KBUtility.signedBytes2Float(byte1: Int8(bitPattern:response[nRecordPtr]), byte2: response[nRecordPtr+1]);
+        humidity = KBUtility.signedBytes2Float(byte1:response[nRecordPtr], byte2: response[nRecordPtr+1]);
         nRecordPtr += 2;
         
         return true

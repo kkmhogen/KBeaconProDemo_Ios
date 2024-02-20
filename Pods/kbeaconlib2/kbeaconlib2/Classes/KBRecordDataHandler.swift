@@ -69,6 +69,9 @@ public class KBRecordDataHandler : NSObject
         //read direction
         byMsgReq.append(UInt8(option.rawValue))
         
+        //high speed (connection interval to 30 ms, unit is 1.25ms)
+        byMsgReq.append(UInt8(24))
+        
         return byMsgReq
     }
     

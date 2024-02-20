@@ -12,11 +12,18 @@ import Foundation
     @objc public static let JSON_FIELD_SENSOR_AXIS = "axis"
     @objc public static let JSON_FIELD_SENSOR_LUX = "lux"
     @objc public static let JSON_FIELD_SENSOR_PIR = "pir"
-    
+    @objc public static let JSON_FIELD_RECORD_COUNT = "rcd"
+    @objc public static let JSON_FIELD_SENSOR_VOC = "voc"
+    @objc public static let JSON_FIELD_SENSOR_CO2 = "co2"
+
     var htSensorInclude: Bool?
     var axisSensorInclude: Bool?
     var lightSensorInclude: Bool?
     var pirSensorInclude: Bool?
+    var recordInclude: Bool?
+    var vocSensorInclude: Bool?
+    var co2SensorInclude: Bool?
+
 
     @objc public required init()
     {
@@ -52,9 +59,33 @@ import Foundation
         self.pirSensorInclude = sensorInclude
     }
     
-    
     @objc public func isPirSensorInclude()->Bool {
         return pirSensorInclude ?? false
+    }
+    
+    @objc public func isVOCSensorInclude()->Bool {
+        return vocSensorInclude ?? false
+    }
+
+    @objc public func setVOCSensorInclude(_ sensorInclude : Bool) {
+        self.vocSensorInclude = sensorInclude
+    }
+    
+    @objc public func isCO2SensorInclude()->Bool {
+        return co2SensorInclude ?? false
+    }
+
+    @objc public func setCO2SensorInclude(_ sensorInclude : Bool) {
+        self.co2SensorInclude = sensorInclude
+    }
+    
+    
+    @objc public func setRecordInclude(_ sensorInclude : Bool) {
+        self.recordInclude = sensorInclude
+    }
+    
+    @objc public func isRecordInclude()->Bool {
+        return recordInclude ?? false
     }
 
     @objc @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
@@ -80,6 +111,21 @@ import Foundation
             pirSensorInclude = (tempValue > 0)
             nUpdatePara += 1
         }
+        
+        if let tempValue = para[KBCfgAdvKSensor.JSON_FIELD_SENSOR_VOC] as? Int {
+            vocSensorInclude = (tempValue > 0)
+            nUpdatePara += 1
+        }
+        
+        if let tempValue = para[KBCfgAdvKSensor.JSON_FIELD_SENSOR_CO2] as? Int {
+            co2SensorInclude = (tempValue > 0)
+            nUpdatePara += 1
+        }
+        
+        if let tempValue = para[KBCfgAdvKSensor.JSON_FIELD_RECORD_COUNT] as? Int {
+            recordInclude = (tempValue > 0)
+            nUpdatePara += 1
+        }
 
         return nUpdatePara;
     }
@@ -102,6 +148,18 @@ import Foundation
         
         if let tempValue = pirSensorInclude{
             cfgDicts[KBCfgAdvKSensor.JSON_FIELD_SENSOR_PIR] = (tempValue ? 1 : 0)
+        }
+        
+        if let tempValue = vocSensorInclude{
+            cfgDicts[KBCfgAdvKSensor.JSON_FIELD_SENSOR_VOC] = (tempValue ? 1 : 0)
+        }
+        
+        if let tempValue = co2SensorInclude{
+            cfgDicts[KBCfgAdvKSensor.JSON_FIELD_SENSOR_CO2] = (tempValue ? 1 : 0)
+        }
+        
+        if let tempValue = recordInclude{
+            cfgDicts[KBCfgAdvKSensor.JSON_FIELD_RECORD_COUNT] = (tempValue ? 1 : 0)
         }
 
         return cfgDicts;

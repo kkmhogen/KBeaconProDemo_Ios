@@ -22,10 +22,13 @@ internal class KBCfgHandler {
         KBAdvType.EddyTLM: KBCfgAdvEddyTLM.self,
         KBAdvType.EddyURL: KBCfgAdvEddyURL.self,
         KBAdvType.IBeacon: KBCfgAdvIBeacon.self,
-        KBAdvType.System: KBCfgAdvSystem.self]
+        KBAdvType.System: KBCfgAdvSystem.self,
+        KBAdvType.AOA: KBCfgAdvAOA.self,
+    ]
     
     static var kbCfgTriggerObjects : Dictionary<Int, KBCfgTrigger.Type> = [
         KBTriggerType.AccMotion: KBCfgTriggerMotion.self,
+        KBTriggerType.AccAngle: KBCfgTriggerAngle.self,
         KBTriggerType.TriggerNull: KBCfgTrigger.self,
         KBTriggerType.BtnLongPress: KBCfgTrigger.self,
         KBTriggerType.BtnSingleClick: KBCfgTrigger.self,
@@ -47,7 +50,8 @@ internal class KBCfgHandler {
         KBSensorType.PIR: KBCfgSensorPIR.self,
         KBSensorType.Light: KBCfgSensorLight.self,
         KBSensorType.VOC: KBCfgSensorVOC.self,
-        KBSensorType.CO2: KBCfgSensorCO2.self
+        KBSensorType.CO2: KBCfgSensorCO2.self,
+        KBSensorType.Acc: KBCfgSensorAcc.self
     ]
     
     internal init()
@@ -101,13 +105,21 @@ internal class KBCfgHandler {
         var cfgList:[KBCfgTrigger]?
         for triggerCfg in kbDeviceCfgTriggerLists
         {
-            if slotIndex == triggerCfg.getTriggerAdvSlot()
+            let triggerAction = triggerCfg.getTriggerAction()
+            let triggerSlotIndex = triggerCfg.getTriggerAdvSlot()
+            
+            if (triggerAction != KBCfgBase.INVALID_INT
+                && triggerSlotIndex != KBCfgBase.INVALID_INT)
             {
-                if (cfgList == nil)
+                if (triggerAction & KBTriggerAction.Advertisement) > 0
+                    && slotIndex == triggerSlotIndex
                 {
-                    cfgList = [KBCfgTrigger]()
+                    if (cfgList == nil)
+                    {
+                        cfgList = [KBCfgTrigger]()
+                    }
+                    cfgList!.append(triggerCfg)
                 }
-                cfgList!.append(triggerCfg)
             }
         }
         return cfgList

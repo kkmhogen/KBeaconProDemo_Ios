@@ -793,6 +793,38 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         }
     }
     
+    func enableAccAngleTrigger()
+    {
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportTrigger(KBTriggerType.AccAngle) else
+        {
+            print("device does not support cut off trigger")
+            return
+        }
+        
+        //set tilt angle trigger
+        let angleTrigger = KBCfgTriggerAngle()
+        angleTrigger.setTriggerAction(KBTriggerAction.Advertisement | KBTriggerAction.ReportToApp)
+        angleTrigger.setTriggerAdvSlot(0)
+        
+        //set trigger angle
+        angleTrigger.setTriggerPara(45)        //set below angle threashold
+        angleTrigger.setAboveAngle(angle: 90)  //set above angle threashold
+        angleTrigger.setReportingInterval(5)   //set repeat report interval to 5 minutes
+        
+        self.beacon!.modifyConfig(obj: angleTrigger) { (result, exception) in
+            if (result)
+            {
+                print("Enable angle trigger success")
+            }
+            else
+            {
+                print("Enable angle trigger failed")
+            }
+        }
+    }
+    
     //update HT sensor parameters
     func setTHSensorMeasureParameters()
     {
@@ -816,13 +848,16 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         sensorHTPara.setLogEnable(true)
 
         //unit is second, set measure temperature and humidity interval
-        sensorHTPara.setSensorMeasureInterval(2)
+        sensorHTPara.setMeasureInterval(2)
+        
+        //set log interval
+        sensorHTPara.setLogInterval(300)
 
         //unit is 0.1%, if abs(current humidity - last saved humidity) > 3, then save new record
-        sensorHTPara.setHumidityChangeThreshold(30)
+        sensorHTPara.setHumidityLogThreshold(30)
 
         //unit is 0.1 Celsius, if abs(current temperature - last saved temperature) > 0.5, then save new record
-        sensorHTPara.setTemperatureChangeThreshold(5)
+        sensorHTPara.setTemperatureLogThreshold(5)
 
         //enable sensor advertisement
         self.beacon!.modifyConfig(obj: sensorHTPara) { (result, exception) in
@@ -1404,6 +1439,32 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
                 if (dataRsp.readDataNextPos == KBRecordDataRsp.INVALID_DATA_RECORD_POS)
                 {
                     NSLog("read history complete")
+                }
+            }
+        }
+    }
+    
+    //read battery level
+    func readBatteryLevel()
+    {
+        guard self.beacon!.isConnected() else
+        {
+            print("device does not connected")
+            return
+        }
+        
+        //get battery percent(the SDK will read battery level after authentication)
+        if let commPara = self.beacon!.getCommonCfg()
+        {
+            print("battery percent:\(commPara.getBatteryPercent())")
+        }
+        
+        //read battery percent from device again
+        self.beacon!.readCommonConfig { result, rspData, error in
+            if (result){
+                if let newCommPara = self.beacon!.getCommonCfg()
+                {
+                    print("new battery percent:\(newCommPara.getBatteryPercent())")
                 }
             }
         }

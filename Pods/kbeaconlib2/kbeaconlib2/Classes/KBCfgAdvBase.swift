@@ -30,6 +30,8 @@ import Foundation
     @objc public static let  JSON_FIELD_ADV_TRIGGER_ONLY = "trAdv"
     @objc public static let  JSON_FIELD_ADV_CONNECTABLE = "conn"
     @objc public static let  JSON_FIELD_ADV_MODE = "mode"
+    //adv channel mask
+    @objc public static let  JSON_FIELD_CHANNEL_MASK = "chMsk"
 
     var slotIndex : Int?
     
@@ -44,6 +46,9 @@ import Foundation
     var advMode : Int?       //advertisement mode
 
     var advTriggerOnly: Bool?  //trigger only
+    
+    //advertisement channel mask
+    private var advChanelMask : UInt8?
     
     @objc public required override init()
     {
@@ -74,7 +79,21 @@ import Foundation
     {
         return advPeriod ?? KBCfgBase.INVALID_FLOAT
     }
+    
+    @objc public func getAdvChanelMask()->UInt8
+    {
+        return advChanelMask ?? KBCfgBase.INVALID_UINT8
+    }
 
+    @objc @discardableResult public func setAdvChanelMask(_ chMask: UInt8) -> Bool {
+        if (chMask < 7) {
+            self.advChanelMask = chMask;
+            return true
+        } else {
+            return false
+        }
+    }
+    
     //default is true
     @objc public func isAdvConnectable()->Bool
     {
@@ -212,6 +231,12 @@ import Foundation
             advTriggerOnly = (tempValue > 0)
             nUpdateParaNum += 1
         }
+        
+        //channel mask
+        if let tempValue = para[KBCfgAdvBase.JSON_FIELD_CHANNEL_MASK] as? UInt8 {
+            advChanelMask = tempValue
+            nUpdateParaNum += 1
+        }
 
         return nUpdateParaNum;
     }
@@ -251,6 +276,11 @@ import Foundation
             cfgDicts[KBCfgAdvEddyUID.JSON_FIELD_ADV_TRIGGER_ONLY] = tempValue ? 1 : 0
         }
 
+        //channel mask
+        if let tempValue = advChanelMask {
+            cfgDicts[KBCfgAdvBase.JSON_FIELD_CHANNEL_MASK] = tempValue;
+        }
+        
         return cfgDicts;
     }
 }

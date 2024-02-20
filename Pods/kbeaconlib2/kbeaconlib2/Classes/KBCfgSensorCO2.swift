@@ -21,11 +21,13 @@ import Foundation
     //co2 change thd
     @objc public static let DEFAULT_CO2_CHANGE_LOG_THD = 20
     @objc public static let MAX_CO2_CHANGE_LOG_THD = 256
-    @objc public static let MIN_CO2_CHANGE_LOG_THD = 5
-
+    @objc public static let MIN_CO2_CHANGE_LOG_THD = 0;
 
     //log enable
     private var logEnable: Bool?
+    
+    //log interval
+//    private var logInterval: Int?
 
     //asc enable
     private var ascEnable: Bool?
@@ -103,11 +105,18 @@ import Foundation
             logEnable = (tempValue > 0)
             nUpdatePara += 1
         }
+        
+        if let tempValue = para[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_INTERVAL] as? Int {
+            logInterval = tempValue
+            nUpdatePara += 1
+        }
 
         if let tempValue = para[KBCfgSensorBase.JSON_SENSOR_TYPE_MEASURE_INTERVAL] as? Int {
             measureInterval = tempValue
             nUpdatePara += 1
         }
+        
+      
 
         if let tempValue = para[KBCfgSensorCO2.JSON_SENSOR_TYPE_CO2_CHANGE_THD] as? Int {
             logCO2SaveThd = tempValue
@@ -130,6 +139,10 @@ import Foundation
             cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_ENABLE] = (tempValue ? 1 : 0)
         }
         
+        if let tempValue = logInterval{
+            cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_LOG_INTERVAL] = tempValue
+        }
+        
         if let tempValue = measureInterval{
             cfgDicts[KBCfgSensorBase.JSON_SENSOR_TYPE_MEASURE_INTERVAL] = tempValue
         }
@@ -141,7 +154,9 @@ import Foundation
         if let tempValue = logCO2SaveThd{
             cfgDicts[KBCfgSensorCO2.JSON_SENSOR_TYPE_CO2_CHANGE_THD] = tempValue
         }
-
+        
+       
+        
         return cfgDicts;
     }
 

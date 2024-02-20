@@ -1363,7 +1363,6 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         let msgBodyLen = dataLen - KBeacon.DATA_ACK_HEAD_LEN
         if mActionList.isEmpty
         {
-            NSLog("action list is empty, discard ack message");
             return
         }
         
@@ -1588,7 +1587,10 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         {
             //new read message command
             action.receiveData = data.subdata(in: readIndex..<data.count)
-            //[self configSendDataRptAck: mReceiveData.length dataType:dataType  cause: 0];
+            
+            self.configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count),
+                                      dataType: dataType,
+                                      cause: 0)
             bRcvDataCmp = true;
         }
         

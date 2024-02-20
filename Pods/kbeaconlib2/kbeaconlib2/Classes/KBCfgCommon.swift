@@ -32,13 +32,25 @@ import Foundation
     @objc public static let  JSON_FIELD_BASIC_CAPABILITY = "bCap"
     @objc public static let JSON_FIELD_TRIG_CAPABILITY = "trCap"
     @objc public static let JSON_FIELD_BATTERY_PERCENT = "btPt"
+    @objc public static let  JSON_FIELD_IDENTIFY = "id"
 
+    @objc public static let ADV_CHANNEL_37_MASK = 0x4;
+    @objc public static let ADV_CHANNEL_38_MASK = 0x2;
+    @objc public static let ADV_CHANNEL_39_MASK = 0x1;
+    
     //configurable parameters
     @objc public static let  JSON_FIELD_DEV_NAME = "name"
     @objc public static let  JSON_FIELD_PWD = "pwd"
     @objc public static let  JSON_FIELD_MEA_PWR = "meaPwr"
     @objc public static let  JSON_FIELD_AUTO_POWER_ON = "atPwr"
-    @objc public static let  JSON_FIELD_MAX_ADV_PERIOD = "maxPrd";
+    @objc public static let  JSON_FIELD_MAX_ADV_PERIOD = "maxPrd"
+
+
+    //flash led interval
+    @objc public static let  JSON_FIELD_BLINK_LED_INTERVAL = "led"
+    
+    //low battery blink only
+    @objc public static let  JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY = "lwBlk"
 
     //basic capiblity
     private var maxSlot: Int?
@@ -63,6 +75,8 @@ import Foundation
 
     private var hversion : String?
 
+    private var serialNo:Int?
+    
     ////////////////////can be configruation able///////////////////////
     private var refPower1Meters:Int?   //received RSSI at 1 meters
 
@@ -71,6 +85,10 @@ import Foundation
     private var name: String?
 
     private var alwaysPowerOn : Bool? //beacon automatic start advertisement after powen on
+    
+    //led flash when power on
+    private var alwaysLedBlinkInterval: UInt8?
+    private var lowBatteryLedBlinkOnly : Bool?
 
     @objc public func getMaxSlot()->Int
     {
@@ -86,7 +104,17 @@ import Foundation
     {
         return maxTrigger ?? 5
     }
-
+    
+    @objc public func getBatteryPercent()->Int
+    {
+        return batteryPercent ?? 0
+    }
+    
+    @objc public func getSerialNo()->Int
+    {
+        return serialNo ?? KBCfgBase.INVALID_INT
+    }
+    
     //basic capability
     @objc public func getBasicCapability()->Int
     {
@@ -137,6 +165,12 @@ import Foundation
     @objc public func isSupportKBSystem()->Bool
     {
         return isSupportAdvType(KBAdvType.System)
+    }
+    
+    //is support AOA advType
+    @objc public func isSupportAOA()->Bool
+    {
+       return isSupportAdvType(KBAdvType.AOA)
     }
 
     //support BLE5 LongRange
@@ -204,6 +238,16 @@ import Foundation
     {
         if let tempAdvCap = self.basicCapability{
             return (tempAdvCap & 0x8) > 0
+        }else{
+            return false
+        }
+    }
+    
+    //is support channel mask
+    @objc public func isSupportAdvChannelMask()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x200000) > 0
         }else{
             return false
         }
@@ -330,7 +374,17 @@ import Foundation
     {
         return alwaysPowerOn ?? false
     }
+    
+    
+    @objc public func getAlwaysLedBlinkInterval()->UInt8
+    {
+        return alwaysLedBlinkInterval ?? KBCfgBase.INVALID_UINT8
+    }
 
+    @objc public func isLowBatteryBlinkOnly()->Bool
+    {
+        return lowBatteryLedBlinkOnly ?? false
+    }
 
     @objc @discardableResult public func setRefPower1Meters(_ value: Int)->Bool{
         if (value < -10 && value > -100) {
@@ -363,6 +417,20 @@ import Foundation
 
     @objc public func setAlwaysPowerOn(_ isEnable: Bool) {
         self.alwaysPowerOn = isEnable
+    }
+
+    
+    @objc @discardableResult public func setAlwaysFlashLedInterval(_ alwaysFlashLedInterval: UInt8)  -> Bool{
+        if (alwaysFlashLedInterval <= 100) {
+            self.alwaysLedBlinkInterval = alwaysFlashLedInterval;
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    @objc public func setLowBatteryLedBlinkOnly(_ lowBatteryFlash: Bool) {
+        self.lowBatteryLedBlinkOnly = lowBatteryFlash
     }
 
     @objc @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
@@ -447,6 +515,24 @@ import Foundation
             batteryPercent = tempValue
             nUpdatePara += 1
         }
+        
+        //identify
+        if let tempValue = para[KBCfgCommon.JSON_FIELD_IDENTIFY] as? Int {
+            serialNo = tempValue
+            nUpdatePara += 1
+        }
+        
+        //blink interval
+        if let tempValue = para[KBCfgCommon.JSON_FIELD_BLINK_LED_INTERVAL] as? UInt8 {
+            alwaysLedBlinkInterval = tempValue
+            nUpdatePara += 1
+        }
+        
+        //low battery blink only
+        if let tempValue = para[KBCfgCommon.JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY] as? Int {
+            lowBatteryLedBlinkOnly = (tempValue > 0)
+            nUpdatePara += 1
+        }
 
         return nUpdatePara;
     }
@@ -473,6 +559,17 @@ import Foundation
         //auto power
         if let tempValue = alwaysPowerOn {
             configDicts[KBCfgCommon.JSON_FIELD_AUTO_POWER_ON] = tempValue ? 1 : 0;
+        }
+    
+        
+        //led blink interval
+        if let tempValue = alwaysLedBlinkInterval {
+            configDicts[KBCfgCommon.JSON_FIELD_BLINK_LED_INTERVAL] = tempValue;
+        }
+        
+        //low battery blink
+        if let tempValue = lowBatteryLedBlinkOnly {
+            configDicts[KBCfgCommon.JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY] = tempValue ? 1 : 0;
         }
 
         return configDicts;

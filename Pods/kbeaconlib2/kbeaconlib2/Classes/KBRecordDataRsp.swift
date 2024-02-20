@@ -11,7 +11,6 @@ import Foundation
 {
     public static let INVALID_DATA_RECORD_POS = UInt32(4294967295)
 
-    
     @objc public var readDataNextPos: UInt32
 
     @objc public var readDataRspList : [NSObject]
