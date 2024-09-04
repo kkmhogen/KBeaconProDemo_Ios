@@ -15,6 +15,7 @@ import Foundation
     @objc public static let Record = 0x4
     @objc public static let Vibration = 0x8
     @objc public static let ReportToApp = 0x10
+    @objc public static let BLEScan = 0x20
     
-    @objc public static let AllMask = (0x1 | 0x2 | 0x4 | 0x8 | 0x10)
+    @objc public static let AllMask = (0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x20)
 }

@@ -338,6 +338,14 @@ class RootViewController: UIViewController ,UITextFieldDelegate, UITableViewData
                     print("modelNo:\(systemAdv.model)")
                     print("ver:\(systemAdv.firmwareVersion)")
                 }
+            case KBAdvType.EBeacon:
+                if let encryptAdv = advPacket as? KBAdvPacketEBeacon
+                {
+                    print("-----EBeacon----")
+                    print("Decrypt UUID:\(encryptAdv.uuid)")
+                    print("ADV UTC:\(encryptAdv.utcSecCount)")
+                    print("Reference power:\(encryptAdv.measurePower)")
+                }
             default:
                 print("unknown packet")
             }

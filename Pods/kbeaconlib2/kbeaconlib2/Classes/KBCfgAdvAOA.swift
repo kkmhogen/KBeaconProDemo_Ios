@@ -11,12 +11,16 @@ import Foundation
 {
     @objc public static let JSON_FIELD_AOA_TYPE  = "aoa"
     @objc public static let JSON_FIELD_AOA_AXIS = "axis"
-    @objc public static let JSON_FIELD_AOA_AItvl = "aItvl"
+    @objc public static let JSON_FIELD_AOA_SYS_ADV_INTERVAL = "aItvl"
     @objc public static let FIELD_AOA_MAXInterval = 255
     //
     private var type : Int?
+    
     private var axisSupport : Bool?
-    private var aItvl : Int?
+    
+    //the beacon will advertisement system info(acc,version)
+    // every sysAdvInterval when broadcasting AOA advertisement
+    private var sysAdvInterval : Int?
 
     @objc public required init()
     {
@@ -28,12 +32,12 @@ import Foundation
         return type;
     }
     
-    @objc  public func setType(_ type: Int)
+    public func setType(_ type: Int)
     {
         self.type = type
     }
     
-    @objc  public func setAxisSupport(_ axis: Bool)
+    public func setAxisSupport(_ axis: Bool)
     {
         self.axisSupport = axis
     }
@@ -43,14 +47,14 @@ import Foundation
         return axisSupport == true
     }
 
-    @objc  public func setAItvl(_ aItvl: Int)
+    public func setSysAdvInterval(_ aItvl: Int)
     {
-        self.aItvl = aItvl
+        self.sysAdvInterval = aItvl
     }
     
-    public func getAItvl()->Int?
+    public func getSysAdvInterval()->Int?
     {
-        return aItvl
+        return sysAdvInterval
     }
 
     @objc @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
@@ -65,8 +69,8 @@ import Foundation
             axisSupport = tempValue > 0
             nUpdatePara += 1
         }
-        if let tempValue = para[KBCfgAdvAOA.JSON_FIELD_AOA_AItvl] as? Int {
-            aItvl = tempValue
+        if let tempValue = para[KBCfgAdvAOA.JSON_FIELD_AOA_SYS_ADV_INTERVAL] as? Int {
+            sysAdvInterval = tempValue
             nUpdatePara += 1
         }
         return nUpdatePara;
@@ -82,8 +86,8 @@ import Foundation
         if let tempValue = axisSupport{
             cfgDicts[KBCfgAdvAOA.JSON_FIELD_AOA_AXIS] = (tempValue ? 1 : 0)
         }
-        if let tempValue = aItvl{
-            cfgDicts[KBCfgAdvAOA.JSON_FIELD_AOA_AItvl] = tempValue
+        if let tempValue = sysAdvInterval{
+            cfgDicts[KBCfgAdvAOA.JSON_FIELD_AOA_SYS_ADV_INTERVAL] = tempValue
         }
         return cfgDicts;
     }

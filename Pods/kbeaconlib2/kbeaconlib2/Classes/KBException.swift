@@ -58,16 +58,25 @@ import Foundation
     @objc static public let CfgSubErrorSlotUsedByTrigger = 0x109
 
     //This type advertisement can only be single instance
-    @objc static public let CfgSubErrorAdvTypeDuplicate = 0x110
+    @objc static public let CfgSubErrorAdvTypeDuplicate = 0x10A
 
     //the trigger was already enable
-    @objc static public let CfgSubErrorTriggerTypeDuplicate = 0x111
-
-    //the request record No does not exist
-    @objc static public let CfgSubErrorRecordNotExist = 0x131
-
-    //enable sensor failed
-    @objc static public let CfgSubErrorEnableSensorFailed = 0x135
+    @objc static public let CfgSubErrorTriggerTypeDuplicate = 0x10B
+    
+    //command busy
+    @objc static public let CfgCmdBusy = 0x10C
+    
+    //nable sensor failed
+    @objc static public let CfgSubErrorEnableSensorFailed = 0x116
+    
+    //not supported trigger
+    @objc static public let CfgSubErrorNotSupportTriggerFailed = 0x117
+    
+    //not supported sensor
+    @objc static public let CfgSubErrorNotSupportSensorFailed = 0x118
+    
+    //unknown message
+    @objc static public let CfgSubErrorNotSupportMsgFailed = 0x119
 }
 
 

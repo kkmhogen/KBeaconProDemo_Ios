@@ -17,9 +17,8 @@ import Foundation
 
     @objc public var model:UInt8 = 0
 
-    @objc public var macAddress:String?
+    @objc public var macAddress: String?
     
-  
     internal required init() {
         super.init()
     }

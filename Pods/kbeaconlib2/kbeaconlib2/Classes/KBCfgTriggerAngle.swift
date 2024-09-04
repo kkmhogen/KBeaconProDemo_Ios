@@ -41,7 +41,7 @@ public class KBCfgTriggerAngle:  KBCfgTrigger {
         return aboveAngle
     }
     
-    public func setAboveAngle(angle:Int) {
+    public func setAboveAngle(_ angle:Int) {
         aboveAngle = angle
     }
     

@@ -26,8 +26,6 @@ import Foundation
     //log enable
     private var logEnable: Bool?
     
-    //log interval
-//    private var logInterval: Int?
 
     //asc enable
     private var ascEnable: Bool?

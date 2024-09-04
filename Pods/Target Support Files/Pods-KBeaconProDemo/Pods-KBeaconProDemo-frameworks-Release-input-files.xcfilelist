@@ -1,4 +1,5 @@
 ${PODS_ROOT}/Target Support Files/Pods-KBeaconProDemo/Pods-KBeaconProDemo-frameworks.sh
+${BUILT_PRODUCTS_DIR}/CryptoSwift/CryptoSwift.framework
 ${BUILT_PRODUCTS_DIR}/MJRefresh/MJRefresh.framework
 ${BUILT_PRODUCTS_DIR}/ZIPFoundation/ZIPFoundation.framework
 ${BUILT_PRODUCTS_DIR}/iOSDFULibrary/iOSDFULibrary.framework

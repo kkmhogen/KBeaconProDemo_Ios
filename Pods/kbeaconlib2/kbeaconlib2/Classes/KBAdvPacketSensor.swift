@@ -120,6 +120,14 @@ import Foundation
             nSrvIndex += 1
             
             humidity = KBUtility.signedBytes2Float(byte1: humHeigh, byte2: humLow)
+            
+            if humidity < 0 {
+
+                if temperature != KBCfgBase.INVALID_FLOAT {
+                    temperature = Float(100 * (-1 - Int(humidity))) + temperature
+                }
+                humidity = KBCfgBase.INVALID_FLOAT
+            }
         }
         else
         {

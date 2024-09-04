@@ -36,7 +36,7 @@ public class KBRecordDataHandler : NSObject
     static var kbSensorParserObjects: Dictionary<Int, KBRecordBase.Type> = [
         KBSensorType.VOC: KBRecordVOC.self,
         KBSensorType.CO2: KBRecordCO2.self,
-        KBSensorType.Cutoff: KBRecordCutoff.self,
+        KBSensorType.Alarm: KBRecordAlarm.self,
         KBSensorType.PIR: KBRecordPIR.self,
         KBSensorType.HTHumidity : KBRecordHumidity.self,
         KBSensorType.Light : KBRecordLight.self

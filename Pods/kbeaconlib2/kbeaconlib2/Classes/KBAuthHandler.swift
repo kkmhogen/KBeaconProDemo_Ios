@@ -18,7 +18,7 @@ internal protocol KBAuthDelegate : NSObjectProtocol
 {
     func authStateChange(_ authRslt:KBAuthResult)
 
-    func writeAuthData(_ data: Data)
+    func writeAuthData(_ data: Data) -> Bool
 }
 
 internal class KBAuthHandler : NSObject
@@ -105,8 +105,8 @@ internal class KBAuthHandler : NSObject
         }
         
         //set data;
-        authDelegate?.writeAuthData(authRequest)
-        return true;
+        
+        return authDelegate!.writeAuthData(authRequest)
     }
 
     internal func authHandleResponse(data:Data, index:Int)
@@ -285,8 +285,6 @@ internal class KBAuthHandler : NSObject
             }
         }
         
-        self.authDelegate?.writeAuthData(authRequest)
-        
-        return true
+        return self.authDelegate!.writeAuthData(authRequest)
     }
 }

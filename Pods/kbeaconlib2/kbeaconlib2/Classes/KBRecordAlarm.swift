@@ -7,31 +7,31 @@
 
 import Foundation
 
-@objc public class KBRecordCutoff :KBRecordBase
+@objc public class KBRecordAlarm :KBRecordBase
 {
-    @objc public static let CUT_OFF_RECORD_LEN = UInt8(5)
+    @objc public static let ALARM_RECORD_LEN = UInt8(5)
 
     @objc public var utcTime : UInt32
     
-    @objc public var cutoffFlag : UInt8
+    @objc public var alarmStatus : UInt8
     
     @objc public required init()
     {
         utcTime = 0
         
-        cutoffFlag = 0
+        alarmStatus = 0
         
         super.init()
     }
     
     public override func getRecordLen() -> UInt8
     {
-        return KBRecordCutoff.CUT_OFF_RECORD_LEN;
+        return KBRecordAlarm.ALARM_RECORD_LEN;
     }
     
     public override func getSenorType()->Int
     {
-        return KBSensorType.Cutoff
+        return KBSensorType.Alarm
     }
     
     public override func parseRecord(utcOffset: UInt32, response: Data, dataPtr: Int)->Bool
@@ -46,7 +46,7 @@ import Foundation
         nRecordPtr += 4
 
         //cut type
-        cutoffFlag = response[nRecordPtr];
+        alarmStatus = response[nRecordPtr];
         nRecordPtr += 1
         
         return true

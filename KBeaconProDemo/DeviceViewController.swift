@@ -810,7 +810,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         
         //set trigger angle
         angleTrigger.setTriggerPara(45)        //set below angle threashold
-        angleTrigger.setAboveAngle(angle: 90)  //set above angle threashold
+        angleTrigger.setAboveAngle(90)  //set above angle threashold
         angleTrigger.setReportingInterval(5)   //set repeat report interval to 5 minutes
         
         self.beacon!.modifyConfig(obj: angleTrigger) { (result, exception) in
@@ -1145,7 +1145,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         })
     }
     
-    //read cutoff history info example
+    //read temp history info example
     func readTempHistoryRecordExample()
     {
         guard self.beacon!.isConnected(),
@@ -1346,14 +1346,14 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
     {
         guard self.beacon!.isConnected(),
             let commCfg = self.beacon!.getCommonCfg(),
-              commCfg.isSupportCutoffSensor() else
+              commCfg.isSupportAlarmSensor() else
         {
             print("device does not support cut off trigger")
             return
         }
 
         let sensorPara = KBCfgSensorBase()
-        sensorPara.setSensorType(KBSensorType.Cutoff)
+        sensorPara.setSensorType(KBSensorType.Alarm)
 
         //set disable period from 8:00AM to 20:00 PM
         let sleepPeriod = KBTimeRange()
@@ -1675,4 +1675,198 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         alertController.addAction(OkAction)
         self.navigationController!.present(alertController, animated: true, completion: nil)
     }
+    
+    //MARK: - setSlot0PeriodicIBeaconAdv
+    /**
+     *  Example: Beacon broadcasts 5 seconds every 2 minutes in Slot1.
+     *  The advertisement interval is 1 second in advertisement period.
+     *  That is, the Beacon sleeps for 115 seconds and then broadcasts for 5 seconds.
+    */
+    func setSlot0PeriodicIBeaconAdv(){
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportIBeacon(),
+            commCfg.isSupportTrigger(KBTriggerType.PeriodicallyEvent) else
+        {
+            print("device does not support iBeacon advertisement,or device does not support Periodically Event")
+            return
+        }
+        
+        //setting slot1 parameters
+        let periodicAdv = KBCfgAdvIBeacon()
+        periodicAdv.setSlotIndex(1)
+        //set adv period, unit is ms
+        periodicAdv.setAdvPeriod(1000)
+        periodicAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
+        periodicAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0")
+        
+        /*
+         This parameter is very important, indicating that slot1 does
+         not broadcast by default and only broadcasts when triggered by a Trigger.
+        */
+        periodicAdv.setAdvTriggerOnly(true)
+        
+        //add periodically trigger
+        let periodicTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.PeriodicallyEvent)
+        periodicTrigger.setTriggerAction(KBTriggerAction.Advertisement)
+        periodicTrigger.setTriggerAdvSlot(1)  //trigger slot 1 advertisement
+        periodicTrigger.setTriggerAdvTime(5);//set adv duration to 5 seconds
+
+        //set trigger period, unit is ms
+        periodicTrigger.setTriggerPara(120*1000)
+        
+        let cfgArray = [periodicAdv, periodicTrigger]
+        
+        self.beacon?.modifyConfig(array: cfgArray, callback: { (result, exception) in
+            if (result)
+            {
+                self.showDialogMsg("success", message: "config success")
+            }
+            else if (exception != nil)
+            {
+                if (exception!.errorCode == KBErrorCode.CfgBusy)
+                {
+                    NSLog("Config busy, please make sure other configruation complete")
+                }
+                else if (exception!.errorCode == KBErrorCode.CfgTimeout)
+                {
+                    NSLog("Config timeout")
+                }
+                
+                self.showDialogMsg("Failed", message:"config other error:\(exception!.errorCode)")
+            }
+        })
+    }
+    
+    //MARK: - setSlot0AdvEncrypt
+    /**
+     example: set device broadcasting encrypt UUID
+    */
+    func setSlot0AdvEncrypt(){
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportEBeacon()
+            else
+        {
+            print("device does not support encrypt advertisement")
+            return
+        }
+        
+        //set basic parameters.
+        let encAdv = KBCfgAdvEBeacon()
+        encAdv.setSlotIndex(0)
+        encAdv.setAdvPeriod(1000)
+        encAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
+
+        //set the UUID that to be encrypt
+        encAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0")
+
+        //Set the AES KEY to change every 5 seconds.
+        encAdv.setEncryptInterval(5)
+
+        //set aes type to 0(ECB)
+        encAdv.setAESType(KBCfgAdvEBeacon.AES_ECB_TYPE)
+        
+        self.beacon?.modifyConfig(obj: encAdv, callback: { result, error in
+            if (result)
+            {
+                self.showDialogMsg("success", message: "config success")
+            }
+            else if (error != nil)
+            {
+                if (error!.errorCode == KBErrorCode.CfgBusy)
+                {
+                    NSLog("Config busy, please make sure other configruation complete")
+                }
+                else if (error!.errorCode == KBErrorCode.CfgTimeout)
+                {
+                    NSLog("Config timeout")
+                }
+                
+                self.showDialogMsg("Failed", message:"config other error:\(error!.errorCode)")
+            }
+        })
+    }
+
+    //MARK: - Config parking sensor paramaters
+    /**
+     example: For the parking sensor, we can use this sensor to monitor if there is a vehicle parked at a specified location
+    */
+    func setParkingIdleParameters(){
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportGEOSensor()
+            else
+        {
+            print("Device does not supported parking sensors")
+            return
+        }
+        
+        let sensorGeoPara = KBCfgSensorGEO()
+        
+        //If this parameter is set to true, the sensor initiates the measurement
+        // and sets the current state to the idle parking state.
+        sensorGeoPara.setParkingTag(true)
+        
+        self.beacon?.modifyConfig(obj: sensorGeoPara, callback: { result, error in
+            if (result)
+            {
+                self.showDialogMsg("success", message: "config success")
+            }
+            else if (error != nil)
+            {
+                if (error!.errorCode == KBErrorCode.CfgBusy)
+                {
+                    NSLog("Config busy, please make sure other configruation complete")
+                }
+                else if (error!.errorCode == KBErrorCode.CfgTimeout)
+                {
+                    NSLog("Config timeout")
+                }
+                
+                self.showDialogMsg("Failed", message:"config other error:\(error!.errorCode)")
+            }
+        })
+    }
+    
+    func setParkingSensorMeasureParameters() {
+        guard self.beacon!.isConnected(),
+            let commCfg = self.beacon!.getCommonCfg(),
+              commCfg.isSupportGEOSensor()
+            else
+        {
+            print("Device does not supported parking sensors")
+            return
+        }
+        
+        let sensorGeoPara = KBCfgSensorGEO()
+        
+        //Set the geomagnetic offset value of the parking space occupancy relative to the idle parking space
+        //unit is mg
+        sensorGeoPara.setParkingThreshold(2000)
+        //If the setting continuously detects geomagnetic changes for more than 50 seconds,
+        //the device will generate a parking space occupancy event. the Delay unit is 10 seconds
+        sensorGeoPara.setParkingDelay(5)
+        
+        self.beacon?.modifyConfig(obj: sensorGeoPara, callback: { result, error in
+            if (result)
+            {
+                self.showDialogMsg("success", message: "config success")
+            }
+            else if (error != nil)
+            {
+                if (error!.errorCode == KBErrorCode.CfgBusy)
+                {
+                    NSLog("Config busy, please make sure other configruation complete")
+                }
+                else if (error!.errorCode == KBErrorCode.CfgTimeout)
+                {
+                    NSLog("Config timeout")
+                }
+                
+                self.showDialogMsg("Failed", message:"config other error:\(error!.errorCode)")
+            }
+        })
+    }
+    
 }

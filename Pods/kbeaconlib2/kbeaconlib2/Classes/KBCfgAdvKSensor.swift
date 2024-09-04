@@ -15,7 +15,8 @@ import Foundation
     @objc public static let JSON_FIELD_RECORD_COUNT = "rcd"
     @objc public static let JSON_FIELD_SENSOR_VOC = "voc"
     @objc public static let JSON_FIELD_SENSOR_CO2 = "co2"
-
+    @objc public static let JSON_FIELD_SENSOR_GEO = "mag"
+    
     var htSensorInclude: Bool?
     var axisSensorInclude: Bool?
     var lightSensorInclude: Bool?
@@ -23,7 +24,7 @@ import Foundation
     var recordInclude: Bool?
     var vocSensorInclude: Bool?
     var co2SensorInclude: Bool?
-
+    var geoSensorInclude: Bool?
 
     @objc public required init()
     {
@@ -87,6 +88,14 @@ import Foundation
     @objc public func isRecordInclude()->Bool {
         return recordInclude ?? false
     }
+    
+    @objc public func isGEOSensorInclude()->Bool {
+        return geoSensorInclude ?? false
+    }
+    
+    @objc public func setGeoSensorInclude(_ sensorInclude : Bool) {
+        self.geoSensorInclude = sensorInclude
+    }
 
     @objc @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
     {
@@ -126,6 +135,11 @@ import Foundation
             recordInclude = (tempValue > 0)
             nUpdatePara += 1
         }
+        
+        if let tempValue = para[KBCfgAdvKSensor.JSON_FIELD_SENSOR_GEO] as? Int {
+            geoSensorInclude = (tempValue > 0)
+            nUpdatePara += 1
+        }
 
         return nUpdatePara;
     }
@@ -160,6 +174,10 @@ import Foundation
         
         if let tempValue = recordInclude{
             cfgDicts[KBCfgAdvKSensor.JSON_FIELD_RECORD_COUNT] = (tempValue ? 1 : 0)
+        }
+        
+        if let tempValue = geoSensorInclude{
+            cfgDicts[KBCfgAdvKSensor.JSON_FIELD_SENSOR_GEO] = (tempValue ? 1 : 0)
         }
 
         return cfgDicts;

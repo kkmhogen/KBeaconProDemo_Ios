@@ -17,7 +17,8 @@ import Foundation
     @objc public static let IBeacon = Int(5)
     @objc public static let System = Int(6)
     @objc public static let AOA = Int(7)
-    @objc public static let MAXValue = Int(8)
+    @objc public static let EBeacon = Int(8)
+    @objc public static let MAXValue = Int()
     
     @objc public static let SensorString = "KSensor"
     @objc public static let EddyUIDString = "UID"
@@ -26,6 +27,7 @@ import Foundation
     @objc public static let EddyURLString = "URL"
     @objc public static let SystemString  = "System"
     @objc public static let AOAString  = "AOA"
+    @objc public static let EBeaconString = "EBeacon"
     @objc public static let AdvNullString  = "Disabled"
     
     @objc public static func getAdvTypeString(_ advType:Int)->String
@@ -49,6 +51,8 @@ import Foundation
                strAdv = SystemString;
             case AOA:
                 strAdv = AOAString;
+            case EBeacon:
+                strAdv = EBeaconString
            default:
                strAdv = "Unknown";
        }

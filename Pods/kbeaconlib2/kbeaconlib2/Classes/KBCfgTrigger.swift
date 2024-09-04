@@ -10,7 +10,7 @@ import Foundation
 @objc public class KBCfgTrigger : KBCfgBase {
     //trigger adv time
     @objc public static let DEFAULT_TRIGGER_ADV_TIME = 30
-    @objc public static let MIN_TRIGGER_ADV_TIME = 2
+    @objc public static let MIN_TRIGGER_ADV_TIME = 1
     @objc public static let MAX_TRIGGER_ADV_TIME = 7200
     
     //motion trigger

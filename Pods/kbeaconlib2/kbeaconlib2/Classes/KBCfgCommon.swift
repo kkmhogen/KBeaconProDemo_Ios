@@ -45,12 +45,11 @@ import Foundation
     @objc public static let  JSON_FIELD_AUTO_POWER_ON = "atPwr"
     @objc public static let  JSON_FIELD_MAX_ADV_PERIOD = "maxPrd"
 
-
     //flash led interval
-    @objc public static let  JSON_FIELD_BLINK_LED_INTERVAL = "led"
+    @objc public static let  JSON_FIELD_BLINK_LED_INTERVAL = "nBlk"
     
     //low battery blink only
-    @objc public static let  JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY = "lwBlk"
+    @objc public static let  JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY = "lBlk"
 
     //basic capiblity
     private var maxSlot: Int?
@@ -86,9 +85,11 @@ import Foundation
 
     private var alwaysPowerOn : Bool? //beacon automatic start advertisement after powen on
     
-    //led flash when power on
-    private var alwaysLedBlinkInterval: UInt8?
-    private var lowBatteryLedBlinkOnly : Bool?
+    //normal led blink interval
+    private var normalLedBlinkInterval: UInt8?
+    
+    //low battery Blink Intervl
+    private var lowLedBlinkInterval : UInt8?
 
     @objc public func getMaxSlot()->Int
     {
@@ -97,7 +98,7 @@ import Foundation
     
     @objc public func getMaxAdvPeriod()->Float
     {
-        return maxAdvPeriod ?? 10000.0
+        return maxAdvPeriod ?? KBCfgCommon.MAX_ADV_PERIOD_MS
     }
     
     @objc public func getMaxTrigger()->Int
@@ -172,6 +173,12 @@ import Foundation
     {
        return isSupportAdvType(KBAdvType.AOA)
     }
+    
+    //is support AOA advType
+    @objc public func isSupportEBeacon()->Bool
+    {
+       return isSupportAdvType(KBAdvType.EBeacon)
+    }
 
     //support BLE5 LongRange
     @objc public func isSupportBLELongRangeAdv()->Bool
@@ -198,6 +205,16 @@ import Foundation
     {
         if let tempAdvCap = self.basicCapability{
             return ((tempAdvCap >> 16) & 0x8) > 0;
+        }else{
+            return false
+        }
+    }
+    
+    //support flash record
+    @objc public func isSupportFlashRecord()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return ((tempAdvCap >> 16) & 0x10) > 0;
         }else{
             return false
         }
@@ -284,8 +301,8 @@ import Foundation
         }
     }
     
-    //is support cutoff sensor
-    @objc public func isSupportCutoffSensor()->Bool
+    //is support alarm sensor
+    @objc public func isSupportAlarmSensor()->Bool
     {
         if let tempAdvCap = self.basicCapability{
             return (tempAdvCap & 0x10) > 0
@@ -309,6 +326,26 @@ import Foundation
     {
         if let tempAdvCap = self.basicCapability{
             return (tempAdvCap & 0x40) > 0
+        }else{
+            return false
+        }
+    }
+    
+    //is support GEO Sensor
+    @objc public func isSupportGEOSensor()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x2000000) > 0
+        }else{
+            return false
+        }
+    }
+    
+    //is support Scan Sensor
+    @objc public func isSupportScanSensor()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x4000000) > 0
         }else{
             return false
         }
@@ -361,9 +398,9 @@ import Foundation
         return hversion
     }
 
-    @objc public func getName()->String?
+    @objc public func getName()->String
     {
-        return name
+        return name ?? "NA"
     }
 
     @objc public override init() {
@@ -376,14 +413,14 @@ import Foundation
     }
     
     
-    @objc public func getAlwaysLedBlinkInterval()->UInt8
+    @objc public func getNormalLedBlinkInterval()->UInt8
     {
-        return alwaysLedBlinkInterval ?? KBCfgBase.INVALID_UINT8
+        return normalLedBlinkInterval ?? KBCfgBase.INVALID_UINT8
     }
 
-    @objc public func isLowBatteryBlinkOnly()->Bool
+    @objc public func getLowLedBLinkInterval()->UInt8
     {
-        return lowBatteryLedBlinkOnly ?? false
+        return lowLedBlinkInterval ?? KBCfgBase.INVALID_UINT8
     }
 
     @objc @discardableResult public func setRefPower1Meters(_ value: Int)->Bool{
@@ -420,17 +457,22 @@ import Foundation
     }
 
     
-    @objc @discardableResult public func setAlwaysFlashLedInterval(_ alwaysFlashLedInterval: UInt8)  -> Bool{
-        if (alwaysFlashLedInterval <= 100) {
-            self.alwaysLedBlinkInterval = alwaysFlashLedInterval;
+    @objc @discardableResult public func setNormalFlashLedInterval(_ normalLedFlashInterval: UInt8)  -> Bool{
+        if (normalLedFlashInterval <= 16) {
+            self.normalLedBlinkInterval = normalLedFlashInterval;
             return true
         } else {
             return false
         }
     }
     
-    @objc public func setLowBatteryLedBlinkOnly(_ lowBatteryFlash: Bool) {
-        self.lowBatteryLedBlinkOnly = lowBatteryFlash
+    @objc @discardableResult public func setLowBatteryLedBlinkInterval(_ lowBatteryFlash: UInt8)  -> Bool{
+        if (lowBatteryFlash <= 16) {
+            self.lowLedBlinkInterval = lowBatteryFlash;
+            return true
+        } else {
+            return false
+        }
     }
 
     @objc @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
@@ -524,13 +566,13 @@ import Foundation
         
         //blink interval
         if let tempValue = para[KBCfgCommon.JSON_FIELD_BLINK_LED_INTERVAL] as? UInt8 {
-            alwaysLedBlinkInterval = tempValue
+            normalLedBlinkInterval = tempValue
             nUpdatePara += 1
         }
         
         //low battery blink only
-        if let tempValue = para[KBCfgCommon.JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY] as? Int {
-            lowBatteryLedBlinkOnly = (tempValue > 0)
+        if let tempValue = para[KBCfgCommon.JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY] as? UInt8 {
+            lowLedBlinkInterval = tempValue
             nUpdatePara += 1
         }
 
@@ -563,13 +605,13 @@ import Foundation
     
         
         //led blink interval
-        if let tempValue = alwaysLedBlinkInterval {
+        if let tempValue = normalLedBlinkInterval {
             configDicts[KBCfgCommon.JSON_FIELD_BLINK_LED_INTERVAL] = tempValue;
         }
         
         //low battery blink
-        if let tempValue = lowBatteryLedBlinkOnly {
-            configDicts[KBCfgCommon.JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY] = tempValue ? 1 : 0;
+        if let tempValue = lowLedBlinkInterval {
+            configDicts[KBCfgCommon.JSON_FIELD_LED_BLINK_ONLY_IN_LOW_BATTERY] = tempValue;
         }
 
         return configDicts;

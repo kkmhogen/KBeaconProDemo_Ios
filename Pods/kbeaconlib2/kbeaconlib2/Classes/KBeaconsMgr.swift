@@ -168,13 +168,26 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
         scanNameIgnoreCase = ignoreCase
         scanNameMatchWord = matchWord
     }
+    
+    //set adv decode password
+    @objc @discardableResult public func saveBeaconPassword(_ uuid:String, password pwd:String)->Bool
+    {
+        if (pwd.count >= 8 && pwd.count <= 16)
+        {
+            let mPrefCfg = KBPreferance.sharedPreferance
+            mPrefCfg.savePassword(uuid, password: pwd)
+            return true
+        }
+        
+        return false
+    }
 
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber)
     {
         var nRssi:Int8
         
         //rssi
-        if RSSI.intValue < -100 || RSSI.intValue > 100{
+        if RSSI.intValue < -100 || RSSI.intValue > 20{
             nRssi = -100
         }else{
             nRssi = Int8(RSSI.intValue)
@@ -230,14 +243,14 @@ let MAX_TIMER_OUT_INTERVAL = 0.3;
                 mCbAllBeacons[uuidString] = pUnknownBeacon
             }
             
-            if (pUnknownBeacon!.parseAdvPacket(advData: advertisementData, rssi:nRssi))
+            if (pUnknownBeacon!.parseAdvPacket(advData: advertisementData, rssi:nRssi, uuid:peripheral.identifier.uuidString))
             {
                 if beacons[uuidString] == nil
                 {
-                    pUnknownBeacon!.attach2Device(peripheral: peripheral, beaconMgr: self)
                     beacons[uuidString] = pUnknownBeacon
                 }
-                
+                //peripheral will be release after some time
+                pUnknownBeacon!.attach2Device(peripheral: peripheral, beaconMgr: self)
                 //add to beacon notify list
                 mCBNtfBeacons[uuidString] = pUnknownBeacon
                 

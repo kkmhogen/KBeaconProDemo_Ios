@@ -11,7 +11,7 @@ import Foundation
 
     @objc public static let JSON_FIELD_EDDY_URL_ADDR  = "url"
     @objc public static let DEFAULT_URL_ADDRESS = "https://www.google.com/"
-    @objc public static let MAX_URL_LENGTH = 30
+    @objc public static let MAX_URL_LENGTH = 60
 
     private var url : String?
 

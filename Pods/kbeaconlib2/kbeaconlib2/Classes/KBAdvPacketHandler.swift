@@ -40,7 +40,8 @@ internal class KBAdvPacketHandler : NSObject
         Int(KBAdvType.IBeacon): KBAdvPacketIBeacon.self,
         Int(KBAdvType.Sensor): KBAdvPacketSensor.self,
         Int(KBAdvType.System): KBAdvPacketSystem.self,
-        Int(KBAdvType.AOA):KBAdvPacketAOA.self
+        Int(KBAdvType.AOA):KBAdvPacketAOA.self,
+        Int(KBAdvType.EBeacon):KBAdvPacketEBeacon.self
         ]
     
     internal override init()
@@ -74,16 +75,16 @@ internal class KBAdvPacketHandler : NSObject
         self.mAdvPackets.removeAll()
     }
 
-    internal func parseAdvPacket(_ advData: [String:Any], rssi: Int8)->Bool
+    internal func parseAdvPacket(_ advData: [String:Any], rssi: Int8, peripheralUUID:String, mac:String?)->Bool
     {
-        var bParseDataRslt : Bool = false;
+     
         var deviceName: String?
         var pAdvData: Data?
         
         //device name
         deviceName = advData["kCBAdvDataLocalName"] as? String
         
-
+       
         //is connectable
         guard let advConnable = advData["kCBAdvDataIsConnectable"] as? NSNumber else{
             return false;
@@ -106,7 +107,10 @@ internal class KBAdvPacketHandler : NSObject
                             && kkmManufactureData.count >= KBAdvPacketSystem.MIN_ADV_PACKET_LEN)
                 {
                     advType = KBAdvType.System;
-                }else if  kkmManufactureData[2] == 0x04 {
+                }else if  kkmManufactureData[2] == 0x03 {
+                    advType = KBAdvType.EBeacon
+                }
+                else if  kkmManufactureData[2] == 0x04 {
                     advType = KBAdvType.AOA
                 }
             }else if kkmManufactureData[0] == 0x0D, kkmManufactureData[1] == 0x00  {
@@ -114,6 +118,7 @@ internal class KBAdvPacketHandler : NSObject
                     advType = KBAdvType.AOA
                 }
             }
+           
             advDataIndex = 3
             pAdvData = kkmManufactureData
         }
@@ -203,18 +208,16 @@ internal class KBAdvPacketHandler : NSObject
                 advPacket = KBAdvPacketHandler.createAdvPacketByType(advType)
                 mAdvPackets[advType] = advPacket
             }
-
+            
+            advPacket!.updateBasicInfo(deviceName,
+                                      rssi: rssi,
+                                       isConnect: advConnable.boolValue,
+                                       peripheralUUID:peripheralUUID)
+            
             //check if parse advertisment packet success
-            if (advPacket!.parseAdvPacket(advData, index: advDataIndex))
-            {
-                advPacket!.updateBasicInfo(deviceName,
-                                          rssi: rssi,
-                                          isConnect: advConnable.boolValue)
-                bParseDataRslt = true;
-                
-            }
+            return advPacket!.parseAdvPacket(advData, index: advDataIndex)
         }
         
-        return bParseDataRslt;
+        return false;
     }
 }

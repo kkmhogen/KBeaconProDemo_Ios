@@ -644,7 +644,127 @@ func updateKBeaconToEddyURL()
 }
 ```
 
-##### 4.3.3.4 Check if parameters are changed
+##### 4.3.3.4 Encrypted advertisement
+In some special cases, we may need to encrypt broadcast packets. Prevent third-party copies of counterfeit beacons. In addition, we may also need to encrypt broadcast content.
+By setting the broadcast type to EBeacon, we can encrypt the UUID, and the AES key will dynamically change according to the UTC time, so it can prevent copying and decryption.
+
+```swift
+//example: set device broadcasting encrypt UUID
+func setSlot0AdvEncrypt(){
+    guard self.beacon!.isConnected(),
+        let commCfg = self.beacon!.getCommonCfg(),commCfg.isSupportEBeacon() else
+    {
+        print("device does not support encrypt advertisement")
+        return
+    }
+
+    //set basic parameters.
+    let encAdv = KBCfgAdvEBeacon()
+    encAdv.setSlotIndex(0)
+    encAdv.setAdvPeriod(1000)
+    encAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
+
+    //set the UUID that to be encrypt
+    encAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0")
+
+    //Set the AES KEY to change every 5 seconds.
+    encAdv.setEncryptInterval(5)
+
+    //set aes type to 0(ECB)
+    encAdv.setAESType(KBCfgAdvEBeacon.AES_ECB_TYPE)
+
+    self.beacon?.modifyConfig(obj: encAdv, callback: { result, error in
+        if (result)
+        {
+            self.showDialogMsg("success", message: "config success")
+        }
+        else if (error != nil)
+        {
+            if (error!.errorCode == KBErrorCode.CfgBusy)
+            {
+                NSLog("Config busy, please make sure other configruation complete")
+            }
+            else if (error!.errorCode == KBErrorCode.CfgTimeout)
+            {
+                NSLog("Config timeout")
+            }
+
+            self.showDialogMsg("Failed", message:"config other error:\(error!.errorCode)")
+        }
+    })
+}
+```
+
+##### 4.3.3.5 Intermittent advertisement
+In some cases, you may want Beacon to broadcast intermittently. For example, broadcasting for 5 seconds every 2 minutes.  
+![avatar](https://github.com/kkmhogen/KBeaconProDemo_Android/blob/main/periodic_adv.png?raw=true)  
+Example: Beacon broadcasts 5 seconds every 2 minutes in Slot1. The advertisement interval is 1 second in advertisement period. That is, the Beacon sleeps for 115 seconds and then broadcasts for 5 seconds.
+```swift
+/**
+ *  Example: Beacon broadcasts 5 seconds every 2 minutes in Slot1.
+ *  The advertisement interval is 1 second in advertisement period.
+ *  That is, the Beacon sleeps for 115 seconds and then broadcasts for 5 seconds.
+*/
+func setSlot0PeriodicIBeaconAdv(){
+    guard self.beacon!.isConnected(),
+        let commCfg = self.beacon!.getCommonCfg(),
+          commCfg.isSupportIBeacon(),
+        commCfg.isSupportTrigger(KBTriggerType.PeriodicallyEvent) else
+    {
+        print("device does not support iBeacon advertisement,or device does not support Periodically Event")
+        return
+    }
+
+    //setting slot1 parameters
+    let periodicAdv = KBCfgAdvIBeacon()
+    periodicAdv.setSlotIndex(1)
+    //set adv period, unit is ms
+    periodicAdv.setAdvPeriod(1000)
+    periodicAdv.setTxPower(KBAdvTxPower.RADIO_0dBm)
+    periodicAdv.setUuid("E2C56DB5-DFFB-48D2-B060-D0F5A71096E0")
+
+    /*
+     This parameter is very important, indicating that slot1 does
+     not broadcast by default and only broadcasts when triggered by a Trigger.
+    */
+    periodicAdv.setAdvTriggerOnly(true)
+
+    //add periodically trigger
+    let periodicTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.PeriodicallyEvent)
+    periodicTrigger.setTriggerAction(KBTriggerAction.Advertisement)
+    //trigger slot 1 advertisement
+    periodicTrigger.setTriggerAdvSlot(1)  
+    //set adv duration to 5 seconds
+    periodicTrigger.setTriggerAdvTime(5);
+
+    //set trigger period, unit is ms
+    periodicTrigger.setTriggerPara(120*1000)
+
+    let cfgArray = [periodicAdv, periodicTrigger]
+
+    self.beacon?.modifyConfig(array: cfgArray, callback: { (result, exception) in
+        if (result)
+        {
+            self.showDialogMsg("success", message: "config success")
+        }
+        else if (exception != nil)
+        {
+            if (exception!.errorCode == KBErrorCode.CfgBusy)
+            {
+                NSLog("Config busy, please make sure other configruation complete")
+            }
+            else if (exception!.errorCode == KBErrorCode.CfgTimeout)
+            {
+                NSLog("Config timeout")
+            }
+
+            self.showDialogMsg("Failed", message:"config other error:\(exception!.errorCode)")
+        }
+    })
+}
+```
+
+##### 4.3.3.6 Check if parameters are changed
 Sometimes, in order to reduce the time for configuration, The app can only sending the modified parameters.
 
 Example: checking if the parameters was changed, then send new parameters to device.
@@ -1223,7 +1343,7 @@ func enableAccAngleTrigger()
     angleTrigger.setTriggerPara(45)        
 
     //above angle
-    angleTrigger.setAboveAngle(angle: 90)  
+    angleTrigger.setAboveAngle(90)  
 
     angleTrigger.setReportingInterval(5)   //set repeat report interval to 5 minutes
 
@@ -1342,18 +1462,18 @@ For some sensors, we may not want it to work all the time, such as the Door sens
 The sensors that support configuring sleep period include: Door sensor(S1), PIR sensor(S2).
 ```swift
 //set disable period parameters
-func setCutoffSleepPeriod()
+func setAlarmSleepPeriod()
 {
     guard self.beacon!.isConnected(),
         let commCfg = self.beacon!.getCommonCfg(),
-          commCfg.isSupportCutoffSensor() else
+          commCfg.isSupportAlarmSensor() else
     {
-        print("device does not support cut off trigger")
+        print("device does not support alarm trigger")
         return
     }
 
     let sensorPara = KBCfgSensorBase()
-    sensorPara.setSensorType(KBSensorType.Cutoff)
+    sensorPara.setSensorType(KBSensorType.Alarm)
 
     //set disable period from 8:00AM to 20:00 PM
     let disablePeriod = KBTimeRange()
@@ -1445,10 +1565,10 @@ func readHTSensorDataInfo()
     })
 }
 
-//read cutoff history info example
-func readCutSensorDataInfo()
+//read Alarm history info example
+func readAlarmSensorDataInfo()
 {
-    beacon!.readSensorDataInfo(KBSensorType.Cutoff, callback: { (result, obj, exception) in
+    beacon!.readSensorDataInfo(KBSensorType.Alarm, callback: { (result, obj, exception) in
         if (!result)
         {
             print("read record info failed")
@@ -1463,7 +1583,7 @@ func readCutSensorDataInfo()
             }
             else
             {
-                print("there are \(infRsp.unreadRecordNumber) cut off record in device")
+                print("there are \(infRsp.unreadRecordNumber) alarm record in device")
             }
         }
     })

@@ -17,6 +17,8 @@ import Foundation
     
     @objc public var lastReceiveTime : TimeInterval
     
+    @objc public var peripheralUUID: String?
+
     private var advType: Int
     
     internal required override init()
@@ -37,11 +39,12 @@ import Foundation
         return true
     }
 
-    internal func updateBasicInfo(_ name:String?, rssi:Int8, isConnect:Bool)
+    internal func updateBasicInfo(_ name:String?, rssi:Int8, isConnect:Bool, peripheralUUID:String?)
     {
         self.name = name
         self.rssi = rssi
         self.connectable = isConnect
         self.lastReceiveTime = NSDate().timeIntervalSince1970
+        self.peripheralUUID = peripheralUUID
     }
 }

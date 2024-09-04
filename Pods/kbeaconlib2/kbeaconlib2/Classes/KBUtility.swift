@@ -21,8 +21,17 @@ public extension Data {
     {
         let str = String(data:self, encoding:.utf8)!
         
-        return str.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "\n", with: "")
-            .replacingOccurrences(of: "\\", with: "");
+
+        return str.replacingOccurrences(of: "\\/", with: "/")
+//            .replacingOccurrences(of: " ", with: "")
+//            .replacingOccurrences(of: "\n", with: "")
+    }
+    
+    func dataToHexString() -> String {
+        if self.count > 0{
+            return  "0x"+hexadecimal
+        }
+        return ""
     }
 }
 
