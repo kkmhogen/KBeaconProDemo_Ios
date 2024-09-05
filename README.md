@@ -39,7 +39,7 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.1.6'
+pod 'kbeaconlib2','1.1.8'
 ```
 This library is also open source, please refer to this link.  
 [kbeaconlib](https://github.com/kkmhogen/kbeaconlib2)  
@@ -1495,36 +1495,121 @@ func setAlarmSleepPeriod()
     }
 }
 ```
+#### 4.3.5.4 Config parking sensor paramaters
+For the parking sensor, we can use this sensor to monitor if there is a vehicle parked at a specified location
+```swift
 
-##### 4.3.5.4 Other sensor parameters configruation
+//set parking idle
+//Parking sensors need to be marked before use. That is, when there is no parking, we need to set
+// the sensor to idle. The sensor detects if a vehicle is parked based on the status of the marker.
+
+func setParkingIdleParameters(){
+  guard self.beacon!.isConnected(),
+      let commCfg = self.beacon!.getCommonCfg(),
+        commCfg.isSupportGEOSensor()
+      else
+  {
+      print("Device does not supported parking sensors")
+      return
+  }
+
+  let sensorGeoPara = KBCfgSensorGEO()
+
+  //If this parameter is set to true, the sensor initiates the measurement
+  // and sets the current state to the idle parking state.
+  sensorGeoPara.setParkingTag(true)
+
+  self.beacon?.modifyConfig(obj: sensorGeoPara, callback: { result, error in
+      if (result)
+      {
+          self.showDialogMsg("success", message: "config success")
+      }
+      else if (error != nil)
+      {
+          if (error!.errorCode == KBErrorCode.CfgBusy)
+          {
+              NSLog("Config busy, please make sure other configruation complete")
+          }
+          else if (error!.errorCode == KBErrorCode.CfgTimeout)
+          {
+              NSLog("Config timeout")
+          }
+
+          self.showDialogMsg("Failed", message:"config other error:\(error!.errorCode)")
+      }
+  })
+}
+
+func setParkingSensorMeasureParameters() {
+  guard self.beacon!.isConnected(),
+      let commCfg = self.beacon!.getCommonCfg(),
+        commCfg.isSupportGEOSensor()
+      else
+  {
+      print("Device does not supported parking sensors")
+      return
+  }
+
+  let sensorGeoPara = KBCfgSensorGEO()
+
+  //Set the geomagnetic offset value of the parking space occupancy relative to the idle parking space
+  //unit is mg
+  sensorGeoPara.setParkingThreshold(2000)
+  //If the setting continuously detects geomagnetic changes for more than 50 seconds,
+  //the device will generate a parking space occupancy event. the Delay unit is 10 seconds
+  sensorGeoPara.setParkingDelay(5)
+
+  self.beacon?.modifyConfig(obj: sensorGeoPara, callback: { result, error in
+      if (result)
+      {
+          self.showDialogMsg("success", message: "config success")
+      }
+      else if (error != nil)
+      {
+          if (error!.errorCode == KBErrorCode.CfgBusy)
+          {
+              NSLog("Config busy, please make sure other configruation complete")
+          }
+          else if (error!.errorCode == KBErrorCode.CfgTimeout)
+          {
+              NSLog("Config timeout")
+          }
+
+          self.showDialogMsg("Failed", message:"config other error:\(error!.errorCode)")
+      }
+  })
+}
+```
+
+##### 4.3.5.5 Other sensor parameters configruation
 Other sensors, such as PIR sensors and VOC sensors, have a similar method for setting parameters, and will not be given example here.
 
 ```swift
 func setPIRSensorParameters()
 {
-    let sensorPara = KBCfgSensorPIR()
+  let sensorPara = KBCfgSensorPIR()
 
-    //enable logger
-    sensorPara.setLogEnable(true)
+  //enable logger
+  sensorPara.setLogEnable(true)
 
-    //unit is second, set measure interval
-    sensorPara.setMeasureInterval(2)
+  //unit is second, set measure interval
+  sensorPara.setMeasureInterval(2)
 
-    //set backoff time to 30 seconds
-    //After the beacon detects and log a PIR event, if a new PIR is detected in the next 30 seconds,
-    //the event will be ignored.
-    sensorPara.setLogBackoffTime(30)
+  //set backoff time to 30 seconds
+  //After the beacon detects and log a PIR event, if a new PIR is detected in the next 30 seconds,
+  //the event will be ignored.
+  sensorPara.setLogBackoffTime(30)
 
-    self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
-        if (result)
-        {
-            print("update pir parameters success")
-        }
-        else
-        {
-            print("update pir parameters failed")
-        }
-    }
+  self.beacon!.modifyConfig(obj: sensorPara) { (result, exception) in
+      if (result)
+      {
+          print("update pir parameters success")
+      }
+      else
+      {
+          print("update pir parameters failed")
+      }
+  }
 }
 ```
 
