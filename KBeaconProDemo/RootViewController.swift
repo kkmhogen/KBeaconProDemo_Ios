@@ -342,7 +342,7 @@ class RootViewController: UIViewController ,UITextFieldDelegate, UITableViewData
                 if let encryptAdv = advPacket as? KBAdvPacketEBeacon
                 {
                     print("-----EBeacon----")
-                    print("Decrypt UUID:\(encryptAdv.uuid)")
+                    print("Decrypt UUID:\(String(describing: encryptAdv.uuid))")
                     print("ADV UTC:\(encryptAdv.utcSecCount)")
                     print("Reference power:\(encryptAdv.measurePower)")
                 }

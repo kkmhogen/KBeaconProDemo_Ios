@@ -14,7 +14,7 @@
 		04A5638772B67513986F9C47D5773D02 /* KBCfgTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3378A0D10763B3A417E7AF50D3A8B30 /* KBCfgTrigger.swift */; };
 		052CAE0F86812E1F9C44FBA541C06673 /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD8C1EDCB57AC7887DCEBDA8743972D4 /* Updatable.swift */; };
 		0662D94CF105654B5F6B1A05F2FAC8EC /* KBAuthHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570A2B3BEB90AA85905A03467AA88EE7 /* KBAuthHandler.swift */; };
-		0697775380D82F213C70072376B27ECF /* CryptoSwift-CryptoSwift in Resources */ = {isa = PBXBuildFile; fileRef = 409A40F21065BFF2199E91A10A27F9DA /* CryptoSwift-CryptoSwift */; };
+		0697775380D82F213C70072376B27ECF /* CryptoSwift.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 409A40F21065BFF2199E91A10A27F9DA /* CryptoSwift.bundle */; };
 		073B36C56B7C9AA96C0C6A01F345F2EF /* KBPreferance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ECC6D52B2A2720983425E9D79D95228 /* KBPreferance.swift */; };
 		081725A00D6CD57BA9B3B51CB30BB9CB /* DFUServiceSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66DE00AEB2347302151B57F555C032E6 /* DFUServiceSelector.swift */; };
 		094678419EBED3486880603F3ADE1A69 /* Checksum.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC615E953A6D94F6856395B39A235EF /* Checksum.swift */; };
@@ -404,7 +404,7 @@
 		1D7FA2B5E44F86CE79E04EA7F49C2086 /* iOSDFULibrary-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "iOSDFULibrary-Info.plist"; sourceTree = "<group>"; };
 		1ED3E173357A2AE4FE4184AF35DC42F0 /* MJRefreshAutoStateFooter.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = MJRefreshAutoStateFooter.m; path = MJRefresh/Custom/Footer/Auto/MJRefreshAutoStateFooter.m; sourceTree = "<group>"; };
 		202C1A5BCA86E8ECEAE95F757E2E92ED /* MJRefreshBackGifFooter.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = MJRefreshBackGifFooter.h; path = MJRefresh/Custom/Footer/Back/MJRefreshBackGifFooter.h; sourceTree = "<group>"; };
-		21B1375088A0310C7AE2BE4C8188D12F /* iOSDFULibrary */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = iOSDFULibrary; path = iOSDFULibrary.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		21B1375088A0310C7AE2BE4C8188D12F /* iOSDFULibrary.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = iOSDFULibrary.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2326F378BD46CE5F0B0369CABCCEF12D /* MJRefresh.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = MJRefresh.release.xcconfig; sourceTree = "<group>"; };
 		232A133A9BC6D900D0150E72B5942A3C /* Rabbit.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Rabbit.swift; path = Sources/CryptoSwift/Rabbit.swift; sourceTree = "<group>"; };
 		2376692DB4BA249C6D5AC96530B7955D /* DFUServiceDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DFUServiceDelegate.swift; path = iOSDFULibrary/Classes/Implementation/DFUServiceDelegate.swift; sourceTree = "<group>"; };
@@ -438,7 +438,7 @@
 		3DABC3583F81E73377C6A1FF5C32BA84 /* ISO78164Padding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ISO78164Padding.swift; path = Sources/CryptoSwift/ISO78164Padding.swift; sourceTree = "<group>"; };
 		3FC11C61D8C7F6B7DD25027957746036 /* HMAC+Foundation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "HMAC+Foundation.swift"; path = "Sources/CryptoSwift/Foundation/HMAC+Foundation.swift"; sourceTree = "<group>"; };
 		40305F3415165C1FF541EBFD104C10B1 /* DFUPeripheralSelector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DFUPeripheralSelector.swift; path = iOSDFULibrary/Classes/Implementation/DFUPeripheralSelector.swift; sourceTree = "<group>"; };
-		409A40F21065BFF2199E91A10A27F9DA /* CryptoSwift-CryptoSwift */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = "CryptoSwift-CryptoSwift"; path = CryptoSwift.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		409A40F21065BFF2199E91A10A27F9DA /* CryptoSwift.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CryptoSwift.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		41D455DF49A4278C95B8851106336A62 /* BlockDecryptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlockDecryptor.swift; path = Sources/CryptoSwift/BlockDecryptor.swift; sourceTree = "<group>"; };
 		41F886498D0F42CD00EE7B36A2A5A40F /* LegacyDFUPeripheral.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LegacyDFUPeripheral.swift; path = iOSDFULibrary/Classes/Implementation/LegacyDFU/Peripherals/LegacyDFUPeripheral.swift; sourceTree = "<group>"; };
 		429D2CBD88E12F3B086A4D474DDBCFA7 /* KBAdvPacketEddyURL.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBAdvPacketEddyURL.swift; path = kbeaconlib2/Classes/KBAdvPacketEddyURL.swift; sourceTree = "<group>"; };
@@ -448,7 +448,7 @@
 		473BA9E4F0D1DDB9DBBA7C4E3E16D149 /* ASN1Decoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ASN1Decoder.swift; path = Sources/CryptoSwift/ASN1/ASN1Decoder.swift; sourceTree = "<group>"; };
 		47C1E4334CB5CD9804EAE88E4774E40A /* UInt8+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "UInt8+Extension.swift"; path = "Sources/CryptoSwift/UInt8+Extension.swift"; sourceTree = "<group>"; };
 		4839DE2438A7F8F8381AFF03F9708908 /* RSA+Cipher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "RSA+Cipher.swift"; path = "Sources/CryptoSwift/RSA/RSA+Cipher.swift"; sourceTree = "<group>"; };
-		48A4A6EDC08C8AC933D0DCD507E9D173 /* ZIPFoundation */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = ZIPFoundation; path = ZIPFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		48A4A6EDC08C8AC933D0DCD507E9D173 /* ZIPFoundation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZIPFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A03D54CFAB7A61F9CF885B29A1827FF /* Generics.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Generics.swift; path = Sources/CryptoSwift/Generics.swift; sourceTree = "<group>"; };
 		4ACD2512CDC3EBCA1F7BFE1C8910A215 /* SecureDFUPacket.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SecureDFUPacket.swift; path = iOSDFULibrary/Classes/Implementation/SecureDFU/Characteristics/SecureDFUPacket.swift; sourceTree = "<group>"; };
 		4B62850B3108A3A3E21781ABC0457F93 /* CBC.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBC.swift; path = Sources/CryptoSwift/BlockMode/CBC.swift; sourceTree = "<group>"; };
@@ -513,7 +513,7 @@
 		7451AC39EA6668976B1593BB12F39A9D /* Multiplication.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Multiplication.swift; path = Sources/CryptoSwift/CS_BigInt/Multiplication.swift; sourceTree = "<group>"; };
 		74C973FB83B612D89A988CF8FB0BC6F8 /* ZIPFoundation.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ZIPFoundation.release.xcconfig; sourceTree = "<group>"; };
 		755D9CF9922547F9E45EE3A117B306FE /* KBRecordDataRsp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBRecordDataRsp.swift; path = kbeaconlib2/Classes/KBRecordDataRsp.swift; sourceTree = "<group>"; };
-		768AFB30BFD04447DE546203BD86F8BA /* Pods-KBeaconProDemo */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = "Pods-KBeaconProDemo"; path = Pods_KBeaconProDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		768AFB30BFD04447DE546203BD86F8BA /* Pods_KBeaconProDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KBeaconProDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7768FAD209057CA59E54625E810501CA /* Signature.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Signature.swift; path = Sources/CryptoSwift/Signature.swift; sourceTree = "<group>"; };
 		78ACC58BB395C233F6FCD19A41D00874 /* SHA3.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SHA3.swift; path = Sources/CryptoSwift/SHA3.swift; sourceTree = "<group>"; };
 		78BCCE53E89DDC3C670BE7C2026D8993 /* KBAdvPacketEddyTLM.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBAdvPacketEddyTLM.swift; path = kbeaconlib2/Classes/KBAdvPacketEddyTLM.swift; sourceTree = "<group>"; };
@@ -555,7 +555,7 @@
 		9AAEB9EA625F73754768525ED8F809F4 /* KBTimeRange.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBTimeRange.swift; path = kbeaconlib2/Classes/KBTimeRange.swift; sourceTree = "<group>"; };
 		9AD5D14628DA3DD9F3E13703FAB3028B /* CTR.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CTR.swift; path = Sources/CryptoSwift/BlockMode/CTR.swift; sourceTree = "<group>"; };
 		9B884AB31717C11A13D4E367B7D4394F /* MJRefresh-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "MJRefresh-umbrella.h"; sourceTree = "<group>"; };
-		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		9E12E265983E78527A680A0D602C66BA /* Archive+MemoryFile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Archive+MemoryFile.swift"; path = "Sources/ZIPFoundation/Archive+MemoryFile.swift"; sourceTree = "<group>"; };
 		9ECF597B936C5EC39B0D1C6E33EEEC58 /* KBTriggerAction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBTriggerAction.swift; path = kbeaconlib2/Classes/KBTriggerAction.swift; sourceTree = "<group>"; };
 		A29BADF625527E172E3BC0694EB307BA /* DFUStream.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DFUStream.swift; path = iOSDFULibrary/Classes/Utilities/Streams/DFUStream.swift; sourceTree = "<group>"; };
@@ -666,9 +666,9 @@
 		E2DFCD0F6763A7ACC7E28AF4FE2206D5 /* DFUStreamHex.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DFUStreamHex.swift; path = iOSDFULibrary/Classes/Utilities/Streams/DFUStreamHex.swift; sourceTree = "<group>"; };
 		E3FB0633D85856578DD79F657DB87FAA /* AEAD.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AEAD.swift; path = Sources/CryptoSwift/AEAD/AEAD.swift; sourceTree = "<group>"; };
 		E4906B3D5AED9864438336EF98EB96C1 /* PKCS5.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PKCS5.swift; path = Sources/CryptoSwift/PKCS/PKCS5.swift; sourceTree = "<group>"; };
-		E49D6D248DD1CEE584E6776B9164A1B2 /* MJRefresh */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = MJRefresh; path = MJRefresh.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E49D6D248DD1CEE584E6776B9164A1B2 /* MJRefresh.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MJRefresh.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6E013E7D27EF25219EE176C4B95FD9A /* KBCfgHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBCfgHandler.swift; path = kbeaconlib2/Classes/KBCfgHandler.swift; sourceTree = "<group>"; };
-		E7CC27ED5216CB69C8A379F5C41461A0 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Sources/CryptoSwift/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		E7CC27ED5216CB69C8A379F5C41461A0 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Sources/CryptoSwift/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E877CD046D296AE7CA041CCDCB8D1067 /* Random.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Random.swift; path = Sources/CryptoSwift/CS_BigInt/Random.swift; sourceTree = "<group>"; };
 		E89B0C0D406334CA20BAEB805BA1F4CE /* MJRefreshFooter.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = MJRefreshFooter.h; path = MJRefresh/Base/MJRefreshFooter.h; sourceTree = "<group>"; };
 		EA7C9C29B585AF3135D1994389E825C3 /* MJRefreshTrailer.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = MJRefreshTrailer.m; path = MJRefresh/Base/MJRefreshTrailer.m; sourceTree = "<group>"; };
@@ -686,14 +686,14 @@
 		F0E91D18AD55EEDC95BBBF25ADE525B2 /* SoftdeviceBootloaderInfo.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SoftdeviceBootloaderInfo.swift; path = iOSDFULibrary/Classes/Utilities/DFUPackage/Manifest/SoftdeviceBootloaderInfo.swift; sourceTree = "<group>"; };
 		F1412559EFF9A4F2FF35A4E35E6EEE4B /* KBCfgSensorGEO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBCfgSensorGEO.swift; path = kbeaconlib2/Classes/KBCfgSensorGEO.swift; sourceTree = "<group>"; };
 		F1DFC64DA3238508AEBF177FDEF344C0 /* ResourceBundle-CryptoSwift-CryptoSwift-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ResourceBundle-CryptoSwift-CryptoSwift-Info.plist"; sourceTree = "<group>"; };
-		F3338390214B72D5C38D39C4CEDBAE0D /* kbeaconlib2 */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = kbeaconlib2; path = kbeaconlib2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3338390214B72D5C38D39C4CEDBAE0D /* kbeaconlib2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kbeaconlib2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3378A0D10763B3A417E7AF50D3A8B30 /* KBCfgTrigger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBCfgTrigger.swift; path = kbeaconlib2/Classes/KBCfgTrigger.swift; sourceTree = "<group>"; };
 		F3A59C85D766C64C674D84C9170AE404 /* KBCfgTriggerMotion.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBCfgTriggerMotion.swift; path = kbeaconlib2/Classes/KBCfgTriggerMotion.swift; sourceTree = "<group>"; };
 		F44E3DCE559C78B385F7B8C36AF8EDC5 /* Padding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Padding.swift; path = Sources/CryptoSwift/Padding.swift; sourceTree = "<group>"; };
 		F676131FC20B64EBACE410B6CC6B09C7 /* Pods-KBeaconProDemo-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-KBeaconProDemo-frameworks.sh"; sourceTree = "<group>"; };
 		F75BDDA957A477FD12895B6A129B07BD /* StreamDecryptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StreamDecryptor.swift; path = Sources/CryptoSwift/StreamDecryptor.swift; sourceTree = "<group>"; };
 		F7647FA376E7AA9E0BC19E022ECB3120 /* KBRecordInfoRsp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBRecordInfoRsp.swift; path = kbeaconlib2/Classes/KBRecordInfoRsp.swift; sourceTree = "<group>"; };
-		F81274EDB681F11E7CB05F7DCA2BB33C /* CryptoSwift */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = CryptoSwift; path = CryptoSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F81274EDB681F11E7CB05F7DCA2BB33C /* CryptoSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CryptoSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F82909D6B4BA85DE9D6BD429868AC08C /* LoggerDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LoggerDelegate.swift; path = iOSDFULibrary/Classes/Utilities/Logging/LoggerDelegate.swift; sourceTree = "<group>"; };
 		F842E99A4F433E8B4A0E2F0853966DBE /* PKCS7Padding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PKCS7Padding.swift; path = Sources/CryptoSwift/PKCS/PKCS7Padding.swift; sourceTree = "<group>"; };
 		F8836E96B6FAB550FBF658AF763BC5AB /* PKCS1v15.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PKCS1v15.swift; path = Sources/CryptoSwift/PKCS/PKCS1v15.swift; sourceTree = "<group>"; };
@@ -845,7 +845,6 @@
 				D91906BF7C2C61C55F1279814B3F7EB7 /* UTCTime.swift */,
 				8A73B49BD0C5E0811361EC8D93C101ED /* Support Files */,
 			);
-			name = kbeaconlib2;
 			path = kbeaconlib2;
 			sourceTree = "<group>";
 		};
@@ -968,7 +967,6 @@
 				94DA5AA639492EC367B1B9E4CE0413F8 /* Resources */,
 				7E2C5B510215076D318E47277516C487 /* Support Files */,
 			);
-			name = CryptoSwift;
 			path = CryptoSwift;
 			sourceTree = "<group>";
 		};
@@ -997,7 +995,6 @@
 				5A7DB0BA0D36F0B63429D0D9D20BF61A /* FileManager+ZIP.swift */,
 				600F9D1F6C7D198A203F3B62B408967E /* Support Files */,
 			);
-			name = ZIPFoundation;
 			path = ZIPFoundation;
 			sourceTree = "<group>";
 		};
@@ -1095,7 +1092,6 @@
 				06A5A3A1BFEDE6CED3999F83823BFAC1 /* Resources */,
 				8BA5E1C89219ADE294F00A96811C9B3D /* Support Files */,
 			);
-			name = MJRefresh;
 			path = MJRefresh;
 			sourceTree = "<group>";
 		};
@@ -1187,7 +1183,6 @@
 				7FA30714AF830FBCC0FA2C4494D62B53 /* ZipArchive.swift */,
 				AE6DB0D53D303CA3A9EA141B219A9FF2 /* Support Files */,
 			);
-			name = iOSDFULibrary;
 			path = iOSDFULibrary;
 			sourceTree = "<group>";
 		};
@@ -1209,13 +1204,13 @@
 		B52D0393AF6504BAD526B9C328071CAF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F81274EDB681F11E7CB05F7DCA2BB33C /* CryptoSwift */,
-				409A40F21065BFF2199E91A10A27F9DA /* CryptoSwift-CryptoSwift */,
-				21B1375088A0310C7AE2BE4C8188D12F /* iOSDFULibrary */,
-				F3338390214B72D5C38D39C4CEDBAE0D /* kbeaconlib2 */,
-				E49D6D248DD1CEE584E6776B9164A1B2 /* MJRefresh */,
-				768AFB30BFD04447DE546203BD86F8BA /* Pods-KBeaconProDemo */,
-				48A4A6EDC08C8AC933D0DCD507E9D173 /* ZIPFoundation */,
+				F81274EDB681F11E7CB05F7DCA2BB33C /* CryptoSwift.framework */,
+				409A40F21065BFF2199E91A10A27F9DA /* CryptoSwift.bundle */,
+				21B1375088A0310C7AE2BE4C8188D12F /* iOSDFULibrary.framework */,
+				F3338390214B72D5C38D39C4CEDBAE0D /* kbeaconlib2.framework */,
+				E49D6D248DD1CEE584E6776B9164A1B2 /* MJRefresh.framework */,
+				768AFB30BFD04447DE546203BD86F8BA /* Pods_KBeaconProDemo.framework */,
+				48A4A6EDC08C8AC933D0DCD507E9D173 /* ZIPFoundation.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1358,7 +1353,7 @@
 			);
 			name = MJRefresh;
 			productName = MJRefresh;
-			productReference = E49D6D248DD1CEE584E6776B9164A1B2 /* MJRefresh */;
+			productReference = E49D6D248DD1CEE584E6776B9164A1B2 /* MJRefresh.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		9506C7FCDAE6E6967A99655F452EEE93 /* iOSDFULibrary */ = {
@@ -1377,7 +1372,7 @@
 			);
 			name = iOSDFULibrary;
 			productName = iOSDFULibrary;
-			productReference = 21B1375088A0310C7AE2BE4C8188D12F /* iOSDFULibrary */;
+			productReference = 21B1375088A0310C7AE2BE4C8188D12F /* iOSDFULibrary.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		989F78AFDFDA7F6A720659D6364CF384 /* kbeaconlib2 */ = {
@@ -1396,7 +1391,7 @@
 			);
 			name = kbeaconlib2;
 			productName = kbeaconlib2;
-			productReference = F3338390214B72D5C38D39C4CEDBAE0D /* kbeaconlib2 */;
+			productReference = F3338390214B72D5C38D39C4CEDBAE0D /* kbeaconlib2.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		99313990C1D76A6D1D017868B6975CC8 /* CryptoSwift */ = {
@@ -1415,7 +1410,7 @@
 			);
 			name = CryptoSwift;
 			productName = CryptoSwift;
-			productReference = F81274EDB681F11E7CB05F7DCA2BB33C /* CryptoSwift */;
+			productReference = F81274EDB681F11E7CB05F7DCA2BB33C /* CryptoSwift.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		AA15C8469D67684160CC2A7098EB841C /* ZIPFoundation */ = {
@@ -1433,7 +1428,7 @@
 			);
 			name = ZIPFoundation;
 			productName = ZIPFoundation;
-			productReference = 48A4A6EDC08C8AC933D0DCD507E9D173 /* ZIPFoundation */;
+			productReference = 48A4A6EDC08C8AC933D0DCD507E9D173 /* ZIPFoundation.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		B46F3163C287B060B73DC5B1D32C5153 /* Pods-KBeaconProDemo */ = {
@@ -1456,7 +1451,7 @@
 			);
 			name = "Pods-KBeaconProDemo";
 			productName = Pods_KBeaconProDemo;
-			productReference = 768AFB30BFD04447DE546203BD86F8BA /* Pods-KBeaconProDemo */;
+			productReference = 768AFB30BFD04447DE546203BD86F8BA /* Pods_KBeaconProDemo.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		EBC10B6451F5FE5244D138B5176C2A02 /* CryptoSwift-CryptoSwift */ = {
@@ -1473,7 +1468,7 @@
 			);
 			name = "CryptoSwift-CryptoSwift";
 			productName = CryptoSwift;
-			productReference = 409A40F21065BFF2199E91A10A27F9DA /* CryptoSwift-CryptoSwift */;
+			productReference = 409A40F21065BFF2199E91A10A27F9DA /* CryptoSwift.bundle */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -1529,7 +1524,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0697775380D82F213C70072376B27ECF /* CryptoSwift-CryptoSwift in Resources */,
+				0697775380D82F213C70072376B27ECF /* CryptoSwift.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1944,7 +1939,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/MJRefresh/MJRefresh-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/MJRefresh/MJRefresh-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1980,7 +1975,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/CryptoSwift/CryptoSwift-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/CryptoSwift/CryptoSwift-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2016,7 +2011,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/CryptoSwift/CryptoSwift-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/CryptoSwift/CryptoSwift-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2043,7 +2038,7 @@
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/CryptoSwift";
 				IBSC_MODULE = CryptoSwift;
 				INFOPLIST_FILE = "Target Support Files/CryptoSwift/ResourceBundle-CryptoSwift-CryptoSwift-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_NAME = CryptoSwift;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2067,7 +2062,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/iOSDFULibrary/iOSDFULibrary-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/iOSDFULibrary/iOSDFULibrary-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2095,7 +2090,7 @@
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/CryptoSwift";
 				IBSC_MODULE = CryptoSwift;
 				INFOPLIST_FILE = "Target Support Files/CryptoSwift/ResourceBundle-CryptoSwift-CryptoSwift-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_NAME = CryptoSwift;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -2182,7 +2177,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "Target Support Files/Pods-KBeaconProDemo/Pods-KBeaconProDemo-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2219,7 +2214,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/ZIPFoundation/ZIPFoundation-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/ZIPFoundation/ZIPFoundation-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2255,7 +2250,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "Target Support Files/Pods-KBeaconProDemo/Pods-KBeaconProDemo-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2292,7 +2287,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/kbeaconlib2/kbeaconlib2-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/kbeaconlib2/kbeaconlib2-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2392,7 +2387,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/iOSDFULibrary/iOSDFULibrary-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/iOSDFULibrary/iOSDFULibrary-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2427,7 +2422,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/kbeaconlib2/kbeaconlib2-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/kbeaconlib2/kbeaconlib2-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2462,7 +2457,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/ZIPFoundation/ZIPFoundation-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/ZIPFoundation/ZIPFoundation-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2496,7 +2491,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/MJRefresh/MJRefresh-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/MJRefresh/MJRefresh-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

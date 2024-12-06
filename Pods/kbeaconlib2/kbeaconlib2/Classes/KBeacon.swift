@@ -89,6 +89,8 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     
     var receiveData: Data?
     
+    var allData: [Data]
+    
     var tobeCfgData: [KBCfgBase]?
     
 
@@ -97,6 +99,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         actionType = type;
         actionTimeout = timeout;
         
+        allData = [Data]()
         super.init()
     }
 };
@@ -308,6 +311,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
     private static let BEACON_ACK_EXPECT_NEXT = 0x4
     private static let BEACON_ACK_CAUSE_CMD_RCV = 0x5
     private static let BEACON_ACK_CMD_CMP = 0x6
+    private static let BEACON_ACK_CMD_UNCMP = 0x7
     
     //max mtu size
     private static let MIN_BLE_MTU_SIZE = 20
@@ -1455,6 +1459,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
                 if (msgBodyLen > 0)
                 {
                     action.receiveData = data.subdata(in: nReadIndex..<data.count)
+                    action.allData.append(action.receiveData!)
                 }
                 
                 //handle ack data
@@ -1505,6 +1510,17 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         else if (AckCause == KBeacon.BEACON_ACK_CMD_CMP)
         {
             NSLog("command execute complete");
+            //handle ack data
+            if (dataType == KBeacon.PERP_CENT_TX_HEX_ACK)
+            {
+                self.handleHexRptDataComplete()
+            }
+        }
+        else if (AckCause == KBeacon.BEACON_ACK_CMD_UNCMP)
+        {
+            NSLog("hex frame complete, now wait next frame")
+            mActionTimer?.invalidate()
+            startNewAction(timeout: KBeacon.MAX_READ_CFG_TIMEOUT)
         }
         else
         {
@@ -1613,6 +1629,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             {
                 let segData = data.subdata(in: readIndex..<data.count)
                 action.receiveData!.append(segData)
+                action.allData.append(action.receiveData!)
                 self.configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count),
                                           dataType: dataType,
                                           cause: 0)
@@ -1623,6 +1640,7 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         {
             //new read message command
             action.receiveData = data.subdata(in: readIndex..<data.count)
+            action.allData.append(action.receiveData!)
             
             self.configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count),
                                       dataType: dataType,
@@ -1630,17 +1648,22 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             bRcvDataCmp = true;
         }
         
-        if (bRcvDataCmp)
+//        if (bRcvDataCmp)
+//        {
+//            if (dataType == KBeacon.PERP_CENT_DATA_RPT)
+//            {
+//                self.handleJsonRptDataComplete()
+//            }
+//            else if (dataType == KBeacon.PERP_CENT_HEX_DATA_RPT)
+//            {
+//                self.handleHexRptDataComplete()
+//            }
+//            
+//            executeNextAction()
+//        }
+        if (bRcvDataCmp && dataType == KBeacon.PERP_CENT_DATA_RPT)
         {
-            if (dataType == KBeacon.PERP_CENT_DATA_RPT)
-            {
-                self.handleJsonRptDataComplete()
-            }
-            else if (dataType == KBeacon.PERP_CENT_HEX_DATA_RPT)
-            {
-                self.handleHexRptDataComplete()
-            }
-            
+            self.handleJsonRptDataComplete()
             executeNextAction()
         }
     }
@@ -1664,8 +1687,22 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
         {
             if let readCallback = action.readSensorRecordCallback
             {
-                let (success, result, exception) = self.mSensorRecordsMgr.parseSensorRecordResponse(rspdata: action.receiveData)
+                var success = false
+                let result  = KBRecordDataRsp()
+                var exception : KBException?
+                for item in action.allData {
+                    let parse = self.mSensorRecordsMgr.parseSensorRecordResponse(rspdata: item)
+                    success = parse.succ
+                    if let parseResult = parse.1
+                    {
+                        result.readDataRspList += parseResult.readDataRspList
+                        result.readDataNextPos = parseResult.readDataNextPos
+                    }
+                    exception = parse.2
+                }
+                
                 readCallback(success, result, exception)
+                action.allData.removeAll()
             }
         }
         else if (action.actionType == ActionType.ACTION_SENSOR_EXE_COMMAND)

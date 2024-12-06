@@ -89,7 +89,7 @@ import Foundation
                 return false;
             }
             
-            batteryLevel = UInt16(Int16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex + 1]);
+            batteryLevel = UInt16(UInt16(data[nSrvIndex]) << 8) + UInt16(data[nSrvIndex + 1]);
             nSrvIndex += 2
         }
         

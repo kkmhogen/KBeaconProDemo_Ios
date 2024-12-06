@@ -2,32 +2,31 @@ PODS:
   - CryptoSwift (1.8.3)
   - iOSDFULibrary (4.13.0):
     - ZIPFoundation (= 0.9.11)
-  - kbeaconlib2 (1.1.8):
+  - kbeaconlib2 (1.1.9):
     - CryptoSwift
   - MJRefresh (3.7.6)
   - ZIPFoundation (0.9.11)
 
 DEPENDENCIES:
   - iOSDFULibrary
-  - kbeaconlib2 (= 1.1.8)
+  - kbeaconlib2 (= 1.1.9)
   - MJRefresh
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
     - CryptoSwift
-    - kbeaconlib2
-  trunk:
     - iOSDFULibrary
+    - kbeaconlib2
     - MJRefresh
     - ZIPFoundation
 
 SPEC CHECKSUMS:
   CryptoSwift: 967f37cea5a3294d9cce358f78861652155be483
   iOSDFULibrary: 3b9de67ed4bfb901b5f09c2fea843f65e152612d
-  kbeaconlib2: 69a7aab63626707bd26f3d02073b0fc1ebf97441
+  kbeaconlib2: b76b194bfdb94917c775ebbfb2361ec74d9be9a9
   MJRefresh: 2fe7fb43a5167ceda20bb7e63f130c04fd1814a5
   ZIPFoundation: b1f0de4eed33e74a676f76e12559ab6b75990197
 
-PODFILE CHECKSUM: 711ecdd052d0ccc50f6b92435a1735cd32851283
+PODFILE CHECKSUM: d2faa3cdddc8e99b54528c66625a535b25010f69
 
 COCOAPODS: 1.12.1
