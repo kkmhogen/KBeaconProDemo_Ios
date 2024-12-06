@@ -35,7 +35,10 @@ class CfgHTHistoryController : UIViewController,UITableViewDataSource, UITableVi
     
     private var mRecordMgr : CfgHTRecordFileMgr?
     
-    static let HISTORY_LOAD_TIMEOUT_SEC = 12.0
+    //The timeout period for reading sensor data needs to be adjusted according to the number of records in the read area.
+    //We recommend that you have a timeout of 10 seconds for every 100 records.
+    //If 600 records are read at a time, the recommended timeout period is 60 seconds.
+    static let HISTORY_LOAD_TIMEOUT_SEC = 40.0
 
     static let INVALID_DATA_RECORD_POS  = UInt32(0xFFFFFFFF)
     
@@ -138,7 +141,7 @@ class CfgHTHistoryController : UIViewController,UITableViewDataSource, UITableVi
         self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
                                       number: KBRecordDataRsp.INVALID_DATA_RECORD_POS,
                                       option: KBSensorReadOption.NewRecord,
-                                      max: 300,
+                                      max: 400,
                                       callback: { (result, recordRsp, exception) in
                         if (!result)
                         {

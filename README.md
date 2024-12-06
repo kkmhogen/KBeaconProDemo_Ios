@@ -39,7 +39,7 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.1.8'
+pod 'kbeaconlib2','1.1.9'
 ```
 This library is also open source, please refer to this link.  
 [kbeaconlib](https://github.com/kkmhogen/kbeaconlib2)  
@@ -1749,7 +1749,7 @@ func readAlarmSensorDataInfo()
 
 ##### 4.3.6.2 Read sensor events records
   The SDK provides the following three ways to read records.
-  * KBSensorReadOption.NewRecord:  read history records and move next. After app reading records, the KBeacon device will move the pointer to the next unreaded record. If the app send read request again, the KBeacon device sends next unread records and move the pointer to next.
+  * KBSensorReadOption.NewRecord:  read history records and move next. After app reading records, the KBeacon device will move the pointer to the next un-read record. If the app send read request again, the KBeacon device sends next unread records and move the pointer to next.
 
   * KBSensorReadOption.NormalOrder: Read records without pointer moving. The app can read records from old to recently. To read records in this way, the app must  specify the record no to be read.
 
@@ -1757,12 +1757,14 @@ func readAlarmSensorDataInfo()
 
    Example1: The app read the temperature and humidity records. Each time the records was read, the pointer will move to next.
 ```swift
+//The following demo can read a maximum of 200 records, and if there are only 100 new records in the device, the device returns 100 records.
+//If the device's sensor history is greater than 200, the device returns 200 records
 func readTempHistoryRecordExample()
 {
     self.beacon!.readSensorRecord(KBSensorType.HTHumidity,
                                   number: KBRecordDataRsp.INVALID_DATA_RECORD_POS,
                                   option: KBSensorReadOption.NewRecord,
-                                  max: 50,
+                                  max: 200,
                                   callback: { (result, recordRsp, exception) in
         if (!result)
         {
@@ -1898,7 +1900,7 @@ Example1: read light events history records.
   beacon!.readSensorRecord(KBSensorType.Light,
                             number:KBRecordDataRsp.INVALID_DATA_RECORD_POS,
                             option: KBSensorReadOption.NewRecord,
-                            max: 100) { result, obj, error in
+                            max: 200) { result, obj, error in
       if (!result)
       {
           //read light record info failed

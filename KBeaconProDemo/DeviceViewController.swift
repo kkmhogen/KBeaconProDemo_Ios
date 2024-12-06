@@ -1869,6 +1869,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         })
     }
     
+    //enable beacon to actor as repeater
     func enableRepeaterScanner()
     {
         guard self.beacon!.isConnected(),
