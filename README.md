@@ -32,7 +32,7 @@ To make your development easier, we have an IOS demos in GitHub. They are:
 ## 3. Import SDK to project
 ### 3.1 Prepare
 Development environment:  
-min IOS Version 11.0
+min IOS Version 13.0
 
 ### 3.2 Import SDK
 kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
