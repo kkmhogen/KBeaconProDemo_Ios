@@ -17,12 +17,16 @@ import Foundation
     
     public static let MIN_SCAN_DURATION = 1;
     public static let MAX_SCAN_DURATION = 60000;
+    public static let MAX_SCAN_INTERVAL = 7200;
     
     @objc public static let JSON_SENSOR_TYPE_SCAN_MODE = "mode"
     @objc public static let JSON_SENSOR_TYPE_SCAN_RSSI = "rssi"
     @objc public static let JSON_SENSOR_TYPE_SCAN_DUR = "dur"
     @objc public static let JSON_SENSOR_TYPE_SCAN_MSK = "chMsk"
     @objc public static let JSON_SENSOR_TYPE_SCAN_MAX = "max"
+    @objc public static let JSON_SENSOR_TYPE_SCAN_INTERVAL = "itvl"
+    @objc public static let JSON_SENSOR_TYPE_MOTION_SCAN_INTERVAL = "mItvl"
+    @objc public static let JSON_SENSOR_TYPE_SCAN_DATA_ADV_SLOT = "aSlot"
     
     // type, BLE4.0, BLE5.0 PHY Coded, BLE5.0 Ext Adv
     private var scanMode:Int?
@@ -38,6 +42,15 @@ import Foundation
     
     //The maximum number of devices scanned
     private var scanMax:Int?
+    
+    //scan interval when static
+    private var scanInterval:Int?
+
+    //scan interval when motion
+    private var motionScanInterval:Int?
+
+    //advertisement slot for scaned device
+    private var scanResultAdvSlot:Int?
     
     @objc public required init() {
         super.init()
@@ -84,6 +97,48 @@ import Foundation
     
     @objc public func getScanMax() -> Int {
         return scanMax ?? KBCfgBase.INVALID_INT
+    }
+    
+    @objc @discardableResult public func setScanInterval(_ interval:Int)->Bool{
+        if (interval >= 0
+            && interval <= KBCfgSensorScan.MAX_SCAN_INTERVAL)
+        {
+            scanInterval = interval
+            return true
+        }
+        else
+        {
+            return false
+        }
+    }
+    
+    @objc public func getScanInterval() -> Int {
+        return scanInterval ?? KBCfgBase.INVALID_INT
+    }
+    
+    @objc @discardableResult public func setMotionScanInterval(_ interval:Int)->Bool{
+        if (interval >= 0
+            && interval <= KBCfgSensorScan.MAX_SCAN_INTERVAL)
+        {
+            motionScanInterval = interval
+            return true
+        }
+        else
+        {
+            return false
+        }
+    }
+    
+    @objc public func getMotionScanInterval() -> Int {
+        return motionScanInterval ?? KBCfgBase.INVALID_INT
+    }
+    
+    @objc public func setScanResultAdvSlot(_ slot:Int) {
+        scanResultAdvSlot = slot;
+    }
+    
+    @objc public func getScanResultAdvSlot() -> Int {
+        return scanResultAdvSlot ?? KBCfgBase.INVALID_INT
     }
     
     @objc @discardableResult public func setScanMax(_ max:Int) ->Bool{
@@ -147,6 +202,20 @@ import Foundation
             scanMax = tempValue
             nUpdatePara += 1
         }
+        
+        if let tempValue = para[KBCfgSensorScan.JSON_SENSOR_TYPE_SCAN_INTERVAL] as? Int {
+            scanInterval = tempValue
+            nUpdatePara += 1
+        }
+        if let tempValue = para[KBCfgSensorScan.JSON_SENSOR_TYPE_MOTION_SCAN_INTERVAL] as? Int {
+            motionScanInterval = tempValue
+            nUpdatePara += 1
+        }
+        if let tempValue = para[KBCfgSensorScan.JSON_SENSOR_TYPE_SCAN_DATA_ADV_SLOT] as? Int {
+            scanResultAdvSlot = tempValue
+            nUpdatePara += 1
+        }
+        
         return nUpdatePara
     }
     
@@ -172,6 +241,21 @@ import Foundation
         if let tempValue = scanMax {
             cfgDicts[KBCfgSensorScan.JSON_SENSOR_TYPE_SCAN_MAX]  = tempValue
         }
+        
+        if let tempValue = scanInterval{
+            cfgDicts[KBCfgSensorScan.JSON_SENSOR_TYPE_SCAN_INTERVAL]  = tempValue
+        }
+
+        if let tempValue = motionScanInterval
+        {
+            cfgDicts[KBCfgSensorScan.JSON_SENSOR_TYPE_MOTION_SCAN_INTERVAL]  = tempValue
+        }
+
+        if let tempValue = scanResultAdvSlot
+        {
+            cfgDicts[KBCfgSensorScan.JSON_SENSOR_TYPE_SCAN_DATA_ADV_SLOT]  = tempValue
+        }
+
         return cfgDicts
     }
 }

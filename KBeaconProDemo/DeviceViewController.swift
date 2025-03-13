@@ -1785,7 +1785,7 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
                 
                 self.showDialogMsg("Failed", message:"config other error:\(error!.errorCode)")
             }
-        })
+        })   
     }
 
     //MARK: - Config parking sensor paramaters
@@ -1884,6 +1884,15 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         //set scanner parameters
         let scanPara = KBCfgSensorScan()
         
+        //set scan interval every 300 seconds
+        scanPara.setScanInterval(300)
+        
+        //set scan interval to 60 seconds when detected motion
+        if commCfg.isSupportAccSensor()
+        {
+            scanPara.setMotionScanInterval(60)
+        }
+        
         //set scan duration 1seconds, unit is 10 ms
         scanPara.setScanDuration(100)
         
@@ -1894,37 +1903,26 @@ class DeviceViewController :UIViewController, ConnStateDelegate, UITextFieldDele
         scanPara.setScanRssi(-80)
         
         //The scanning advertisement channel mask is 3 bit, channel 37(bit0), channel 38(bit1)
-        // channel 39(bit2). if the chanel bit is 1, then the Beacon will not scan on the channel
+        // channel 39(bit2). if the channel bit is 1, then the Beacon will not scan on the channel
         //for example, if the advChannelMask is 0x3(0B'011), then the beacon only scan BLE channel 37
         scanPara.setScanChanelMask(3)
         
         //The maximum number of peripheral devices during each scan
         // When the number of devices scanned exceed 20, then stop scanning.
-        scanPara.setScanMax(20);
+        scanPara.setScanMax(20)
+        
+        //set scan result adv on slot 0
+        //please make sure the slot 0 was configured to iBeacon
+        scanPara.setScanResultAdvSlot(0)
 
-        // Set a Trigger to periodically trigger scanning
-        let periodicTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.PeriodicallyEvent);
-        //When a trigger occurs, it triggers a BLE scan and carries the scanned parameters in the broadcast.
-        periodicTrigger.setTriggerAction(KBTriggerAction.BLEScan | KBTriggerAction.Advertisement);
-        periodicTrigger.setTriggerAdvSlot(0)
-        periodicTrigger.setTriggerAdvPeriod(500.0)
-        periodicTrigger.setTriggerAdvTime(10)
-        periodicTrigger.setTriggerAdvTxPower(0)
-
-        //When a trigger occurs, change the UUID to carry the MAC address of the scanned peripheral device.
-        periodicTrigger.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID);
-
-        //Set to start scanning every 60 seconds, unit is ms
-        periodicTrigger.setTriggerPara(60*1000)
-        let repeaterScanParas = [scanPara, periodicTrigger]
-        self.beacon?.modifyConfig(array:repeaterScanParas, callback: { result, error in
+        self.beacon?.modifyConfig(obj: scanPara, callback: { result, error in
             if (result)
             {
                 self.showDialogMsg("success", message: "config success")
             }
             else if (error != nil)
             {
-                self.showDialogMsg("Failed", message:"config repeater scan error:\(error!.errorCode)")
+                self.showDialogMsg("Failed", message:"config repeater scan error, please make sure the slot0 was config to iBeacon:\(error!.errorCode)")
             }
         })
     }

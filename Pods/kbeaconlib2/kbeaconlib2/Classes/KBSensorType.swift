@@ -18,4 +18,5 @@ import Foundation
     @objc public static let CO2 = 0x41
     @objc public static let GEO = 0x42
     @objc public static let SCAN = 0x44
+    @objc public static let NFC = 0x45
 }

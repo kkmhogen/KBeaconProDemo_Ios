@@ -55,7 +55,8 @@ internal class KBCfgHandler {
         KBSensorType.CO2: KBCfgSensorCO2.self,
         KBSensorType.Acc: KBCfgSensorAcc.self,
         KBSensorType.GEO: KBCfgSensorGEO.self,
-        KBSensorType.SCAN: KBCfgSensorScan.self
+        KBSensorType.SCAN: KBCfgSensorScan.self,
+        KBSensorType.NFC: KBCfgSensorNFC.self
     ]
     
     internal init()

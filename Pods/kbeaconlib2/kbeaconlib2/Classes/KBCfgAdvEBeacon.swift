@@ -15,7 +15,7 @@ import Foundation
     @objc public static let  DEFAULT_UUID = "7777772E-6B6B-6D63-6E2E-636F6D000001"
     
     //0: AES ECB
-    @objc public static let  AES_ECB_TYPE = UInt8(0x0)
+    @objc public static let  AES_ECB_TYPE = UInt8(0x1)
     
     @objc public static let  DEFAULT_INTERVER = UInt8(0x5)
 

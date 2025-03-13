@@ -39,7 +39,7 @@ kbeaconlib2 is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'kbeaconlib2','1.1.9'
+pod 'kbeaconlib2','1.2.0'
 ```
 This library is also open source, please refer to this link.  
 [kbeaconlib](https://github.com/kkmhogen/kbeaconlib2)  
@@ -701,6 +701,14 @@ func setSlot0AdvEncrypt(){
         }
     })
 }
+
+
+//Set the slot0 encrypted broadcast KSensor protocol
+if commCfg.isSupportEBeacon()
+    let encKSensorAdv = KBCfgAdvKSensor()
+    encKSensorAdv.setSlotIndex(0)
+    encKSensorAdv.setAesType(Int(KBCfgAdvEBeacon.AES_ECB_TYPE))
+    ...
 ```
 
 ##### 4.3.3.5 Intermittent advertisement
@@ -1368,7 +1376,7 @@ func enableAccAngleTrigger()
 }
  ```
 
-### 4.3.5 sensor parameters
+### 4.3.5 Sensor parameters
 If the device has sensors, such as temperature and humidity sensors, we may need to setting the sensor parameters, such as the measurement interval.
 There are also some beacons, which can save sensor events to non-volatile memory, so that the app or gateway can obtain these historical records. Therefore, we may need to configure the conditions for recording events, such as recording an event when the temperature changes by more than 3 degrees.
 
@@ -1410,6 +1418,7 @@ func setTHSensorMeasureParameters()
     //unit is 0.1 Celsius, if abs(current temperature - last saved temperature) > 0.5, then log new record
     sensorHTPara.setTemperatureLogThreshold(5)
 
+    //modify para
     self.beacon!.modifyConfig(obj: sensorHTPara) { (result, exception) in
         if (result)
         {
@@ -1594,68 +1603,66 @@ The repeater solution refers to Beacon's support for scanning surrounding Beacon
 * Expand the positioning range of Beacon. Beacons in weak indoor coverage areas may not be scanned by the gateway. Other beacons will act as repeaters to send the signal of that beacon to the gateway. The gateway can locate the Beacon in weak coverage areas.
 * Increase the positioning accuracy of Beacon. Multiple Anchor Beacons can be deployed in fixed locations, and mobile Beacons can periodically scan for Anchor Beacons and send the scanned Anchor Beacon information to the gateway. The gateway can accurately locate the mobile Beacons based on the Anchor Beacon information.
 ```swift
+//enable beacon to actor as repeater
 func enableRepeaterScanner()
+{
+    guard self.beacon!.isConnected(),
+        let commCfg = self.beacon!.getCommonCfg(),
+          commCfg.isSupportScanSensor()
+        else
     {
-        guard self.beacon!.isConnected(),
-            let commCfg = self.beacon!.getCommonCfg(),
-              commCfg.isSupportScanSensor()
-            else
-        {
-            print("Device does not support scan sensors")
-            return
-        }
-
-        // set scanner parameters
-        let scanPara = KBCfgSensorScan()
-
-        // set scan duration 1seconds, unit is 10 ms
-        scanPara.setScanDuration(100)
-
-        //only scan BLE4.0 legacy advertisement
-        scanPara.setScanModel(KBAdvMode.Legacy)
-
-        scanPara.setScanRssi(-80) //Scan devices with signals greater than -80dBm
-
-        //The scanning advertisement channel mask is 3 bit, channel 37(bit0), channel 38(bit1)
-        // channel 39(bit2). if the chanel bit is 1, then the Beacon will not scan on the channel
-        //for example, if the advChannelMask is 0x3(0B'011), then the beacon only scan BLE channel 37
-        scanPara.setScanChanelMask(3)
-
-        //The maximum number of peripheral devices during each scan
-        // When the number of devices scanned exceed 20, then stop scanning.
-        scanPara.setScanMax(20);
-
-        // Set a Trigger to periodically trigger scanning
-        let periodicTrigger = KBCfgTrigger(0, triggerType: KBTriggerType.PeriodicallyEvent);
-
-        //When a trigger occurs, it triggers a BLE scan and carries the scanned parameters in the broadcast.
-        periodicTrigger.setTriggerAction(KBTriggerAction.BLEScan | KBTriggerAction.Advertisement);
-        periodicTrigger.setTriggerAdvSlot(0)
-        periodicTrigger.setTriggerAdvPeriod(500.0)
-        periodicTrigger.setTriggerAdvTime(10)
-        periodicTrigger.setTriggerAdvTxPower(0)
-
-        //When a trigger occurs, change the UUID to carry the MAC address of the scanned peripheral device.
-        periodicTrigger.setTriggerAdvChangeMode(KBTriggerAdvChgMode.KBTriggerAdvChangeModeUUID);
-
-        //Set to start scanning every 60 seconds, unit is ms
-        periodicTrigger.setTriggerPara(60*1000)
-        let repeaterScanParas = [scanPara, periodicTrigger]
-        self.beacon?.modifyConfig(array:repeaterScanParas, callback: { result, error in
-            if (result)
-            {
-                self.showDialogMsg("success", message: "config success")
-            }
-            else if (error != nil)
-            {
-                self.showDialogMsg("Failed", message:"config repeater scan error:\(error!.errorCode)")
-            }
-        })
+        print("Device does not support scan sensors")
+        return
     }
+
+    //set scanner parameters
+    let scanPara = KBCfgSensorScan()
+
+    //set scan interval every 300 seconds
+    scanPara.setScanInterval(300)
+
+    //set scan interval to 60 seconds when detected motion
+    if commCfg.isSupportAccSensor()
+    {
+        scanPara.setMotionScanInterval(60)
+    }
+
+    //set scan duration 1seconds, unit is 10 ms
+    scanPara.setScanDuration(100)
+
+    //only scan BLE4.0 legacy advertisement
+    scanPara.setScanModel(KBAdvMode.Legacy)
+
+    //Scan devices with signals greater than -80dBm
+    scanPara.setScanRssi(-80)
+
+    //The scanning advertisement channel mask is 3 bit, channel 37(bit0), channel 38(bit1)
+    // channel 39(bit2). if the channel bit is 1, then the Beacon will not scan on the channel
+    //for example, if the advChannelMask is 0x3(0B'011), then the beacon only scan BLE channel 37
+    scanPara.setScanChanelMask(3)
+
+    //The maximum number of peripheral devices during each scan
+    // When the number of devices scanned exceed 20, then stop scanning.
+    scanPara.setScanMax(20)
+
+    //set scan result adv on slot 0
+    //please make sure the slot 0 was configured to iBeacon
+    scanPara.setScanResultAdvSlot(0)
+
+    self.beacon?.modifyConfig(obj: scanPara, callback: { result, error in
+        if (result)
+        {
+            self.showDialogMsg("success", message: "config success")
+        }
+        else if (error != nil)
+        {
+            self.showDialogMsg("Failed", message:"config repeater scan error, please make sure the slot0 was config to iBeacon:\(error!.errorCode)")
+        }
+    })
+}
 ```
 ##### 4.3.5.6 Other sensor parameters
 Other sensors, such as PIR sensors and VOC sensors, have a similar method for setting parameters, and will not be given example here.
-
 ```swift
 func setPIRSensorParameters()
 {
@@ -1695,7 +1702,6 @@ For these devices, we can read these saved histories record through the APP or G
 
 ##### 4.3.6.1 Read events summary information
 With this command, we can read the total number of records and the number of unread records in the device. Next, we can read the specified record. Or read the records that have not been read.  
-
 ```swift
 //read temperature and humidity history record info
 func readHTSensorDataInfo()
@@ -2121,6 +2127,7 @@ All command message between app and KBeacon are JSON format. Our SDK provide Has
 https://github.com/NordicSemiconductor/IOS-Pods-DFU-Library
 
 ## 6. Change log
+* 2025.3.20 v1.40 Add scan sensor and encryption advertisement
 * 2024.1.20 v1.33 Add tilt angle trigger
 * 2023.5.20 v1.32 Add VOC and CO2 sensor
 * 2022.6.1 v1.31 Add PIR sensor

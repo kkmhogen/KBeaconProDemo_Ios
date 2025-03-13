@@ -351,6 +351,16 @@ import Foundation
         }
     }
     
+    //is support nfc Sensor
+    @objc public func isSupportNFCSensor()->Bool
+    {
+        if let tempAdvCap = self.basicCapability{
+            return (tempAdvCap & 0x8000000) > 0
+        }else{
+            return false
+        }
+    }
+    
     //is support button
     @objc public func isSupportTrigger(_ triggerType:Int)->Bool
     {

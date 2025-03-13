@@ -16,6 +16,7 @@ import Foundation
     @objc public static let JSON_FIELD_SENSOR_VOC = "voc"
     @objc public static let JSON_FIELD_SENSOR_CO2 = "co2"
     @objc public static let JSON_FIELD_SENSOR_GEO = "mag"
+    @objc public static let JSON_FIELD_AES_TYPE = "aes";
     
     var htSensorInclude: Bool?
     var axisSensorInclude: Bool?
@@ -25,6 +26,7 @@ import Foundation
     var vocSensorInclude: Bool?
     var co2SensorInclude: Bool?
     var geoSensorInclude: Bool?
+    var aesType:Int?
 
     @objc public required init()
     {
@@ -96,6 +98,14 @@ import Foundation
     @objc public func setGeoSensorInclude(_ sensorInclude : Bool) {
         self.geoSensorInclude = sensorInclude
     }
+    
+    @objc public func getAesType()->Int {
+        return aesType ?? 0
+    }
+    
+    @objc public func setAesType(_ aesType : Int) {
+        self.aesType = aesType
+    }
 
     @objc @discardableResult public override func updateConfig(_ para:Dictionary<String, Any>)->Int
     {
@@ -140,6 +150,11 @@ import Foundation
             geoSensorInclude = (tempValue > 0)
             nUpdatePara += 1
         }
+        
+        if let tempValue = para[KBCfgAdvKSensor.JSON_FIELD_AES_TYPE] as? Int {
+            aesType = tempValue
+            nUpdatePara += 1
+        }
 
         return nUpdatePara;
     }
@@ -178,6 +193,10 @@ import Foundation
         
         if let tempValue = geoSensorInclude{
             cfgDicts[KBCfgAdvKSensor.JSON_FIELD_SENSOR_GEO] = (tempValue ? 1 : 0)
+        }
+        
+        if let tempValue = aesType{
+            cfgDicts[KBCfgAdvKSensor.JSON_FIELD_AES_TYPE] = tempValue
         }
 
         return cfgDicts;

@@ -38,16 +38,22 @@ import Foundation
     {
         super.parseAdvPacket(data, index: index)
         
+        //only advertisement mac address
+        if data[index] == 0 {
+             return true
+        }
+        //iBeacon type
+        if (data[index] & 0x4) == 0
+        {
+            return false
+        }
+        
         if (data.count - index < 5)
         {
-            return false;
+            return false
         }
         
         var nStartIndex = index
-        if ((Int(data[nStartIndex]) & 0x4) == 0)
-        {
-            return false;
-        }
         nStartIndex += 1
         
         //major id
@@ -57,6 +63,6 @@ import Foundation
         //minor id
         minorID = (UInt(data[nStartIndex]) << 8) + UInt(data[nStartIndex + 1])
         
-        return true;
+        return true
     }
 }

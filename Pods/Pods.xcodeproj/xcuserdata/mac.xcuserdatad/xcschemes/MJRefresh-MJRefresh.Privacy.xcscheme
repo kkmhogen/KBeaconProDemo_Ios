@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1300"
+   LastUpgradeVersion = "1600"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "99313990C1D76A6D1D017868B6975CC8"
-               BuildableName = "CryptoSwift.framework"
-               BlueprintName = "CryptoSwift"
+               BlueprintIdentifier = "B26054DF1DEA11585A231AF6D1D80D5E"
+               BuildableName = "MJRefresh.Privacy.bundle"
+               BlueprintName = "MJRefresh-MJRefresh.Privacy"
                ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>

@@ -33,6 +33,26 @@ public extension Data {
         }
         return ""
     }
+    
+    var bytes: Array<UInt8> {
+      Array(self)
+    }
+
+    func toHexString() -> String {
+      self.bytes.toHexString()
+    }
+}
+
+extension Array where Element == UInt8 {
+  public func toHexString() -> String {
+    `lazy`.reduce(into: "") {
+      var s = String($1, radix: 16)
+      if s.count == 1 {
+        s = "0" + s
+      }
+      $0 += s
+    }
+  }
 }
 
 public extension String {

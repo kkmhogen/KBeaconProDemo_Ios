@@ -224,6 +224,10 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             {
                 return sysAdvPacket.macAddress  //adv mac
             }
+	    else if let mac = mAdvPacketMgr.mAdvMacAddress
+            {
+                return mac  //adv mac
+            }
             else if connectionMac != nil  //connection mac
             {
                 return connectionMac
@@ -1641,7 +1645,6 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
             //new read message command
             action.receiveData = data.subdata(in: readIndex..<data.count)
             action.allData.append(action.receiveData!)
-            
             self.configSendDataRptAck(ackSeq: UInt16(action.receiveData!.count),
                                       dataType: dataType,
                                       cause: 0)
@@ -1693,10 +1696,9 @@ public typealias onActionComplete = (_ result:Bool, _ error:KBException?)->Void
                 for item in action.allData {
                     let parse = self.mSensorRecordsMgr.parseSensorRecordResponse(rspdata: item)
                     success = parse.succ
-                    if let parseResult = parse.1
-                    {
-                        result.readDataRspList += parseResult.readDataRspList
-                        result.readDataNextPos = parseResult.readDataNextPos
+                    if let rep = parse.1 {
+                        result.readDataRspList += rep.readDataRspList
+                        result.readDataNextPos = rep.readDataNextPos
                     }
                     exception = parse.2
                 }

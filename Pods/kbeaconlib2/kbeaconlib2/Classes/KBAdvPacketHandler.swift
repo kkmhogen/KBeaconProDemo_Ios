@@ -10,8 +10,11 @@ import CoreBluetooth
 
 internal class KBAdvPacketHandler : NSObject
 {
+    private static let DEFAULT_ENCRYPT_MAC = "00:00:00:00:00:00"
+    
     internal var mAdvPackets = [Int:KBAdvPacketBase]()
     
+    internal var mAdvMacAddress: String?
     //filter adv type
     internal var filterAdvType: Int?
     
@@ -94,14 +97,21 @@ internal class KBAdvPacketHandler : NSObject
         var advDataIndex = 0
         
         //get manufacture
+        var isEncryptAdv: Bool = false
         if let kkmManufactureData = advData["kCBAdvDataManufacturerData"] as? Data,
            kkmManufactureData.count > 3
         {
             if kkmManufactureData[0] == 0x53, kkmManufactureData[1] == 0x0A {
-                if (kkmManufactureData[2] == 0x21
+                if ((kkmManufactureData[2] == 0x21)
                             && kkmManufactureData.count >= KBAdvPacketSensor.MIN_SENSOR_ADV_LEN)
                 {
                     advType = KBAdvType.Sensor;
+                }
+                if ((kkmManufactureData[2] == 0x6) 
+                    && kkmManufactureData.count >= KBAdvPacketSensor.MIN_SENSOR_ADV_LEN)
+                {
+                    advType = KBAdvType.Sensor;
+                    isEncryptAdv = true
                 }
                 else if (kkmManufactureData[2] == 0x22
                             && kkmManufactureData.count >= KBAdvPacketSystem.MIN_ADV_PACKET_LEN)
@@ -109,6 +119,7 @@ internal class KBAdvPacketHandler : NSObject
                     advType = KBAdvType.System;
                 }else if  kkmManufactureData[2] == 0x03 {
                     advType = KBAdvType.EBeacon
+                    isEncryptAdv = true
                 }
                 else if  kkmManufactureData[2] == 0x04 {
                     advType = KBAdvType.AOA
@@ -187,6 +198,17 @@ internal class KBAdvPacketHandler : NSObject
                     advType = KBAdvType.IBeacon;
                     pAdvData = kbResponseData
                     advDataIndex = 1
+                }else if beaconType == 0, kbResponseData.count > 5, kbResponseData[2] == 1 {
+                    if advType == KBAdvType.AdvNull {
+                        advType = KBAdvType.IBeacon;
+                        pAdvData = kbResponseData
+                        advDataIndex = 1
+                    }
+                    mAdvMacAddress = String(format:"BC:57:29:%02X:%02X:%02X",
+                                            kbResponseData[3],
+                                            kbResponseData[4],
+                                            kbResponseData[5]);
+                   
                 }
             }
         }
@@ -209,10 +231,31 @@ internal class KBAdvPacketHandler : NSObject
                 mAdvPackets[advType] = advPacket
             }
             
+
             advPacket!.updateBasicInfo(deviceName,
                                       rssi: rssi,
                                        isConnect: advConnable.boolValue,
                                        peripheralUUID:peripheralUUID)
+            
+            //if the adv was encrypt, then need get password and mac address
+            if (isEncryptAdv)
+            {
+                let mPrefCfg = KBPreferance.sharedPreferance
+                var encryptMac = mAdvMacAddress
+                if encryptMac == nil
+                {
+                    if let uuidMac = mPrefCfg.getMacFromUUID(uuid: peripheralUUID)
+                    {
+                        encryptMac = uuidMac
+                    }
+                    else
+                    {
+                        encryptMac = KBAdvPacketHandler.DEFAULT_ENCRYPT_MAC
+                    }
+                }
+                advPacket!.password = mPrefCfg.getPassword(peripheralUUID)
+                advPacket!.mac = encryptMac
+            }
             
             //check if parse advertisment packet success
             return advPacket!.parseAdvPacket(advData, index: advDataIndex)

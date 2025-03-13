@@ -21,6 +21,7 @@ import Foundation
     public static let SENSOR_MASK_VOC = 0x80
     public static let SENSOR_MASK_CO2 = 0x200
     public static let SENSOR_MASK_RECORD_NUM = 0x400
+    public static let ENCRYPT_SENSOR_TYPE = 0x06
 
     //acceleration sensor data
     @objc public var accSensor: KBAccSensorValue?
@@ -54,7 +55,11 @@ import Foundation
     
     //unread count
     @objc public var newTHRecordNum: UInt16 = KBCfgBase.INVALID_UINT16
+    
+    @objc public var utcSecCount:UInt32 = KBCfgBase.INVALID_UINT32
 
+    @objc public var isEncryptAdv: Bool = false
+    
     internal required init() {
         
         super.init()
@@ -73,15 +78,42 @@ import Foundation
         {
             return false;
         }
-        var nSrvIndex = index;
+        var nSrvIndex = index - 1;
+        let advType = data[nSrvIndex]
+        nSrvIndex += 1
         
         //sensor mask High byte
         let bySensorMaskHigh = Int(data[nSrvIndex])
         nSrvIndex += 1
-                
+        
         //sensor mask
-        let bySensorMask = (bySensorMaskHigh << 8) + Int(data[nSrvIndex]);
+        let sensorMask = (bySensorMaskHigh << 8) + Int(data[nSrvIndex]);
         nSrvIndex += 1
+        
+        if (KBAdvPacketSensor.ENCRYPT_SENSOR_TYPE == advType)
+        {
+            if let decryptData = decryptMD5Data(nSrvIndex, data: data, length: 16)
+            {
+                isEncryptAdv = true;
+                utcSecCount = decryptData.utc
+                return parseSensorData(sensorMask, index: 0, data: decryptData.data)
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            isEncryptAdv = false
+            return parseSensorData(sensorMask, index: nSrvIndex, data: data)
+        }
+    }
+    
+    private func parseSensorData(_ bySensorMask: Int, index:Int, data:Data)->Bool
+    {
+        var nSrvIndex = index
+        
         if ((bySensorMask & KBAdvPacketSensor.SENSOR_MASK_VOLTAGE) > 0)
         {
             if (nSrvIndex > data.count - 2)

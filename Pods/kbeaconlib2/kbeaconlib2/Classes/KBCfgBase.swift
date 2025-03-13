@@ -13,6 +13,7 @@ import Foundation
     @objc public static let INVALID_FLOAT = Float(0xFFFFFF)
     @objc public static let INVALID_INT = Int(0x7FFFFFFF)
     @objc public static let INVALID_UINT = UInt(0xFFFFFFFF)
+    @objc public static let INVALID_UINT32 = UInt32(0xFFFFFFFF)
     @objc public static let INVALID_INT8 = Int8(0x7F)
     @objc public static let INVALID_UINT8 = UInt8(0xFF)
     @objc public static let INVALID_UINT16 = UInt16(0xFFFF)
