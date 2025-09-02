@@ -5,5 +5,5 @@ use_frameworks!
 target 'KBeaconProDemo' do
    pod 'iOSDFULibrary','4.13.0'
    pod 'MJRefresh'
-   pod 'kbeaconlib2', '1.2.0'
+   pod 'kbeaconlib2', '1.2.1'
 end

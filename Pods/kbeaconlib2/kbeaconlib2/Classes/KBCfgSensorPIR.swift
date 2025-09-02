@@ -55,8 +55,8 @@ import Foundation
     
     @objc @discardableResult public func setMeasureInterval(_ interval :Int)->Bool
     {
-        if (KBCfgSensorPIR.MIN_MEASURE_INTERVAL >= interval
-            && KBCfgSensorPIR.MAX_MEASURE_INTERVAL <= interval)
+        if (KBCfgSensorPIR.MIN_MEASURE_INTERVAL <= interval
+            && KBCfgSensorPIR.MAX_MEASURE_INTERVAL >= interval)
         {
             measureInterval = interval
             return true
@@ -69,8 +69,8 @@ import Foundation
     
     @objc @discardableResult public func setLogBackoffTime(_ backOff :Int)->Bool
     {
-        if (KBCfgSensorPIR.MIN_BACKOFF_TIME_SEC >= backOff
-            && KBCfgSensorPIR.MAX_BACKOFF_TIME_SEC <= backOff)
+        if (KBCfgSensorPIR.MIN_BACKOFF_TIME_SEC <= backOff
+            && KBCfgSensorPIR.MAX_BACKOFF_TIME_SEC >= backOff)
         {
             logBackoffTime = backOff
             return true
