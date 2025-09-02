@@ -107,25 +107,24 @@ import CommonCrypto
                 let algoritm:  CCAlgorithm = UInt32(kCCAlgorithmAES128)
                 let options:   CCOptions   = UInt32(kCCOptionECBMode)
                 var numBytesEncrypted :size_t = 0
-                var cryptStatus :CCCryptorStatus = 0
                 
                 //decrypt data
-                encrypedSensorData.withUnsafeBytes({ (dataBytes)  in
+                let cryptStatus = encrypedSensorData.withUnsafeBytes({ (dataBytes)  in
                     let encryptBuffer: UnsafePointer<UInt8> = dataBytes.baseAddress!.assumingMemoryBound(to: UInt8.self)
                     
-                    decryptData.withUnsafeMutableBytes({ (dataBytes)  in
+                    return decryptData.withUnsafeMutableBytes({ (dataBytes)  in
                         let decryptBuffer: UnsafeMutableRawPointer = dataBytes.baseAddress!
-                        cryptStatus = CCCrypt(operation,
-                                              algoritm,
-                                              options,
-                                              aesKey,
-                                              keyLength,
-                                              nil,
-                                              encryptBuffer,
-                                              encrypedSensorData.count,
-                                              decryptBuffer,
-                                              encrypedSensorData.count,
-                                              &numBytesEncrypted)
+                        return CCCrypt(operation,
+                                algoritm,
+                                options,
+                                aesKey,
+                                keyLength,
+                                nil,
+                                encryptBuffer,
+                                encrypedSensorData.count,
+                                decryptBuffer,
+                                encrypedSensorData.count,
+                                &numBytesEncrypted)
                     })
                 })
                 
@@ -133,24 +132,6 @@ import CommonCrypto
                 {
                     return (decryptData, utcSecCount)
                 }
-                
-                /*
-                do {
-                    let decrypted = try AES(key: aesKey, blockMode:  ECB(),padding: .noPadding).decrypt(encrypedSensorData.bytes)
-                    
-                    var hexString = ""
-                    for byte in decrypted {
-                        hexString += String(format:"%02x", UInt8(byte))
-                    }
-                    NSLog(hexString);
-                    
-                    return (Data(decrypted), utcSecCount)
-                } catch AES.Error.dataPaddingRequired {
-                    // block size exceeded
-                } catch {
-                    // some error
-                }
-                */
             }
         }
         

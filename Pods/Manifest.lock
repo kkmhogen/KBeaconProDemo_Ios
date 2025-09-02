@@ -1,13 +1,13 @@
 PODS:
   - iOSDFULibrary (4.13.0):
     - ZIPFoundation (= 0.9.11)
-  - kbeaconlib2 (1.2.0)
+  - kbeaconlib2 (1.2.1)
   - MJRefresh (3.7.9)
   - ZIPFoundation (0.9.11)
 
 DEPENDENCIES:
   - iOSDFULibrary (= 4.13.0)
-  - kbeaconlib2 (= 1.2.0)
+  - kbeaconlib2 (= 1.2.1)
   - MJRefresh
 
 SPEC REPOS:
@@ -19,10 +19,10 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   iOSDFULibrary: ae1bcb1cb921e6e3ff551755f6fdff1b77e07e15
-  kbeaconlib2: 3fb57450e68546c3c87c49c079b09e8a9695be33
+  kbeaconlib2: 03146c34560f6737d6caa67d07d9d449cd0156f2
   MJRefresh: ff9e531227924c84ce459338414550a05d2aea78
   ZIPFoundation: b1f0de4eed33e74a676f76e12559ab6b75990197
 
-PODFILE CHECKSUM: 1d761436b5628871cfbb4cf244a0ede99e795739
+PODFILE CHECKSUM: 888f45f68984ffb6d965e8aa90c45171b1336182
 
 COCOAPODS: 1.16.2

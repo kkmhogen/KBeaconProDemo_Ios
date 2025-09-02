@@ -10,15 +10,15 @@ import UIKit
 public class KBCfgSensorGEO: KBCfgSensorBase {
 
     @objc public static let MAX_PARKING_CHANGE_THD = 65535;
-    @objc public static let MIN_PARKING_CHANGE_THD = 256;
+    @objc public static let MIN_PARKING_CHANGE_THD = 600;
     @objc public static let DEFAULT_PARKING_CHANGE_THD = 1000;
     
-    @objc public static let MAX_MEASURE_INTERVAL = 100
-    @objc public static let MIN_MEASURE_INTERVAL = 1
+    @objc public static let MAX_MEASURE_INTERVAL = 60
+    @objc public static let MIN_MEASURE_INTERVAL = 6
     
-    @objc public static let MAX_PARKING_DELAY_THD = 100;
-    @objc public static let MIN_PARKING_DELAY_THD = 1;
-    @objc public static let DEFAULT_PARKING_DELAY_THD = 9;
+    @objc public static let MAX_PARKING_DELAY_THD = 60
+    @objc public static let MIN_PARKING_DELAY_THD = 2
+    @objc public static let DEFAULT_PARKING_DELAY_THD = 4;
     
     @objc public static let JSON_SENSOR_TYPE_GEO_PTHD = "pThd"
 
